@@ -2,6 +2,8 @@
 
 An extension of [lightweight-charts](https://github.com/tradingview/lightweight-charts) library with additional features and functionality.
 
+![chart](https://i.imgur.com/tLQkxBR.png)
+
 ## Implemented Features
 
 ### Drawing Tools
