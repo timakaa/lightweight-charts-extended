@@ -70,18 +70,41 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 
 ## API Endpoints
 
+### Charts
+
+- `GET /api/v1/charts/{symbol}/candles` - Get candlestick data for a symbol
+- `GET /api/v1/charts/test-drawing` - Test endpoint for single drawing
+- `GET /api/v1/charts/test-multiple-drawings` - Test endpoint for multiple drawings
+- `GET /api/v1/charts/test-drawing-delete` - Test endpoint for drawing deletion
+- `GET /api/v1/charts/test-drawing-update` - Test endpoint for drawing update
+
+### Tickers
+
+- `GET /api/v1/tickers/` - Get default tickers
+- `GET /api/v1/tickers/all` - Get all available tickers
+- `GET /api/v1/tickers/{symbol}` - Get specific ticker information
+
+### System
+
 - `GET /` - Root endpoint
 - `GET /api/v1/health` - Health check
 - `GET /docs` - API documentation (Swagger UI)
 
 ## Socket.IO Events
 
-- `connect` - Client connection
-- `disconnect` - Client disconnection
-- `join_room` - Join a room
-- `leave_room` - Leave a room
-- `send_message` - Send message to room
-- `chart_update` - Update chart data
+### Client Events
+
+- `connect` - Handles client connection, emits 'user_connected' with session ID
+- `disconnect` - Handles client disconnection
+- `join_room` - Join a specific room (format: {symbol}-{timeframe})
+- `leave_room` - Leave a specific room
+
+### Server Events
+
+- `user_connected` - Emitted when a client connects
+- `room_joined` - Emitted when a client joins a room
+- `room_left` - Emitted when a client leaves a room
+- `chart_data_updated` - Real-time chart data updates with new candles
 
 ## Environment Variables
 
