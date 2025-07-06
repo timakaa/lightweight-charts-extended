@@ -4,6 +4,29 @@ An extension of [lightweight-charts](https://github.com/tradingview/lightweight-
 
 ![chart](https://i.imgur.com/tLQkxBR.png)
 
+## Quick Start with Docker
+
+### Option 1: Pull from Docker Hub
+
+```bash
+# Pull and run the containers
+docker-compose pull
+docker-compose up
+```
+
+### Option 2: Build Locally
+
+```bash
+# Build and run the containers
+docker-compose up --build
+```
+
+The application will be available at:
+
+- Frontend: http://localhost:3000
+- Backend: http://localhost:8000
+- API Docs: http://localhost:8000/docs
+
 ## Implemented Features
 
 ### Drawing Tools
