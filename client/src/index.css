@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+a {
+  display: none !important;
+}
+
+body {
+  -moz-osx-font-smoothing: grayscale;
+  font-family: -apple-system, BlinkMacSystemFont, Trebuchet MS, Roboto, Ubuntu,
+    sans-serif;
+  font-feature-settings: "tnum" on, "lnum" on;
+}
