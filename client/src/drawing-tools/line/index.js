@@ -196,7 +196,7 @@ export class LineDrawingTool extends PluginBase {
 
   // Handle chart click: set p1 or p2, create line, and reset state
   _onClick = (param) => {
-    if (!param.point || param.hoveredSeries) return;
+    if (!param.point) return;
 
     if (!this._p1) {
       // First click: set first endpoint

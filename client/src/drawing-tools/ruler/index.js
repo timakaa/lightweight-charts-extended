@@ -125,7 +125,7 @@ export class RulerTool extends PluginBase {
 
   // Handle chart click: set p1 or p2, create ruler, and reset state
   _onClick = (param) => {
-    if (!param.point || param.hoveredSeries) return;
+    if (!param.point) return;
 
     if (!this._p1) {
       // Remove all previous rulers before starting a new one

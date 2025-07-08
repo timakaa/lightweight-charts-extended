@@ -54,7 +54,7 @@ function useShortPositionDrawingTool(
     if (currentTool === TOOL_SHORT_POSITION) {
       // Custom: Only one click to create a 1:1 RR short position
       const handleClick = (param) => {
-        if (!param.point || param.hoveredSeries) {
+        if (!param.point) {
           return;
         }
         if (

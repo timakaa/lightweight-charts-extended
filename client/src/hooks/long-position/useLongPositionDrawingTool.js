@@ -60,7 +60,7 @@ function useLongPositionDrawingTool(
     if (currentTool === TOOL_LONG_POSITION) {
       // Custom: Only one click to create a 1:1 RR long position with hybrid coordinate support
       const handleClick = (param) => {
-        if (!param.point || param.hoveredSeries) {
+        if (!param.point) {
           return;
         }
         if (

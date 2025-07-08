@@ -228,7 +228,7 @@ export class FibRetracementDrawingTool extends PluginBase {
    * @param {object} param - Chart click event parameter
    */
   _onClick = (param) => {
-    if (!param.point || param.hoveredSeries) return;
+    if (!param.point) return;
 
     if (!this._p1) {
       // First click - set first endpoint

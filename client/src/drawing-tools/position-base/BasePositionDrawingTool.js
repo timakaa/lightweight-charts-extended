@@ -140,7 +140,7 @@ export class BasePositionDrawingTool extends PluginBase {
 
   // Handle chart click: set entry, target, stop, and create position
   _onClick = (param) => {
-    if (!param.point || param.hoveredSeries) return;
+    if (!param.point) return;
 
     if (!this._entry) {
       // First click: entry
