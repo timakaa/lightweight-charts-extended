@@ -112,7 +112,7 @@ function useLongPositionResize(
           isResizing: true,
           positionId: targetPosition.id,
           handle: handle,
-          initialMouse: { x: mouse.x, y: mouse.y },
+          initialMouse: { x: e.clientX, y: e.clientY }, // Store client coordinates for distance calculation
           handleHidden: false,
         };
         isResizingRef.current = true;
@@ -157,6 +157,23 @@ function useLongPositionResize(
       let newPrice = mouse.price;
       const entryPrice = position._entryPrice.price;
 
+      // Check if we should hide the handle (after significant movement)
+      if (
+        !resizeState.current.handleHidden &&
+        resizeState.current.initialMouse
+      ) {
+        const dx = e.clientX - resizeState.current.initialMouse.x;
+        const dy = e.clientY - resizeState.current.initialMouse.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist > 3) {
+          // 3px threshold
+          if (activeResizeHandleRef) {
+            activeResizeHandleRef.current = handle;
+          }
+          resizeState.current.handleHidden = true;
+        }
+      }
+
       // --- SNAP LOGIC: if meta or ctrl pressed and resizing profit/loss handle ---
       const isSnap = e.metaKey || e.ctrlKey;
       if (
@@ -175,20 +192,6 @@ function useLongPositionResize(
         }
         if (closestCandle) {
           newPrice = getSnappedPrice(newPrice, closestCandle);
-        }
-      }
-
-      if (
-        !resizeState.current.handleHidden &&
-        resizeState.current.initialMouse
-      ) {
-        const dx = mouse.x - resizeState.current.initialMouse.x;
-        const dy = mouse.y - resizeState.current.initialMouse.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist > 3) {
-          // threshold in pixels
-          if (activeResizeHandleRef) activeResizeHandleRef.current = handle;
-          resizeState.current.handleHidden = true;
         }
       }
 
@@ -310,14 +313,14 @@ function useLongPositionResize(
       }
     };
 
-    document.addEventListener("mousedown", handleMouseDown);
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
+    container.addEventListener("mousedown", handleMouseDown, true); // Use capture phase for priority
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
 
     return () => {
-      document.removeEventListener("mousedown", handleMouseDown);
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
+      container.removeEventListener("mousedown", handleMouseDown, true); // Match capture flag
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
     };
   }, [
     chart,

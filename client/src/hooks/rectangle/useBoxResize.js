@@ -606,7 +606,6 @@ function useBoxResize(
     container.addEventListener("mousedown", handleMouseDown, true); // Use capture phase for priority
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseup", handleMouseUp);
-    // --- ADDED: key listeners ---
     document.addEventListener("keydown", handleKeyDown);
     document.addEventListener("keyup", handleKeyUp);
     // Cleanup listeners on unmount
@@ -614,7 +613,6 @@ function useBoxResize(
       container.removeEventListener("mousedown", handleMouseDown, true); // Match capture flag
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
-      // --- ADDED: cleanup key listeners ---
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("keyup", handleKeyUp);
     };
