@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { io } from "socket.io-client";
 
-const SOCKET_URL = "http://localhost:8000";
+const SOCKET_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 const INTERVAL_MAP = {
   "1m": "1",

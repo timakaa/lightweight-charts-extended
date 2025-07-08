@@ -138,6 +138,12 @@ dmypy.json
 .DS_Store
 Thumbs.db 
 
+# Database
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
 # Other
 
 charts/

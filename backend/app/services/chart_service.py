@@ -29,10 +29,7 @@ class ChartService:
             if not success:
                 # Store in DB since client failed to process or didn't acknowledge
                 self.drawing_repository.store_undelivered_drawing(
-                    client_sid=client_sid,
-                    symbol=symbol,
-                    drawing_data=drawing_data,
-                    action="create",
+                    symbol=symbol, drawing_data=drawing_data, action="create"
                 )
 
             if on_ack:
@@ -69,7 +66,6 @@ class ChartService:
 
             if not success:
                 self.drawing_repository.store_undelivered_drawing(
-                    client_sid=client_sid,
                     symbol=symbol,
                     drawing_id=drawing_id,
                     drawing_data=drawing_data,
@@ -105,10 +101,7 @@ class ChartService:
 
             if not success:
                 self.drawing_repository.store_undelivered_drawing(
-                    client_sid=client_sid,
-                    symbol=symbol,
-                    drawing_id=drawing_id,
-                    action="delete",
+                    symbol=symbol, drawing_id=drawing_id, action="delete"
                 )
 
             if on_ack:
@@ -121,11 +114,9 @@ class ChartService:
         else:
             await sio.emit("chart_drawing_deleted", message, callback=ack_callback)
 
-    async def send_undelivered_drawings(
-        self, client_sid: str, symbol: Optional[str] = None
-    ):
-        """Send all undelivered drawings to a client"""
-        drawings = self.drawing_repository.get_undelivered_drawings(client_sid, symbol)
+    async def send_undelivered_drawings(self):
+        """Send all undelivered drawings"""
+        drawings = self.drawing_repository.get_undelivered_drawings()
 
         for drawing in drawings:
             # Convert SQLAlchemy model to dictionary
@@ -135,20 +126,17 @@ class ChartService:
                 await self.emit_chart_drawing(
                     symbol=drawing_dict["symbol"],
                     drawing_data=drawing_dict["drawing_data"],
-                    room=client_sid,
                 )
             elif drawing_dict["action"] == "update":
                 await self.update_chart_drawing(
                     symbol=drawing_dict["symbol"],
                     drawing_id=drawing_dict["drawing_id"],
                     drawing_data=drawing_dict["drawing_data"],
-                    room=client_sid,
                 )
             elif drawing_dict["action"] == "delete":
                 await self.delete_chart_drawing(
                     symbol=drawing_dict["symbol"],
                     drawing_id=drawing_dict["drawing_id"],
-                    room=client_sid,
                 )
 
 

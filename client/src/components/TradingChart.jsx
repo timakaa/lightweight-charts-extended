@@ -22,9 +22,11 @@ import useChartFitHotkey from "../hooks/useChartFitHotkey";
 import { useTimeframeModal } from "../hooks/useTimeframeModal";
 import TimeframeModal from "./TimeframeModal";
 import { useTickerModal } from "../hooks/useTickerModal";
-import TickerModal from "./TickerModal";
 import { useChartDrawingSocket } from "../hooks/useChartDrawingSocket";
 import { useChartStore } from "../store/chart";
+import { useUndeliveredDrawings } from "../hooks/useUndeliveredDrawings";
+import { getSymbol } from "../helpers/symbol";
+import TickerModal from "./TickerModal";
 
 const TradingChart = () => {
   const chartContainerRef = useRef();
@@ -169,7 +171,7 @@ const TradingChart = () => {
   const symbol = useChartStore((s) => s.ticker);
   const timeframe = useChartStore((s) => s.timeframe);
   useChartDrawingSocket({
-    symbol: symbol ? symbol.replace("/", "") : symbol,
+    symbol: getSymbol(symbol),
     interval: timeframe,
     chart,
     candlestickSeries,
@@ -187,7 +189,9 @@ const TradingChart = () => {
     activeResizeHandleRefs,
   });
 
-  // TODO: change logic to select in 1 store any tool
+  // Load undelivered drawings on mount
+  useUndeliveredDrawings();
+
   const handleDeleteSelected = () => {
     if (selectedLineId) {
       deleteSelectedLine();
