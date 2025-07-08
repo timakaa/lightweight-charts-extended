@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union, List
 from app.core.socket_instance import sio
 
 
@@ -7,11 +7,15 @@ class ChartService:
         pass
 
     async def emit_chart_drawing(
-        self, symbol: str, drawing_data: dict, room: Optional[str] = None
+        self,
+        symbol: str,
+        drawing_data: Union[dict, List[dict]],
+        room: Optional[str] = None,
     ):
         """Emit chart drawing data to connected clients
         If room is specified, emit only to that room
-        If room is None, broadcast to all connected clients"""
+        If room is None, broadcast to all connected clients
+        drawing_data can be a single dict or a list of dicts"""
         message = {"symbol": symbol, "drawing_data": drawing_data}
 
         if room:
@@ -24,13 +28,14 @@ class ChartService:
     async def update_chart_drawing(
         self,
         symbol: str,
-        drawing_id: str,
-        drawing_data: dict,
+        drawing_id: Union[str, List[str]],
+        drawing_data: Union[dict, List[dict]],
         room: Optional[str] = None,
     ):
         """Emit chart drawing update to connected clients
         If room is specified, emit only to that room
-        If room is None, broadcast to all connected clients"""
+        If room is None, broadcast to all connected clients
+        drawing_id and drawing_data can be a single value or a list"""
         message = {
             "symbol": symbol,
             "drawing_id": drawing_id,
@@ -43,11 +48,12 @@ class ChartService:
             await sio.emit("chart_drawing_updated", message)  # Broadcast to all clients
 
     async def delete_chart_drawing(
-        self, symbol: str, drawing_id: str, room: Optional[str] = None
+        self, symbol: str, drawing_id: Union[str, List[str]], room: Optional[str] = None
     ):
         """Emit chart drawing deletion to connected clients
         If room is specified, emit only to that room
-        If room is None, broadcast to all connected clients"""
+        If room is None, broadcast to all connected clients
+        drawing_id can be a single string or a list of strings"""
         message = {"symbol": symbol, "drawing_id": drawing_id}
 
         if room:

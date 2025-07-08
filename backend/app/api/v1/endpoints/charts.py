@@ -130,12 +130,11 @@ async def test_multiple_drawings():
         },
     ]
 
-    for drawing in drawings:
-        await chart_service.emit_chart_drawing(
-            symbol="SOLUSDT",
-            drawing_data=drawing,
-            # No room specified - will broadcast to all clients
-        )
+    await chart_service.emit_chart_drawing(
+        symbol="SOLUSDT",
+        drawing_data=drawings,
+        # No room specified - will broadcast to all clients
+    )
 
     return {"status": "Multiple drawings broadcasted to all clients"}
 

@@ -26,7 +26,6 @@ export const exampleDrawingsData = [
     type: "rectangle",
     ticker: "SOLUSDT",
     startTime: "2025-05-23T10:00:00Z", // Actual time - will find nearest candle
-    // endTime: "2025-05-23T14:00:00Z", // Changed from relative to actual time for testing
     endTime: "relative",
     startPrice: 185.44,
     endPrice: 178.65,
