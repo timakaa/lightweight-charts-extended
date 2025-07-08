@@ -6,6 +6,8 @@ from app.core.cors import setup_cors
 from app.api.v1.api import api_router
 from app.core.socket_instance import sio
 from app.core.socket_manager import bybit_ws_manager
+from app.db.database import engine
+from app.models.undelivered_drawings import Base
 
 # Create FastAPI app
 fastapi_app = FastAPI(
@@ -16,6 +18,9 @@ fastapi_app = FastAPI(
 
 # Setup CORS
 setup_cors(fastapi_app)
+
+# Initialize database tables
+Base.metadata.create_all(bind=engine)
 
 # Include API router
 fastapi_app.include_router(api_router, prefix=settings.API_V1_STR)

@@ -30,7 +30,6 @@ export function useChartSocket({
   const socketRef = useRef(null);
   const currentRoomRef = useRef(null);
 
-  // Use a ref to store the latest props, preventing re-renders from re-triggering effects.
   const latestProps = useRef({
     symbol,
     interval,
@@ -71,35 +70,33 @@ export function useChartSocket({
       }
     });
 
-    socket.on("chart_drawing_received", (msg) => {
+    socket.on("chart_drawing_received", (msg, ack) => {
       const { onDrawing } = latestProps.current;
       if (onDrawing) {
-        onDrawing(msg);
+        onDrawing(msg, ack);
       }
     });
 
-    socket.on("chart_drawing_updated", (msg) => {
+    socket.on("chart_drawing_updated", (msg, ack) => {
       const { onDrawingUpdated } = latestProps.current;
       if (onDrawingUpdated) {
-        onDrawingUpdated(msg);
+        onDrawingUpdated(msg, ack);
       }
     });
 
-    socket.on("chart_drawing_deleted", (msg) => {
+    socket.on("chart_drawing_deleted", (msg, ack) => {
       const { onDrawingDeleted } = latestProps.current;
       if (onDrawingDeleted) {
-        onDrawingDeleted(msg);
+        onDrawingDeleted(msg, ack);
       }
     });
 
-    // Handle reconnection - rejoin room after reconnect
     socket.on("connect", () => {
       if (currentRoomRef.current) {
         socket.emit("join_room", { room: currentRoomRef.current });
       }
     });
 
-    // Handle page visibility changes
     const handleVisibilityChange = () => {
       if (!document.hidden && socket.disconnected) {
         socket.connect();
@@ -123,12 +120,10 @@ export function useChartSocket({
     const backendInterval = INTERVAL_MAP[interval] || interval;
     const room = `${symbol.replace("/", "")}-${backendInterval}`;
 
-    // Leave previous room if exists
     if (currentRoomRef.current) {
       socket.emit("leave_room", { room: currentRoomRef.current });
     }
 
-    // Join new room
     currentRoomRef.current = room;
     socket.emit("join_room", { room });
 
