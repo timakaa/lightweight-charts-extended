@@ -1,4 +1,5 @@
 import { useChartSocket } from "./useChartSocket";
+import { getSymbol } from "../helpers/symbol";
 
 export const useRealtimeUpdates = (
   symbol,
@@ -7,7 +8,7 @@ export const useRealtimeUpdates = (
   setAccumulatedCandles,
 ) => {
   useChartSocket({
-    symbol: symbol ? symbol.replace("/", "") : symbol,
+    symbol: getSymbol(symbol),
     interval: timeframe,
     onCandle: (wsKline) => {
       if (isLoading) return; // Don't process real-time updates while loading paginated data
