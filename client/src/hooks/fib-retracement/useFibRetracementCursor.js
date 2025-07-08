@@ -127,6 +127,5 @@ export default function useFibRetracementCursor(
     retracementsDataRef,
     selectedFibRetracementId,
     dragOrResizeStateRef,
-    candleData,
   ]);
 }

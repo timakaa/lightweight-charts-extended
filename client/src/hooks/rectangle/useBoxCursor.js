@@ -212,8 +212,10 @@ export default function useBoxCursor(
       }
       setGlobalCursor(cursor);
     };
+
     // Attach the mousemove event listener
     container.addEventListener("mousemove", handleMouseMove);
+
     // Cleanup function to reset the cursor when the component unmounts
     // or when the dependencies of the effect change.
     return () => {
@@ -227,6 +229,5 @@ export default function useBoxCursor(
     boxesDataRef,
     selectedBoxId,
     dragOrResizeStateRef,
-    candleData,
   ]);
 }

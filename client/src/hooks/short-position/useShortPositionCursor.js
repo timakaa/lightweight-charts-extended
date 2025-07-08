@@ -201,7 +201,6 @@ function useShortPositionCursor(
     positionsDataRef,
     dragOrResizeStateRef,
     activeResizeHandleRef,
-    candleData,
   ]);
 }
 

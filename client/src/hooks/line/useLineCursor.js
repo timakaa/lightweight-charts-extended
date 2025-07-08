@@ -161,7 +161,6 @@ function useLineCursor(
     selectedLineId,
     linesDataRef,
     dragOrResizeStateRef,
-    candleData,
   ]);
 }
 

@@ -196,7 +196,6 @@ function useLongPositionCursor(
     positionsDataRef,
     dragOrResizeStateRef,
     activeResizeHandleRef,
-    candleData,
   ]);
 }
 
