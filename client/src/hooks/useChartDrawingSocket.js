@@ -164,7 +164,7 @@ export function useChartDrawingSocket({
   useChartSocket({
     symbol,
     interval,
-    onDrawing: (msg) => {
+    onDrawing: (msg, ack) => {
       if (
         msg.symbol &&
         msg.drawing_data &&
@@ -193,9 +193,14 @@ export function useChartDrawingSocket({
           fibRetracementDrawingTool,
           activeResizeHandleRefs,
         );
+
+        // Acknowledge receipt
+        if (ack) ack({ success: true });
+      } else if (ack) {
+        ack({ success: false });
       }
     },
-    onDrawingUpdated: (msg) => {
+    onDrawingUpdated: (msg, ack) => {
       if (msg.symbol && msg.drawing_id && msg.drawing_data) {
         if (Array.isArray(msg.drawing_id) && Array.isArray(msg.drawing_data)) {
           msg.drawing_id.forEach((id, index) => {
@@ -206,15 +211,23 @@ export function useChartDrawingSocket({
           updateDrawing(msg.drawing_id, msg.drawing_data);
           handleDrawingUpdate(msg.drawing_id, msg.drawing_data);
         }
+        // Acknowledge receipt
+        if (ack) ack({ success: true });
+      } else if (ack) {
+        ack({ success: false });
       }
     },
-    onDrawingDeleted: (msg) => {
+    onDrawingDeleted: (msg, ack) => {
       if (msg.symbol && msg.drawing_id) {
         if (Array.isArray(msg.drawing_id)) {
           msg.drawing_id.forEach((id) => handleDrawingDelete(id));
         } else {
           handleDrawingDelete(msg.drawing_id);
         }
+        // Acknowledge receipt
+        if (ack) ack({ success: true });
+      } else if (ack) {
+        ack({ success: false });
       }
     },
   });
