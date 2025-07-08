@@ -34,9 +34,10 @@ class ExchangeService:
 
         current_time = time.time()
 
-        # Return cached data if still valid
+        # Return cached data if still valid and not empty
         if (
             self._cached_tickers is not None
+            and len(self._cached_tickers) > 0
             and current_time - self._last_cache_time < self._cache_duration
         ):
             return self._cached_tickers
@@ -78,15 +79,20 @@ class ExchangeService:
                     }
                 )
 
-            # Update cache
-            self._cached_tickers = formatted_tickers
-            self._last_cache_time = current_time
-
-            return formatted_tickers
+            # Only cache if we got valid data
+            if formatted_tickers:
+                self._cached_tickers = formatted_tickers
+                self._last_cache_time = current_time
+                return formatted_tickers
+            else:
+                print("Warning: No tickers received from exchange")
+                # Return existing cache if available, even if expired
+                return self._cached_tickers if self._cached_tickers else []
 
         except Exception as e:
             print(f"Error fetching tickers: {e}")
-            return []
+            # Return existing cache if available, even if expired
+            return self._cached_tickers if self._cached_tickers else []
 
     async def get_tickers_paginated(
         self,
@@ -101,43 +107,67 @@ class ExchangeService:
         try:
             all_tickers = await self._get_cached_tickers()
 
+            if not all_tickers:
+                print("Warning: No tickers available for filtering")
+                return {
+                    "tickers": [],
+                    "pagination": {
+                        "page": page,
+                        "page_size": page_size,
+                        "total_count": 0,
+                        "total_pages": 0,
+                        "has_next": False,
+                        "has_prev": False,
+                    },
+                    "filters": {
+                        "search": search,
+                        "quote_currency": quote_currency,
+                        "sort_by": sort_by,
+                        "sort_order": sort_order,
+                    },
+                }
+
+            filtered_tickers = all_tickers
+
             # Apply search filter
             if search:
                 search_lower = search.lower()
-                all_tickers = [
+                filtered_tickers = [
                     ticker
-                    for ticker in all_tickers
+                    for ticker in filtered_tickers
                     if (
-                        search_lower in ticker["symbol"].lower()
-                        or search_lower in ticker["base"].lower()
-                        or search_lower in ticker["quote"].lower()
+                        search_lower in (ticker.get("symbol", "")).lower()
+                        or search_lower in (ticker.get("base", "")).lower()
+                        or search_lower in (ticker.get("quote", "")).lower()
                     )
                 ]
 
             # Apply quote currency filter (default to USDT)
             if quote_currency:
                 quote_upper = quote_currency.upper()
-                all_tickers = [
-                    ticker for ticker in all_tickers if ticker["quote"] == quote_upper
+                filtered_tickers = [
+                    ticker
+                    for ticker in filtered_tickers
+                    if ticker.get("quote") == quote_upper
                 ]
 
             # Apply sorting
             if sort_by in ["volume", "quoteVolume", "last", "change", "percentage"]:
                 reverse = sort_order.lower() == "desc"
 
-                # Handle None values for sorting
                 def get_sort_value(ticker):
                     value = ticker.get(sort_by)
                     if value is None:
                         return 0 if reverse else float("inf")
                     return value
 
-                all_tickers.sort(key=get_sort_value, reverse=reverse)
+                filtered_tickers.sort(key=get_sort_value, reverse=reverse)
             elif sort_by == "symbol":
                 reverse = sort_order.lower() == "desc"
-                all_tickers.sort(key=lambda x: x.get("symbol", ""), reverse=reverse)
+                filtered_tickers.sort(
+                    key=lambda x: x.get("symbol", ""), reverse=reverse
+                )
             elif sort_by == "volumePriceRatio":
-                # Calculate volume/price ratio for better ranking
                 reverse = sort_order.lower() == "desc"
 
                 def get_volume_price_ratio(ticker):
@@ -147,22 +177,19 @@ class ExchangeService:
                         return volume / price
                     return 0
 
-                all_tickers.sort(key=get_volume_price_ratio, reverse=reverse)
+                filtered_tickers.sort(key=get_volume_price_ratio, reverse=reverse)
 
             # Calculate pagination
-            total_count = len(all_tickers)
-            total_pages = (total_count + page_size - 1) // page_size
+            total_count = len(filtered_tickers)
+            total_pages = max(1, (total_count + page_size - 1) // page_size)
 
             # Validate page number
-            if page < 1:
-                page = 1
-            elif page > total_pages and total_pages > 0:
-                page = total_pages
+            page = max(1, min(page, total_pages))
 
             # Get paginated results
             start_idx = (page - 1) * page_size
-            end_idx = start_idx + page_size
-            paginated_tickers = all_tickers[start_idx:end_idx]
+            end_idx = min(start_idx + page_size, total_count)
+            paginated_tickers = filtered_tickers[start_idx:end_idx]
 
             return {
                 "tickers": paginated_tickers,
