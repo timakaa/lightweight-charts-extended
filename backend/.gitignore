@@ -139,10 +139,9 @@ dmypy.json
 Thumbs.db 
 
 # Database
-*.db
-*.db-journal
-*.sqlite
-*.sqlite3
+**/*.db
+**/*.db-journal
+**/*.sqlite*
 
 # Other
 

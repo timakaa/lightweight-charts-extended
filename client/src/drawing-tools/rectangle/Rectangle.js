@@ -26,7 +26,7 @@ export class Rectangle extends PluginBase {
   ) {
     super();
     // Unique identifier for the rectangle
-    this.id = id || generateId("rect");
+    this.id = id || generateId("rectangle");
     // Store candle data for coordinate calculations
     this._candleData = candleData;
     // Enhance endpoints with logical coordinates

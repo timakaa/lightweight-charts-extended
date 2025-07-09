@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from app.models.undelivered_drawings import UndeliveredDrawing
 from typing import Optional, Union, List, Dict, Any
+from app.helpers.generate_id import generate_id
 
 
 class DrawingRepository:
@@ -13,20 +14,47 @@ class DrawingRepository:
         action: str,
         drawing_id: Optional[Union[str, List[str]]] = None,
         drawing_data: Optional[Union[Dict[str, Any], List[Dict[str, Any]]]] = None,
-    ) -> None:
-        """Store undelivered drawing in database"""
+    ) -> Union[UndeliveredDrawing, List[UndeliveredDrawing]]:
+        """Store undelivered drawing in database and return the created drawing(s)"""
+        # For create actions, generate an ID if not provided
+        if action == "create":
+            if isinstance(drawing_data, list):
+                # Handle list of drawings
+                for drawing in drawing_data:
+                    if "type" in drawing and not drawing.get("id"):
+                        drawing["id"] = generate_id(drawing["type"])
+            elif (
+                isinstance(drawing_data, dict)
+                and "type" in drawing_data
+                and not drawing_data.get("id")
+            ):
+                drawing_data["id"] = generate_id(drawing_data["type"])
+
+            # Update drawing_id to match the generated id
+            if isinstance(drawing_data, list):
+                drawing_id = [str(d.get("id")) for d in drawing_data if d.get("id")]
+            else:
+                drawing_id = (
+                    str(drawing_data.get("id"))
+                    if drawing_data and drawing_data.get("id")
+                    else None
+                )
+
         # Handle lists of drawings
         if isinstance(drawing_id, list) and isinstance(drawing_data, list):
-            for id, data in zip(drawing_id, drawing_data):
+            drawings = []
+            for i, d_id in enumerate(drawing_id):
                 drawing = UndeliveredDrawing(
                     symbol=symbol,
-                    drawing_id=id,
-                    drawing_data=data,
+                    drawing_id=d_id,
+                    drawing_data=drawing_data[i] if i < len(drawing_data) else None,
                     action=action,
                 )
                 self.db.add(drawing)
+                drawings.append(drawing)
+            self.db.commit()
+            return drawings
         else:
-            # Handle single drawing
             drawing = UndeliveredDrawing(
                 symbol=symbol,
                 drawing_id=drawing_id,
@@ -34,8 +62,8 @@ class DrawingRepository:
                 action=action,
             )
             self.db.add(drawing)
-
-        self.db.commit()
+            self.db.commit()
+            return drawing
 
     def get_undelivered_drawings(self) -> List[UndeliveredDrawing]:
         """Get all undelivered drawings"""
@@ -52,4 +80,11 @@ class DrawingRepository:
                 UndeliveredDrawing.drawing_id == drawing_id,
             ).delete(synchronize_session=False)
 
+        self.db.commit()
+
+    def remove_drawing_by_id(self, id: int) -> None:
+        """Remove drawing by database ID"""
+        self.db.query(UndeliveredDrawing).filter(UndeliveredDrawing.id == id).delete(
+            synchronize_session=False
+        )
         self.db.commit()
