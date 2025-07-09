@@ -9,6 +9,7 @@ import {
   RectangleTimeAxisView,
 } from "./views.js";
 import { enhancePointWithLogicalIndex } from "../../helpers/coordinateUtils.js";
+import { generateId } from "../../helpers/generateId";
 
 // Rectangle.js - Implements the Rectangle and PreviewRectangle primitives for drawing rectangles (boxes) on the chart
 // The Rectangle class represents a drawable rectangle primitive on the chart, with endpoints p1 and p2.
@@ -25,7 +26,7 @@ export class Rectangle extends PluginBase {
   ) {
     super();
     // Unique identifier for the rectangle
-    this.id = id || `rect-${Date.now()}-${Math.random()}`;
+    this.id = id || generateId("rect");
     // Store candle data for coordinate calculations
     this._candleData = candleData;
     // Enhance endpoints with logical coordinates

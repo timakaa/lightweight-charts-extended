@@ -8,6 +8,7 @@ import {
 } from "./views.js";
 import { defaultRulerOptions } from "./options.js";
 import { enhancePointWithLogicalIndex } from "../../helpers/coordinateUtils.js";
+import { generateId } from "../../helpers/generateId";
 
 // Ruler.js - Implements the Ruler and PreviewRuler primitives for drawing measurement rulers on the chart
 // The Ruler class represents a measurement ruler primitive on the chart, with endpoints p1 and p2.
@@ -15,7 +16,7 @@ export class Ruler extends PluginBase {
   constructor(p1, p2, series, chart, candleData) {
     super();
     // Unique identifier for the ruler
-    this.id = `ruler-${Date.now()}-${Math.random()}`;
+    this.id = generateId("ruler");
     // Store candle data for coordinate calculations
     this._candleData = candleData;
     // Enhance endpoints with logical coordinates
