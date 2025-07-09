@@ -68,7 +68,7 @@ export function useChartSocket({
         msg.symbol === symbol.replace("/", "") &&
         msg.timeframe === backendInterval
       ) {
-        // onCandle(msg.data);
+        onCandle(msg.data);
       }
     });
 
