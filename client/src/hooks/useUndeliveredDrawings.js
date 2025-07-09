@@ -14,7 +14,7 @@ export const useUndeliveredDrawings = () => {
         const drawings = await response.json();
 
         drawings.forEach((drawing) => {
-          const { symbol, drawing_id, drawing_data, action } = drawing;
+          const { drawing_id, drawing_data, action } = drawing;
 
           switch (action) {
             case "create":
@@ -22,7 +22,7 @@ export const useUndeliveredDrawings = () => {
                 console.log("drawing_data", drawing_data);
                 const drawingWithSymbol = {
                   ...drawing_data,
-                  ticker: getSymbol(symbol),
+                  ticker: getSymbol(drawing_data.ticker),
                 };
                 addDrawing(drawingWithSymbol);
               }
@@ -31,7 +31,7 @@ export const useUndeliveredDrawings = () => {
               if (drawing_id && drawing_data) {
                 updateDrawing(drawing_id, {
                   ...drawing_data,
-                  ticker: getSymbol(symbol),
+                  ticker: getSymbol(drawing_data.ticker),
                 });
               }
               break;
