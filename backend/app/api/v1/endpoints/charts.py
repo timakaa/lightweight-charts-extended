@@ -41,7 +41,6 @@ async def get_candlestick_data(
 async def test_drawing_broadcast():
     """Test endpoint to broadcast a drawing to all clients"""
     await chart_service.emit_chart_drawing(
-        symbol="SOLUSDT",
         drawing_data={
             "id": generate_id("line"),
             "type": "line",
@@ -61,6 +60,7 @@ async def test_multiple_drawings():
     """Test endpoint to emit multiple drawings"""
     drawings = [
         {
+            "id": "line-1752069870768-dagdsafeawdfsaf",
             "type": "line",
             "ticker": "SOLUSDT",
             "startTime": "2025-07-09T09:15:00Z",
@@ -80,7 +80,6 @@ async def test_multiple_drawings():
     ]
 
     await chart_service.emit_chart_drawing(
-        symbol="SOLUSDT",
         drawing_data=drawings,
         # No room specified - will broadcast to all clients
     )
@@ -92,30 +91,42 @@ async def test_multiple_drawings():
 async def test_drawing_delete_broadcast():
     """Test endpoint to broadcast a drawing deletion to all clients"""
     await chart_service.delete_chart_drawing(
-        symbol="SOLUSDT",
-        drawing_id="rectangle-1752069870768-7623d884-f9c1-44bc-b35b-a62074510b72",
+        drawing_id=[
+            "rectangle-1752069870768-7623d884-f9c1-44bc-b35b-a62074510b72",
+            "line-1752069870768-dagdsafeawdfsaf",
+        ],
         # No room specified - will broadcast to all clients
     )
-    return {"status": "Drawing deletion broadcasted to all clients"}
+    return {"status": "Drawing deletions broadcasted to all clients"}
 
 
 @router.get("/test-drawing-update")
 async def test_drawing_update_broadcast():
     """Test endpoint to broadcast a drawing update to all clients"""
     await chart_service.update_chart_drawing(
-        symbol="SOLUSDT",
-        drawing_id="rectangle-1752069870768-7623d884-f9c1-44bc-b35b-a62074510b72",
-        drawing_data={
-            "type": "rectangle",
-            "ticker": "SOLUSDT",
-            "startTime": "2025-07-09T05:15:00Z",
-            "endTime": "relative",
-            "startPrice": 151.68,
-            "endPrice": 162.79,
-            "options": {
-                # change styles optionally
+        drawing_data=[
+            {
+                "id": "rectangle-1752069870768-7623d884-f9c1-44bc-b35b-a62074510b72",
+                "type": "rectangle",
+                "ticker": "SOLUSDT",
+                "startTime": "2025-07-09T05:15:00Z",
+                "endTime": "relative",
+                "startPrice": 151.68,
+                "endPrice": 162.79,
+                "options": {
+                    # change styles optionally
+                },
             },
-        },
+            {
+                "id": "line-1752069870768-dagdsafeawdfsaf",  # Add another drawing to update
+                "type": "line",
+                "ticker": "SOLUSDT",  # Could be different ticker
+                "startTime": "2025-07-09T05:15:00Z",
+                "endTime": "relative",
+                "startPrice": 155.68,
+                "endPrice": 160.79,
+            },
+        ],
         # No room specified - will broadcast to all clients
     )
-    return {"status": "Drawing update broadcasted to all clients"}
+    return {"status": "Drawing updates broadcasted to all clients"}

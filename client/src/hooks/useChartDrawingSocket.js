@@ -66,8 +66,8 @@ export function useChartDrawingSocket({
         rect.updateCandleData(candleData);
         rect.updateAllViews();
         if (options) rect.applyOptions(options);
-        // Force a redraw
-        rectangleDrawingTool.current._series.requestUpdate();
+        // Update the series to trigger a redraw
+        candlestickSeries.setData(candlestickSeries.data());
       }
     } else if (drawing.type === "line" && lineDrawingTool.current) {
       const line = Array.from(lineDrawingTool.current._lines).find(
@@ -86,6 +86,8 @@ export function useChartDrawingSocket({
         };
         line.updateCandleData(candleData);
         if (options) line.applyOptions(options);
+        // Update the series to trigger a redraw
+        candlestickSeries.setData(candlestickSeries.data());
       }
     } else if (
       drawing.type === "long-position" &&
@@ -110,6 +112,8 @@ export function useChartDrawingSocket({
         };
         pos.updateCandleData(candleData);
         if (options) pos.applyOptions(options);
+        // Update the series to trigger a redraw
+        candlestickSeries.setData(candlestickSeries.data());
       }
     } else if (
       drawing.type === "short-position" &&
@@ -134,6 +138,8 @@ export function useChartDrawingSocket({
         };
         pos.updateCandleData(candleData);
         if (options) pos.applyOptions(options);
+        // Update the series to trigger a redraw
+        candlestickSeries.setData(candlestickSeries.data());
       }
     } else if (
       drawing.type === "fib-retracement" &&
@@ -155,6 +161,8 @@ export function useChartDrawingSocket({
         };
         fib.updateCandleData(candleData);
         if (options) fib.applyOptions(options);
+        // Update the series to trigger a redraw
+        candlestickSeries.setData(candlestickSeries.data());
       }
     }
   };
@@ -218,13 +226,14 @@ export function useChartDrawingSocket({
         candlestickSeries &&
         candleData?.length > 0
       ) {
-        const drawingData = Array.isArray(msg.drawing_data)
-          ? msg.drawing_data
-          : [msg.drawing_data];
-
         try {
+          // Handle array of drawings
+          const drawingDatas = Array.isArray(msg.drawing_data)
+            ? msg.drawing_data
+            : [msg.drawing_data];
+
           // Add to store first, preserving the backend-generated IDs
-          const addedDrawings = drawingData.map((data) => {
+          const addedDrawings = drawingDatas.map((data) => {
             // Ensure we have the ID from the backend
             if (!data.id) {
               console.error("Drawing data missing ID from backend:", data);
@@ -293,33 +302,37 @@ export function useChartDrawingSocket({
       }
     },
     onDrawingUpdated: (msg, socket) => {
-      if (msg.symbol && msg.drawing_id && msg.drawing_data) {
+      if (msg.drawing_id && msg.drawing_data) {
         try {
-          if (
-            Array.isArray(msg.drawing_id) &&
-            Array.isArray(msg.drawing_data)
-          ) {
-            msg.drawing_id.forEach((id, index) => {
+          // Handle array of drawings
+          const drawingIds = Array.isArray(msg.drawing_id)
+            ? msg.drawing_id
+            : [msg.drawing_id];
+          const drawingDatas = Array.isArray(msg.drawing_data)
+            ? msg.drawing_data
+            : [msg.drawing_data];
+
+          // Update each drawing
+          const success = drawingIds.every((id, index) => {
+            const data = drawingDatas[index];
+            if (!data) return false;
+
+            try {
               updateDrawing(id, {
-                ...msg.drawing_data[index],
+                ...data,
                 id, // Ensure ID is preserved
               });
-              handleDrawingUpdate(id, msg.drawing_data[index]);
-            });
-          } else {
-            updateDrawing(msg.drawing_id, {
-              ...msg.drawing_data,
-              id: msg.drawing_id, // Ensure ID is preserved
-            });
-            handleDrawingUpdate(msg.drawing_id, msg.drawing_data);
-          }
+              handleDrawingUpdate(id, data);
+              return true;
+            } catch (err) {
+              console.error("Failed to update drawing:", err);
+              return false;
+            }
+          });
 
           socket.emit("drawing_update_ack", {
-            success: true,
-            symbol: msg.symbol,
-            drawingIds: Array.isArray(msg.drawing_id)
-              ? msg.drawing_id
-              : [msg.drawing_id],
+            success,
+            drawingIds,
           });
         } catch {
           socket.emit("drawing_update_ack", { success: false });
@@ -329,21 +342,20 @@ export function useChartDrawingSocket({
       }
     },
     onDrawingDeleted: (msg, socket) => {
-      if (msg.symbol && msg.drawing_id) {
+      if (msg.drawing_id) {
         try {
-          if (Array.isArray(msg.drawing_id)) {
-            msg.drawing_id.forEach(handleDrawingDelete);
-          } else {
-            handleDrawingDelete(msg.drawing_id);
-          }
+          // Handle array of drawing IDs
+          const drawingIds = Array.isArray(msg.drawing_id)
+            ? msg.drawing_id
+            : [msg.drawing_id];
+
+          // Delete each drawing
+          drawingIds.forEach(handleDrawingDelete);
 
           // Send explicit acknowledgment event
           socket.emit("drawing_delete_ack", {
             success: true,
-            symbol: msg.symbol,
-            drawingIds: Array.isArray(msg.drawing_id)
-              ? msg.drawing_id
-              : [msg.drawing_id],
+            drawingIds,
           });
         } catch {
           socket.emit("drawing_delete_ack", { success: false });

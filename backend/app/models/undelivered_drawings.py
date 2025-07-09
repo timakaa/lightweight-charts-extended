@@ -9,7 +9,7 @@ class UndeliveredDrawing(Base):
     __tablename__ = "undelivered_drawings"
 
     id = Column(Integer, primary_key=True)
-    symbol = Column(String, nullable=False)
+    symbol = Column(String, nullable=True)  # Allow NULL for delete operations
     drawing_id = Column(String)  # Nullable for create actions
     drawing_data = Column(JSON)  # Nullable for delete actions
     action = Column(String, nullable=False)  # create, update, delete
