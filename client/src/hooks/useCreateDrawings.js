@@ -3,7 +3,6 @@ import { useEffect, useRef } from "react";
 import { createDrawings } from "../helpers/createDrawings";
 import { useChartStore } from "../store/chart";
 import { useDrawingsStore } from "../store/drawings";
-import { toUnixSeconds } from "../helpers/time";
 
 /**
  * Hook to create drawings from backend data
@@ -38,7 +37,7 @@ export function useCreateDrawings({
   longPositionDrawingTool,
   shortPositionDrawingTool,
   fibRetracementDrawingTool,
-  drawingsData = null, // Now optional - will use store data by default
+  drawingsData = null, // optional - will use store data by default
   activeResizeHandleRefs = {},
 }) {
   const symbol = useChartStore((s) => s.ticker);
@@ -49,33 +48,6 @@ export function useCreateDrawings({
     timeframe: null,
     drawingsCreated: false,
   });
-
-  // Helper function to extract start times from drawings data
-  const getDrawingStartTimes = (drawingsData, currentTicker) => {
-    const startTimes = new Set();
-
-    drawingsData
-      .filter((drawing) => drawing.ticker === currentTicker.replace("/", ""))
-      .forEach((drawing) => {
-        switch (drawing.type) {
-          case "rectangle":
-          case "line":
-          case "fib_retracement":
-            if (drawing.startTime && drawing.startTime !== "relative") {
-              startTimes.add(toUnixSeconds(drawing.startTime));
-            }
-            break;
-          case "long_position":
-          case "short_position":
-            if (drawing.entry?.time && drawing.entry.time !== "relative") {
-              startTimes.add(toUnixSeconds(drawing.entry.time));
-            }
-            break;
-        }
-      });
-
-    return startTimes;
-  };
 
   // Effect that only runs on context changes (ticker or timeframe)
   useEffect(() => {
@@ -155,26 +127,12 @@ export function useCreateDrawings({
       return;
     }
 
-    const currentEarliestTime =
-      realCandles.length > 0 ? realCandles[0].time : null;
-    const currentLatestTime =
-      realCandles.length > 0 ? realCandles[realCandles.length - 1].time : null;
-
     // Get current ticker for filtering
     const currentTicker = useChartStore.getState().ticker;
     if (!currentTicker) return;
 
     // Use store data if no data provided
     const dataToUse = drawingsData || storeDrawings;
-
-    // Track unavailable start times
-    const allStartTimes = getDrawingStartTimes(dataToUse, currentTicker);
-    const unavailableStartTimes = new Set();
-    for (const startTime of allStartTimes) {
-      if (startTime < currentEarliestTime || startTime > currentLatestTime) {
-        unavailableStartTimes.add(startTime);
-      }
-    }
 
     // Create drawings with current candle data
     createDrawings(

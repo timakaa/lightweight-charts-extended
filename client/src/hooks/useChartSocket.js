@@ -58,6 +58,8 @@ export function useChartSocket({
     });
     socketRef.current = socket;
 
+    socket.on("disconnect", () => {});
+
     socket.on("chart_data_updated", (msg) => {
       const { symbol, interval, onCandle } = latestProps.current;
       const backendInterval = INTERVAL_MAP[interval] || interval;
@@ -66,34 +68,28 @@ export function useChartSocket({
         msg.symbol === symbol.replace("/", "") &&
         msg.timeframe === backendInterval
       ) {
-        onCandle(msg.data);
+        // onCandle(msg.data);
       }
     });
 
-    socket.on("chart_drawing_received", (msg, ack) => {
+    socket.on("chart_drawing_received", (msg) => {
       const { onDrawing } = latestProps.current;
       if (onDrawing) {
-        onDrawing(msg, ack);
+        onDrawing(msg, socket);
       }
     });
 
-    socket.on("chart_drawing_updated", (msg, ack) => {
+    socket.on("chart_drawing_updated", (msg) => {
       const { onDrawingUpdated } = latestProps.current;
       if (onDrawingUpdated) {
-        onDrawingUpdated(msg, ack);
+        onDrawingUpdated(msg, socket);
       }
     });
 
-    socket.on("chart_drawing_deleted", (msg, ack) => {
+    socket.on("chart_drawing_deleted", (msg) => {
       const { onDrawingDeleted } = latestProps.current;
       if (onDrawingDeleted) {
-        onDrawingDeleted(msg, ack);
-      }
-    });
-
-    socket.on("connect", () => {
-      if (currentRoomRef.current) {
-        socket.emit("join_room", { room: currentRoomRef.current });
+        onDrawingDeleted(msg, socket);
       }
     });
 
