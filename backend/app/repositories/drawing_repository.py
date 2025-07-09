@@ -1,8 +1,6 @@
+from typing import Optional, Union, List, Dict, Any
 from sqlalchemy.orm import Session
 from app.models.undelivered_drawings import UndeliveredDrawing
-from typing import Optional, Union, List, Dict, Any, cast
-from app.helpers.generate_id import generate_id
-import json
 
 
 class DrawingRepository:
@@ -14,83 +12,58 @@ class DrawingRepository:
         action: str,
         drawing_id: Optional[Union[str, List[str]]] = None,
         drawing_data: Optional[Union[Dict[str, Any], List[Dict[str, Any]]]] = None,
-    ) -> Union[UndeliveredDrawing, List[UndeliveredDrawing]]:
-        """Store undelivered drawing in database and return the created drawing(s)"""
-        # For create actions, generate an ID if not provided
-        if action == "create":
-            if isinstance(drawing_data, list):
-                # Handle list of drawings
-                for drawing in drawing_data:
-                    if "type" in drawing and not drawing.get("id"):
-                        generated_id = generate_id(drawing["type"])
-                        drawing["id"] = generated_id
-            elif (
-                isinstance(drawing_data, dict)
-                and "type" in drawing_data
-                and not drawing_data.get("id")
-            ):
-                generated_id = generate_id(drawing_data["type"])
-                drawing_data["id"] = generated_id
+    ):
+        """Store undelivered drawing in database
 
-            # Update drawing_id to match the generated id
-            if isinstance(drawing_data, list):
-                drawing_id = [str(d.get("id")) for d in drawing_data if d.get("id")]
-            else:
-                drawing_id = (
-                    str(drawing_data.get("id"))
-                    if drawing_data and drawing_data.get("id")
-                    else None
-                )
+        Args:
+            action: Type of action - 'create', 'update', or 'delete'
+            drawing_id: ID or list of IDs of the drawings
+            drawing_data: Drawing data or list of drawing data
 
-        # Handle lists of drawings
-        if isinstance(drawing_id, list):
-            drawings = []
-            for i, d_id in enumerate(drawing_id):
-                symbol = None
-                data = None
+        Actions:
+            - create: Stores new drawings with their data and symbol
+            - update: Updates existing drawings with new data
+            - delete: Marks drawings for deletion
+        """
+        # Convert single items to lists for consistent handling
+        if isinstance(drawing_id, str):
+            drawing_id = [drawing_id]
+        if isinstance(drawing_data, dict):
+            drawing_data = [drawing_data]
 
-                # Extract data and symbol if available
-                if isinstance(drawing_data, list) and i < len(drawing_data):
-                    data = drawing_data[i]
-                    if data:
-                        data["id"] = d_id
-                        symbol = (
-                            data.get("ticker", "").replace("/", "")
-                            if data.get("ticker")
-                            else None
-                        )
-
+        # CREATE: Store new drawings with their data and symbol
+        if action == "create" and drawing_data:
+            # Store each drawing
+            for data in drawing_data:
+                if not data or "id" not in data:
+                    continue
                 drawing = UndeliveredDrawing(
-                    symbol=symbol,
-                    drawing_id=d_id,  # Store single ID
-                    drawing_data=data,  # Store corresponding data or None
+                    drawing_id=str(data["id"]),
+                    drawing_data=data,
                     action=action,
                 )
                 self.db.add(drawing)
-                drawings.append(drawing)
-            self.db.commit()
-            return drawings
-        else:
-            symbol = None
-            # Ensure drawing data has the correct ID
-            if drawing_data and drawing_id and isinstance(drawing_data, dict):
-                drawing_data["id"] = drawing_id
-                # Extract symbol from ticker
-                symbol = (
-                    drawing_data.get("ticker", "").replace("/", "")
-                    if drawing_data.get("ticker")
-                    else None
-                )
 
-            drawing = UndeliveredDrawing(
-                symbol=symbol,
-                drawing_id=drawing_id,
-                drawing_data=drawing_data,
-                action=action,
-            )
-            self.db.add(drawing)
-            self.db.commit()
-            return drawing
+        # UPDATE: Store updated data for existing drawings
+        elif action == "update" and drawing_id and drawing_data:
+            for id_, data in zip(drawing_id, drawing_data):
+                drawing = UndeliveredDrawing(
+                    drawing_id=str(id_),
+                    drawing_data=data,
+                    action=action,
+                )
+                self.db.add(drawing)
+
+        # DELETE: Mark drawings for deletion
+        elif action == "delete" and drawing_id:
+            for id_ in drawing_id:
+                drawing = UndeliveredDrawing(
+                    drawing_id=str(id_),
+                    action=action,
+                )
+                self.db.add(drawing)
+
+        self.db.commit()
 
     def get_undelivered_drawings(self) -> List[UndeliveredDrawing]:
         """Get all undelivered drawings"""

@@ -9,7 +9,6 @@ class UndeliveredDrawing(Base):
     __tablename__ = "undelivered_drawings"
 
     id = Column(Integer, primary_key=True)
-    symbol = Column(String, nullable=True)  # Allow NULL for delete operations
     drawing_id = Column(String)  # Nullable for create actions
     drawing_data = Column(JSON)  # Nullable for delete actions
     action = Column(String, nullable=False)  # create, update, delete
@@ -19,7 +18,6 @@ class UndeliveredDrawing(Base):
         """Convert model instance to dictionary"""
         return {
             "id": self.id if hasattr(self, "id") else None,
-            "symbol": str(self.symbol) if self.symbol is not None else None,
             "drawing_id": str(self.drawing_id) if self.drawing_id is not None else None,
             "drawing_data": (
                 self.drawing_data if self.drawing_data is not None else None
@@ -31,4 +29,4 @@ class UndeliveredDrawing(Base):
         }
 
     def __repr__(self):
-        return f"<UndeliveredDrawing(symbol='{self.symbol}', action='{self.action}')>"
+        return f"<UndeliveredDrawing(action='{self.action}')>"
