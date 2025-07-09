@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from app.models.undelivered_drawings import UndeliveredDrawing
 from typing import Optional, Union, List, Dict, Any, cast
 from app.helpers.generate_id import generate_id
+import json
 
 
 class DrawingRepository:
@@ -10,7 +11,6 @@ class DrawingRepository:
 
     def store_undelivered_drawing(
         self,
-        symbol: str,
         action: str,
         drawing_id: Optional[Union[str, List[str]]] = None,
         drawing_data: Optional[Union[Dict[str, Any], List[Dict[str, Any]]]] = None,
@@ -43,19 +43,27 @@ class DrawingRepository:
                 )
 
         # Handle lists of drawings
-        if isinstance(drawing_id, list) and isinstance(drawing_data, list):
+        if isinstance(drawing_id, list):
             drawings = []
             for i, d_id in enumerate(drawing_id):
-                # Ensure drawing data has the correct ID
-                if i < len(drawing_data):
-                    data = cast(Dict[str, Any], drawing_data[i])
+                symbol = None
+                data = None
+
+                # Extract data and symbol if available
+                if isinstance(drawing_data, list) and i < len(drawing_data):
+                    data = drawing_data[i]
                     if data:
                         data["id"] = d_id
+                        symbol = (
+                            data.get("ticker", "").replace("/", "")
+                            if data.get("ticker")
+                            else None
+                        )
 
                 drawing = UndeliveredDrawing(
                     symbol=symbol,
-                    drawing_id=d_id,
-                    drawing_data=drawing_data[i] if i < len(drawing_data) else None,
+                    drawing_id=d_id,  # Store single ID
+                    drawing_data=data,  # Store corresponding data or None
                     action=action,
                 )
                 self.db.add(drawing)
@@ -63,9 +71,16 @@ class DrawingRepository:
             self.db.commit()
             return drawings
         else:
+            symbol = None
             # Ensure drawing data has the correct ID
             if drawing_data and drawing_id and isinstance(drawing_data, dict):
                 drawing_data["id"] = drawing_id
+                # Extract symbol from ticker
+                symbol = (
+                    drawing_data.get("ticker", "").replace("/", "")
+                    if drawing_data.get("ticker")
+                    else None
+                )
 
             drawing = UndeliveredDrawing(
                 symbol=symbol,
