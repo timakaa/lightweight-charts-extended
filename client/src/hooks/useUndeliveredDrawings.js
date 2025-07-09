@@ -19,7 +19,6 @@ export const useUndeliveredDrawings = () => {
           switch (action) {
             case "create":
               if (drawing_data) {
-                console.log("drawing_data", drawing_data);
                 const drawingWithSymbol = {
                   ...drawing_data,
                   ticker: getSymbol(drawing_data.ticker),
