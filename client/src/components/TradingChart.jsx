@@ -22,7 +22,7 @@ import useChartFitHotkey from "../hooks/useChartFitHotkey";
 import { useTimeframeModal } from "../hooks/useTimeframeModal";
 import TimeframeModal from "./TimeframeModal";
 import { useTickerModal } from "../hooks/useTickerModal";
-import { useChartDrawingSocket } from "../hooks/useChartDrawingSocket";
+import { useChartDrawingSocket } from "../hooks/chart-drawing-socket";
 import { useChartStore } from "../store/chart";
 import { useUndeliveredDrawings } from "../hooks/useUndeliveredDrawings";
 import { getSymbol } from "../helpers/symbol";
