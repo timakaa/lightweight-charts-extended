@@ -5,7 +5,11 @@ import { createShortPosition } from "./createShortPosition.js";
 import { createFibRetracement } from "./createFibRetracement.js";
 import { useChartStore } from "../store/chart.js";
 import { useDrawingsStore } from "../store/drawings.js";
-import { toUnixSeconds, resolveDrawingTime } from "./time.js";
+import {
+  toUnixSeconds,
+  resolveDrawingTime,
+  resolveRelativeEndTime,
+} from "./time.js";
 
 // Example array of drawing objects from backend using actual times
 export const exampleDrawingsData = [
@@ -102,31 +106,6 @@ function resolveDrawingPositions(drawingData, candleData) {
 
     // Use hybrid coordinate time resolution instead of limiting to candle range
     return resolveDrawingTime(unixTime, candleData);
-  };
-
-  // Helper function to calculate relative end time (latest candle + 10 candles forward)
-  const resolveRelativeEndTime = (candleData) => {
-    if (!candleData || candleData.length === 0) return null;
-
-    // Find the latest real candle
-    const realCandles = candleData.filter((c) => c.open !== undefined);
-    if (realCandles.length === 0) return null;
-
-    const latestCandle = realCandles[realCandles.length - 1];
-    const latestTime = latestCandle.time;
-
-    // Determine timeframe interval by checking difference between last two candles
-    let interval = 3600; // Default to 1 hour
-    if (realCandles.length >= 2) {
-      interval =
-        realCandles[realCandles.length - 1].time -
-        realCandles[realCandles.length - 2].time;
-    }
-
-    // Calculate time 10 candles beyond the latest candle
-    const relativeEndTime = latestTime + interval * 10;
-
-    return relativeEndTime;
   };
 
   // Check if the drawing can be positioned (start time must be available)

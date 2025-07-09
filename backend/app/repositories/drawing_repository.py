@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from app.models.undelivered_drawings import UndeliveredDrawing
-from typing import Optional, Union, List, Dict, Any
+from typing import Optional, Union, List, Dict, Any, cast
 from app.helpers.generate_id import generate_id
 
 
@@ -22,13 +22,15 @@ class DrawingRepository:
                 # Handle list of drawings
                 for drawing in drawing_data:
                     if "type" in drawing and not drawing.get("id"):
-                        drawing["id"] = generate_id(drawing["type"])
+                        generated_id = generate_id(drawing["type"])
+                        drawing["id"] = generated_id
             elif (
                 isinstance(drawing_data, dict)
                 and "type" in drawing_data
                 and not drawing_data.get("id")
             ):
-                drawing_data["id"] = generate_id(drawing_data["type"])
+                generated_id = generate_id(drawing_data["type"])
+                drawing_data["id"] = generated_id
 
             # Update drawing_id to match the generated id
             if isinstance(drawing_data, list):
@@ -44,6 +46,12 @@ class DrawingRepository:
         if isinstance(drawing_id, list) and isinstance(drawing_data, list):
             drawings = []
             for i, d_id in enumerate(drawing_id):
+                # Ensure drawing data has the correct ID
+                if i < len(drawing_data):
+                    data = cast(Dict[str, Any], drawing_data[i])
+                    if data:
+                        data["id"] = d_id
+
                 drawing = UndeliveredDrawing(
                     symbol=symbol,
                     drawing_id=d_id,
@@ -55,6 +63,10 @@ class DrawingRepository:
             self.db.commit()
             return drawings
         else:
+            # Ensure drawing data has the correct ID
+            if drawing_data and drawing_id and isinstance(drawing_data, dict):
+                drawing_data["id"] = drawing_id
+
             drawing = UndeliveredDrawing(
                 symbol=symbol,
                 drawing_id=drawing_id,

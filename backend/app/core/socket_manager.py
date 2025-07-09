@@ -5,6 +5,7 @@ from collections import defaultdict
 from app.config import settings
 import logging
 from app.core.socket_instance import sio
+from app.services.chart_service import chart_service
 
 # --- Bybit WebSocket Manager ---
 BYBIT_WS_URL = "wss://stream.bybit.com/v5/public/spot"
@@ -265,3 +266,24 @@ async def leave_room(sid, data):
             symbol, interval = room.split("-")
             await bybit_ws_manager.unsubscribe(symbol, interval, sid)
         await sio.emit("room_left", {"room": room}, room=sid)
+
+
+@sio.event
+async def drawing_ack(sid, data):
+    """Handle drawing acknowledgment"""
+    if data.get("success") and data.get("drawingIds"):
+        chart_service.drawing_repository.remove_delivered_drawing(data["drawingIds"])
+
+
+@sio.event
+async def drawing_update_ack(sid, data):
+    """Handle drawing update acknowledgment"""
+    if data.get("success") and data.get("drawingIds"):
+        chart_service.drawing_repository.remove_delivered_drawing(data["drawingIds"])
+
+
+@sio.event
+async def drawing_delete_ack(sid, data):
+    """Handle drawing delete acknowledgment"""
+    if data.get("success") and data.get("drawingIds"):
+        chart_service.drawing_repository.remove_delivered_drawing(data["drawingIds"])

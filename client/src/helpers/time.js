@@ -129,3 +129,32 @@ export function resolveDrawingTime(targetTime, candleData) {
   // Use hybrid coordinate resolution instead of limiting to candle range
   return resolveTimeWithHybridCoordinates(targetTime, candleData);
 }
+
+/**
+ * Calculates a relative end time (latest candle + 10 candles forward)
+ * @param {Array} candleData - Array of candle data sorted by time
+ * @returns {number|null} The resolved time or null if insufficient data
+ */
+export const resolveRelativeEndTime = (candleData) => {
+  if (!candleData || candleData.length === 0) return null;
+
+  // Find the latest real candle
+  const realCandles = candleData.filter((c) => c.open !== undefined);
+  if (realCandles.length === 0) return null;
+
+  const latestCandle = realCandles[realCandles.length - 1];
+  const latestTime = latestCandle.time;
+
+  // Determine timeframe interval by checking difference between last two candles
+  let interval = 3600; // Default to 1 hour
+  if (realCandles.length >= 2) {
+    interval =
+      realCandles[realCandles.length - 1].time -
+      realCandles[realCandles.length - 2].time;
+  }
+
+  // Calculate time 10 candles beyond the latest candle
+  const relativeEndTime = latestTime + interval * 10;
+
+  return relativeEndTime;
+};
