@@ -1,5 +1,8 @@
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Chart from "./components/TradingChart";
+import Backtest from "./pages/Backtest";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -14,9 +17,19 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <div style={{ overflow: "hidden" }}>
-        <Chart />
-      </div>
+      <Router>
+        <Routes>
+          <Route
+            path='/'
+            element={
+              <div style={{ overflow: "hidden" }}>
+                <Chart />
+              </div>
+            }
+          />
+          <Route path='/backtest' element={<Backtest />} />
+        </Routes>
+      </Router>
     </QueryClientProvider>
   );
 }
