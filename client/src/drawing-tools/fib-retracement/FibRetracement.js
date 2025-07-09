@@ -12,6 +12,7 @@ import {
   enhancePointWithLogicalIndex,
   getXCoordinate,
 } from "../../helpers/coordinateUtils.js";
+import { generateId } from "../../helpers/generateId";
 
 /**
  * FibRetracement - Main class for fib retracement drawing tool
@@ -44,7 +45,7 @@ export class FibRetracement extends PluginBase {
   ) {
     super();
     // Unique identifier for this retracement
-    this.id = id || `fib-${Date.now()}-${Math.random()}`;
+    this.id = id || generateId("fib");
     // Store candle data for hybrid coordinate system
     this._candleData = candleData;
     // Endpoints of the retracement with enhanced logical coordinates

@@ -9,6 +9,7 @@ import {
   LineTimeAxisView,
 } from "./views.js";
 import { enhancePointWithLogicalIndex } from "../../helpers/coordinateUtils.js";
+import { generateId } from "../../helpers/generateId";
 
 // Line.js - Implements the Line and PreviewLine primitives for drawing lines on the chart
 // The Line class represents a drawable line primitive on the chart, with endpoints p1 and p2.
@@ -25,7 +26,7 @@ export class Line extends PluginBase {
   ) {
     super();
     // Unique identifier for the line
-    this.id = id || `line-${Date.now()}-${Math.random()}`;
+    this.id = id || generateId("line");
     // Store candle data for coordinate calculations
     this._candleData = candleData;
     // Enhance endpoints with logical coordinates

@@ -1,9 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-
-// Generate unique ID for drawings
-const generateId = () =>
-  `drawing-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+import { generateId } from "../helpers/generateId";
 
 export const useDrawingsStore = create(
   persist(
