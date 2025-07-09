@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useDrawingsStore } from "../store/drawings";
+import { getSymbol } from "../helpers/symbol";
 
 export const useUndeliveredDrawings = () => {
   const { addDrawing, updateDrawing, removeDrawing } = useDrawingsStore();
@@ -7,26 +8,40 @@ export const useUndeliveredDrawings = () => {
   useEffect(() => {
     const fetchUndeliveredDrawings = async () => {
       try {
-        const response = await fetch("/api/v1/drawings/undelivered");
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/v1/drawings/undelivered`,
+        );
         const drawings = await response.json();
 
         drawings.forEach((drawing) => {
-          switch (drawing.action) {
+          const { symbol, drawing_id, drawing_data, action } = drawing;
+
+          switch (action) {
             case "create":
-              addDrawing(drawing.symbol, drawing.drawing_data);
+              if (drawing_data) {
+                console.log("drawing_data", drawing_data);
+                const drawingWithSymbol = {
+                  ...drawing_data,
+                  ticker: getSymbol(symbol),
+                };
+                addDrawing(drawingWithSymbol);
+              }
               break;
             case "update":
-              updateDrawing(
-                drawing.symbol,
-                drawing.drawing_id,
-                drawing.drawing_data,
-              );
+              if (drawing_id && drawing_data) {
+                updateDrawing(drawing_id, {
+                  ...drawing_data,
+                  ticker: getSymbol(symbol),
+                });
+              }
               break;
             case "delete":
-              removeDrawing(drawing.symbol, drawing.drawing_id);
+              if (drawing_id) {
+                removeDrawing(drawing_id);
+              }
               break;
             default:
-              console.warn("Unknown drawing action:", drawing.action);
+              console.warn("Unknown drawing action:", action);
           }
         });
       } catch (error) {

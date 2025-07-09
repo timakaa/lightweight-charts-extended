@@ -23,14 +23,22 @@ class ChartService:
         on_ack is a callback that will be called when client acknowledges receipt"""
         message = {"symbol": symbol, "drawing_data": drawing_data}
 
+        # Store drawing first - we'll remove it when client acknowledges
+        drawings = self.drawing_repository.store_undelivered_drawing(
+            symbol=symbol, drawing_data=drawing_data, action="create"
+        )
+
         async def ack_callback(client_sid, *args):
             success = args[0].get("success", False) if args and args[0] else False
 
-            if not success:
-                # Store in DB since client failed to process or didn't acknowledge
-                self.drawing_repository.store_undelivered_drawing(
-                    symbol=symbol, drawing_data=drawing_data, action="create"
+            if success:
+                # Remove from undelivered if client acknowledged
+                drawing_ids = (
+                    [str(d.drawing_id) for d in drawings]
+                    if isinstance(drawings, list)
+                    else [str(drawings.drawing_id)]
                 )
+                self.drawing_repository.remove_delivered_drawing(drawing_ids)
 
             if on_ack:
                 await on_ack(client_sid, symbol, drawing_data)
@@ -61,16 +69,25 @@ class ChartService:
             "drawing_data": drawing_data,
         }
 
+        # Store update first
+        drawings = self.drawing_repository.store_undelivered_drawing(
+            symbol=symbol,
+            drawing_id=drawing_id,
+            drawing_data=drawing_data,
+            action="update",
+        )
+
         async def ack_callback(client_sid, *args):
             success = args[0].get("success", False) if args and args[0] else False
 
-            if not success:
-                self.drawing_repository.store_undelivered_drawing(
-                    symbol=symbol,
-                    drawing_id=drawing_id,
-                    drawing_data=drawing_data,
-                    action="update",
+            if success:
+                # Remove from undelivered if client acknowledged
+                drawing_ids = (
+                    [str(d.drawing_id) for d in drawings]
+                    if isinstance(drawings, list)
+                    else [str(drawings.drawing_id)]
                 )
+                self.drawing_repository.remove_delivered_drawing(drawing_ids)
 
             if on_ack:
                 await on_ack(client_sid, symbol, drawing_id, drawing_data)
@@ -96,13 +113,22 @@ class ChartService:
         on_ack is a callback that will be called when client acknowledges receipt"""
         message = {"symbol": symbol, "drawing_id": drawing_id}
 
+        # Store deletion first
+        drawings = self.drawing_repository.store_undelivered_drawing(
+            symbol=symbol, drawing_id=drawing_id, action="delete"
+        )
+
         async def ack_callback(client_sid, *args):
             success = args[0].get("success", False) if args and args[0] else False
 
-            if not success:
-                self.drawing_repository.store_undelivered_drawing(
-                    symbol=symbol, drawing_id=drawing_id, action="delete"
+            if success:
+                # Remove from undelivered if client acknowledged
+                drawing_ids = (
+                    [str(d.drawing_id) for d in drawings]
+                    if isinstance(drawings, list)
+                    else [str(drawings.drawing_id)]
                 )
+                self.drawing_repository.remove_delivered_drawing(drawing_ids)
 
             if on_ack:
                 await on_ack(client_sid, symbol, drawing_id)
@@ -118,25 +144,32 @@ class ChartService:
         """Send all undelivered drawings"""
         drawings = self.drawing_repository.get_undelivered_drawings()
 
+        # Group drawings by action and symbol
+        grouped_drawings = {}
         for drawing in drawings:
-            # Convert SQLAlchemy model to dictionary
             drawing_dict = drawing.to_dict()
+            key = (drawing_dict["action"], drawing_dict["symbol"])
+            if key not in grouped_drawings:
+                grouped_drawings[key] = []
+            grouped_drawings[key].append(drawing_dict)
 
-            if drawing_dict["action"] == "create":
+        # Send grouped drawings
+        for (action, symbol), drawing_group in grouped_drawings.items():
+            if action == "create":
                 await self.emit_chart_drawing(
-                    symbol=drawing_dict["symbol"],
-                    drawing_data=drawing_dict["drawing_data"],
+                    symbol=symbol,
+                    drawing_data=[d["drawing_data"] for d in drawing_group],
                 )
-            elif drawing_dict["action"] == "update":
+            elif action == "update":
                 await self.update_chart_drawing(
-                    symbol=drawing_dict["symbol"],
-                    drawing_id=drawing_dict["drawing_id"],
-                    drawing_data=drawing_dict["drawing_data"],
+                    symbol=symbol,
+                    drawing_id=[d["drawing_id"] for d in drawing_group],
+                    drawing_data=[d["drawing_data"] for d in drawing_group],
                 )
-            elif drawing_dict["action"] == "delete":
+            elif action == "delete":
                 await self.delete_chart_drawing(
-                    symbol=drawing_dict["symbol"],
-                    drawing_id=drawing_dict["drawing_id"],
+                    symbol=symbol,
+                    drawing_id=[d["drawing_id"] for d in drawing_group],
                 )
 
 

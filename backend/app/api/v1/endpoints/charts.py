@@ -42,12 +42,12 @@ async def test_drawing_broadcast():
     await chart_service.emit_chart_drawing(
         symbol="SOLUSDT",
         drawing_data={
-            "type": "rectangle",
+            "type": "line",
             "ticker": "SOLUSDT",
-            "startTime": "2025-05-21T16:00:00Z",
-            "endTime": "2025-05-21T20:00:00Z",
-            "startPrice": 171.31,
-            "endPrice": 169.56,
+            "startTime": "2025-07-09T09:15:00Z",
+            "endTime": "2025-07-09T11:30:00Z",
+            "startPrice": 152.33,
+            "endPrice": 153.16,
             "style": {
                 "borderColor": "#FF0000",
                 "borderWidth": 2,
