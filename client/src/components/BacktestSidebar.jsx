@@ -1,6 +1,9 @@
 import React from "react";
 
 const BacktestSidebar = () => {
+  const initialBalance = 10000;
+  const finalBalance = 12845;
+
   // This would come from backend
   const metrics = [
     {
@@ -105,11 +108,32 @@ const BacktestSidebar = () => {
     return conditions[title] ? conditions[title](value) : "";
   };
 
+  const getFinalBalanceColor = () => {
+    if (finalBalance > initialBalance) return "text-green-500";
+    if (finalBalance < initialBalance) return "text-red-500";
+    return "text-white";
+  };
+
   return (
     <div className='fixed z-10 border-l-[4px] cursor-default top-0 right-0 w-[400px] h-full bg-modal text-white border-[#2E2E2E] flex flex-col'>
       <h2 className='sticky top-0 mx-5 mt-5 font-bold text-2xl py-2.5 border-[#1f2024]'>
         Backtest Results
       </h2>
+
+      <div className='mx-5 mt-2 grid grid-cols-2 gap-3'>
+        <div className='p-4 bg-[#0d0e10] rounded-lg border border-[#1f2024]'>
+          <div className='text-gray-500 text-sm mb-1'>Initial Balance</div>
+          <div className='text-xl font-medium'>
+            ${initialBalance.toLocaleString()}
+          </div>
+        </div>
+        <div className='p-4 bg-[#0d0e10] rounded-lg border border-[#1f2024]'>
+          <div className='text-gray-500 text-sm mb-1'>Final Balance</div>
+          <div className={`text-xl font-medium ${getFinalBalanceColor()}`}>
+            ${finalBalance.toLocaleString()}
+          </div>
+        </div>
+      </div>
 
       <hr className='border-[#1f2024] my-5' />
 
