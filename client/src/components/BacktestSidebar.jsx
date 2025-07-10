@@ -7,12 +7,52 @@ const BacktestSidebar = () => {
   // This would come from backend
   const metrics = [
     {
-      title: "Sharpe Ratio",
-      value: 2.45,
+      title: "Total Trades",
+      value: 217,
+    },
+    {
+      title: "Trading Days",
+      value: 77,
+    },
+    {
+      title: "Profitable/Loss Trades",
+      value: "71/146",
+    },
+    {
+      title: "Long/Short Trades",
+      value: "113/104",
+    },
+    {
+      title: "Value at Risk",
+      value: "$1,245.00",
     },
     {
       title: "Win Rate",
-      value: "65.8%",
+      value: "32.72%",
+    },
+    {
+      title: "Total PNL",
+      value: "-26.04 USDT",
+    },
+    {
+      title: "Average PNL",
+      value: "-0.12 USDT",
+    },
+    {
+      title: "Total PNL %",
+      value: "-18.16%",
+    },
+    {
+      title: "Average PNL %",
+      value: "-0.08%",
+    },
+    {
+      title: "Sharpe Ratio",
+      value: -0.2,
+    },
+    {
+      title: "Buy & Hold Return",
+      value: "185.37%",
     },
     {
       title: "Profit Factor",
@@ -22,52 +62,13 @@ const BacktestSidebar = () => {
       title: "Max Drawdown",
       value: "-15.2%",
     },
-    {
-      title: "Total Trades",
-      value: 156,
-    },
-    {
-      title: "Average Win",
-      value: "$245.32",
-    },
-    {
-      title: "Average Loss",
-      value: "-$125.45",
-    },
-    {
-      title: "Expectancy",
-      value: "$85.67",
-    },
-    {
-      title: "Value at Risk",
-      value: "$1,245.00",
-    },
-    {
-      title: "Beta to SPY",
-      value: 0.85,
-    },
-    {
-      title: "Sortino Ratio",
-      value: 1.95,
-    },
-    {
-      title: "Monthly Return",
-      value: "3.5%",
-    },
-    {
-      title: "Quarterly Return",
-      value: "10.2%",
-    },
-    {
-      title: "Year to Date",
-      value: "28.4%",
-    },
   ];
 
   const getValueColor = (title, value) => {
     // Helper to parse numeric values from different formats
     const parseNumber = (val) => {
       if (typeof val === "number") return val;
+      if (typeof val === "string" && val.includes("/")) return 0; // Skip ratio values
       return parseFloat(val.replace(/[^-0-9.]/g, ""));
     };
 
@@ -79,29 +80,21 @@ const BacktestSidebar = () => {
           : parseNumber(val) < 0
           ? "text-red-500"
           : "",
-      "Sortino Ratio": (val) =>
-        parseNumber(val) > 1
-          ? "text-green-500"
-          : parseNumber(val) < 0
-          ? "text-red-500"
-          : "",
       "Win Rate": (val) =>
         parseNumber(val) > 50 ? "text-green-500" : "text-red-500",
       "Profit Factor": (val) =>
         parseNumber(val) > 1 ? "text-green-500" : "text-red-500",
       "Max Drawdown": (val) =>
         parseNumber(val) < 0 ? "text-red-500" : "text-green-500",
-      "Average Win": (val) =>
+      "Total PNL": (val) =>
         parseNumber(val) > 0 ? "text-green-500" : "text-red-500",
-      "Average Loss": (val) =>
+      "Average PNL": (val) =>
         parseNumber(val) > 0 ? "text-green-500" : "text-red-500",
-      Expectancy: (val) =>
+      "Total PNL %": (val) =>
         parseNumber(val) > 0 ? "text-green-500" : "text-red-500",
-      "Monthly Return": (val) =>
+      "Average PNL %": (val) =>
         parseNumber(val) > 0 ? "text-green-500" : "text-red-500",
-      "Quarterly Return": (val) =>
-        parseNumber(val) > 0 ? "text-green-500" : "text-red-500",
-      "Year to Date": (val) =>
+      "Buy & Hold Return": (val) =>
         parseNumber(val) > 0 ? "text-green-500" : "text-red-500",
     };
 

@@ -13,13 +13,37 @@ const BacktestCard = ({ backtest, onClick }) => {
       onClick={onClick}
       className='bg-[#1a1a1a] p-4 rounded-lg border border-[#2a2e39] hover:border-[#3a3f4c] cursor-pointer transition-colors'
     >
+      <style>
+        {`
+          @keyframes ping {
+            75%, 100% {
+              transform: scale(1.5);
+              opacity: 0;
+            }
+          }
+          .animate-ping-slow {
+            animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+          }
+        `}
+      </style>
       <div className='flex justify-between items-center mb-2'>
         <span className='text-white font-medium'>{backtest.name}</span>
         <span className={getProfitLossColor(backtest.profitLoss)}>
           {backtest.profitLoss}
         </span>
       </div>
-      <div className='text-sm text-gray-400'>{backtest.created}</div>
+      <div className='flex justify-between items-center'>
+        <span className='text-sm text-gray-400'>{backtest.created}</span>
+        {backtest.isLive && (
+          <span className='text-xs text-red-500 flex items-center gap-1'>
+            <span className='relative flex h-3 w-3 items-center justify-center'>
+              <span className='absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping-slow bg-red-500'></span>
+              <span className='relative inline-flex rounded-full h-2 w-2 bg-red-500'></span>
+            </span>
+            LIVE
+          </span>
+        )}
+      </div>
     </div>
   );
 };

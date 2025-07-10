@@ -12,6 +12,7 @@ const BacktestModalContent = ({ onClose }) => {
       name: "SOL/USDT EMA Cross",
       created: "2024-03-15",
       profitLoss: "+24.5%",
+      isLive: true,
     },
     {
       id: "2",
