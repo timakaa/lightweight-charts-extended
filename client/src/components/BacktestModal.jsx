@@ -46,7 +46,7 @@ const BacktestModalContent = ({ onClose }) => {
 
   return (
     <div className='flex flex-col h-full'>
-      <div className='p-4 border-b border-[#2a2e39]'>
+      <div className='p-4 border-b border-modal-border'>
         <div className='flex justify-between items-center'>
           <h2 className='text-xl font-bold text-white'>Backtests</h2>
           <button
@@ -87,7 +87,7 @@ const BacktestModal = ({ isOpen, onClose }) => {
       className='fixed cursor-default inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[999]'
       onClick={handleBackdropClick}
     >
-      <div className='bg-[#0F0F0F] rounded-lg w-[500px] h-[550px] flex flex-col'>
+      <div className='bg-modal rounded-lg w-[500px] h-[550px] flex flex-col'>
         <BacktestModalContent onClose={onClose} />
       </div>
     </div>

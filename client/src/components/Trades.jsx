@@ -105,7 +105,7 @@ const Trades = () => {
   ];
 
   return (
-    <div className='border-t-[4px] cursor-default z-10 h-[350px] border-t-[#2E2E2E] bg-[#0F0F0F] text-white absolute bottom-0 left-0 right-0 p-4 overflow-auto'>
+    <div className='border-t-[4px] cursor-default z-10 h-[350px] border-t-[#2E2E2E] bg-modal text-white absolute bottom-0 left-0 right-0 p-4 overflow-auto'>
       <div className='flex justify-between items-center mb-3'>
         <h2 className='text-base font-bold tracking-wide'>Trade History</h2>
         <span className='text-xs text-gray-400'>{trades.length} trades</span>

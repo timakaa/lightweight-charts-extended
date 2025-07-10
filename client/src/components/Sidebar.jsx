@@ -48,7 +48,7 @@ const Sidebar = ({
   };
 
   return (
-    <div className='relative w-16 cursor-default bg-[#0F0F0F] border-r-4 border-[#2E2E2E] flex flex-col items-center pt-5 z-50'>
+    <div className='relative w-16 cursor-default bg-modal border-r-4 border-[#2E2E2E] flex flex-col items-center pt-5 z-50'>
       <button
         onClick={() => setCurrentTool(TOOL_CROSSHAIR)}
         className={`mb-4 w-10 h-10 text-xl rounded-lg border-none cursor-pointer flex items-center justify-center transition-all

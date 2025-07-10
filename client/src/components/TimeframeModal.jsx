@@ -61,7 +61,7 @@ const TimeframeModal = ({
       onClick={onClose}
     >
       <div
-        className='bg-[#1E1E1E] border border-[#3D3D3D] rounded-lg p-6 w-[350px]'
+        className='bg-modal border border-modal-border rounded-lg p-6 w-[350px]'
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className='text-white text-lg font-medium mb-4 text-center'>
