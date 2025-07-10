@@ -4,9 +4,9 @@ import BacktestSidebar from "../components/BacktestSidebar";
 
 const Backtest = () => {
   return (
-    <div className='h-screen w-screen overflow-hidden'>
+    <div className='h-screen w-screen relative'>
       <div className='mr-[399px] h-full'>
-        <Chart />
+        <Chart trades={["dsf"]} />
       </div>
       <BacktestSidebar />
     </div>
