@@ -15,20 +15,20 @@ const BacktestSidebar = () => {
       value: 77,
     },
     {
-      title: "Profitable/Loss Trades",
-      value: "71/146",
-    },
-    {
-      title: "Long/Short Trades",
-      value: "113/104",
-    },
-    {
       title: "Value at Risk",
       value: "$1,245.00",
     },
     {
       title: "Win Rate",
       value: "32.72%",
+    },
+    {
+      title: "Profitable/Loss Trades",
+      value: "71/146",
+    },
+    {
+      title: "Long/Short Trades",
+      value: "113/104",
     },
     {
       title: "Total PNL",
@@ -107,8 +107,35 @@ const BacktestSidebar = () => {
     return "text-white";
   };
 
+  const renderValue = (metric) => {
+    const isRatioMetric =
+      metric.title === "Profitable/Loss Trades" ||
+      metric.title === "Long/Short Trades";
+
+    if (
+      isRatioMetric &&
+      typeof metric.value === "string" &&
+      metric.value.includes("/")
+    ) {
+      const [first, second] = metric.value.split("/");
+      return (
+        <div className='flex items-center gap-1'>
+          <span className='text-green-500'>{first}</span>
+          <span className='text-white'>/</span>
+          <span className='text-red-500'>{second}</span>
+        </div>
+      );
+    }
+
+    return (
+      <div className={getValueColor(metric.title, metric.value)}>
+        {metric.value}
+      </div>
+    );
+  };
+
   return (
-    <div className='fixed z-10 border-l-[4px] cursor-default top-0 right-0 w-[400px] h-full bg-modal text-white border-[#2E2E2E] flex flex-col'>
+    <div className='fixed z-50 border-l-[4px] cursor-default top-0 right-0 w-[400px] h-full bg-modal text-white border-[#2E2E2E] flex flex-col'>
       <h2 className='sticky top-0 mx-5 mt-5 font-bold text-2xl py-2.5 border-[#1f2024]'>
         Backtest Results
       </h2>
@@ -138,14 +165,7 @@ const BacktestSidebar = () => {
               className='p-3 bg-[#0d0e10] rounded-lg border border-[#1f2024] hover:border-[#2a2e39] transition-colors'
             >
               <div className='text-gray-500 text-sm mb-1'>{metric.title}</div>
-              <div
-                className={
-                  "text-lg font-medium " +
-                  getValueColor(metric.title, metric.value)
-                }
-              >
-                {metric.value}
-              </div>
+              <div className='text-lg font-medium'>{renderValue(metric)}</div>
             </div>
           ))}
         </div>

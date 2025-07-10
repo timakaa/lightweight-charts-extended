@@ -1,41 +1,47 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import BacktestCard from "./BacktestCard";
 
 const BacktestModalContent = ({ onClose }) => {
   const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState("");
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
 
   // Mock backtest data
   const backtests = [
     {
       id: "1",
       name: "SOL/USDT EMA Cross",
-      created: "2024-03-15",
+      created: "2024-03-15T12:00",
       profitLoss: "+24.5%",
       isLive: true,
     },
     {
       id: "2",
       name: "BTC/USDT RSI Strategy",
-      created: "2024-03-14",
+      created: "2024-03-14T12:00",
       profitLoss: "-12.3%",
     },
     {
       id: "3",
       name: "ETH/USDT Breakout",
-      created: "2024-03-14",
+      created: "2024-03-14T00:00",
       profitLoss: "+31.7%",
     },
     {
       id: "4",
       name: "BNB/USDT Mean Reversion",
-      created: "2024-03-13",
+      created: "2024-03-13T12:00",
       profitLoss: "+8.9%",
     },
     {
       id: "5",
       name: "AVAX/USDT Volume Strategy",
-      created: "2024-03-13",
+      created: "2024-03-13T00:00",
       profitLoss: "-5.2%",
     },
   ];
@@ -48,7 +54,7 @@ const BacktestModalContent = ({ onClose }) => {
   return (
     <div className='flex flex-col h-full'>
       <div className='p-4 border-b border-modal-border'>
-        <div className='flex justify-between items-center'>
+        <div className='flex justify-between items-center mb-4'>
           <h2 className='text-xl font-bold text-white'>Backtests</h2>
           <button
             onClick={onClose}
@@ -57,6 +63,14 @@ const BacktestModalContent = ({ onClose }) => {
             ✕
           </button>
         </div>
+        <input
+          ref={inputRef}
+          type='text'
+          placeholder='Search backtests...'
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className='w-full px-3 py-2 bg-modal text-white rounded-md border border-modal-border focus:outline-none focus:border-blue-500'
+        />
       </div>
 
       <div className='flex-1 overflow-y-auto p-4'>

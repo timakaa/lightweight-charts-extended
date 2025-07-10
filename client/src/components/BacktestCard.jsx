@@ -8,10 +8,22 @@ const BacktestCard = ({ backtest, onClick }) => {
     return "text-white";
   };
 
+  const formatDate = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleString("en-US", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+  };
+
   return (
     <div
       onClick={onClick}
-      className='bg-[#1a1a1a] p-4 rounded-lg border border-[#2a2e39] hover:border-[#3a3f4c] cursor-pointer transition-colors'
+      className='bg-[#0D0E10] p-4 rounded-lg border border-[#2a2e39] hover:border-[#3a3f4c] cursor-pointer transition-colors'
     >
       <style>
         {`
@@ -33,7 +45,9 @@ const BacktestCard = ({ backtest, onClick }) => {
         </span>
       </div>
       <div className='flex justify-between items-center'>
-        <span className='text-sm text-gray-400'>{backtest.created}</span>
+        <span className='text-sm text-gray-400'>
+          {formatDate(backtest.created)}
+        </span>
         {backtest.isLive && (
           <span className='text-xs text-red-500 flex items-center gap-1'>
             <span className='relative flex h-3 w-3 items-center justify-center'>
