@@ -32,23 +32,23 @@ const BacktestSidebar = () => {
     },
     {
       title: "Total PNL",
-      value: "-26.04 USDT",
+      value: "2326.04 USDT",
     },
     {
       title: "Average PNL",
-      value: "-0.12 USDT",
+      value: "4.12 USDT",
     },
     {
       title: "Total PNL %",
-      value: "-18.16%",
+      value: "18.16%",
     },
     {
       title: "Average PNL %",
-      value: "-0.08%",
+      value: "2.08%",
     },
     {
       title: "Sharpe Ratio",
-      value: -0.2,
+      value: 1.2,
     },
     {
       title: "Buy & Hold Return",

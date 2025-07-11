@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, Float, String, JSON, DateTime, Boolean
+from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.db.database import Base
 
@@ -6,10 +7,15 @@ from app.db.database import Base
 class BacktestResult(Base):
     __tablename__ = "backtest_results"
 
-    id = Column(String, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     title = Column(String)
     is_live = Column(Boolean, default=False)
+
+    # Symbols relationship
+    symbols = relationship(
+        "BacktestSymbol", back_populates="backtest", cascade="all, delete-orphan"
+    )
 
     # Balance info
     initial_balance = Column(Float)
