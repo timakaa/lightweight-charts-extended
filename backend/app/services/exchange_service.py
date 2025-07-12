@@ -3,6 +3,8 @@ from typing import List, Dict, Any, Optional
 import asyncio
 import threading
 import time
+from app.models.backtest_symbol import BacktestSymbol
+from app.db.database import get_db
 
 
 class ExchangeService:
@@ -290,9 +292,11 @@ class ExchangeService:
         timeframe: str = "1h",
         page: int = 1,
         page_size: int = 100,
+        backtest_id: Optional[int] = None,
     ) -> Dict[str, Any]:
         """
         Hybrid: Use cache for oldest candle if available, otherwise return has_next: true and start background fetch.
+        If backtest_id is provided, restrict candles to the backtest symbol's start_date and end_date.
         """
         await self.ensure_markets_loaded()
         if "/" not in symbol:
@@ -322,6 +326,26 @@ class ExchangeService:
         }
         tf_ms = timeframe_map.get(timeframe, 60 * 1000)
 
+        # If backtest_id is provided, restrict to backtest symbol's date range
+        start_limit = None
+        end_limit = None
+        if backtest_id is not None:
+            db = next(get_db())
+            try:
+                bsymbol = (
+                    db.query(BacktestSymbol)
+                    .filter(
+                        BacktestSymbol.backtest_id == backtest_id,
+                        BacktestSymbol.ticker.ilike(symbol.replace("/", "")),
+                    )
+                    .first()
+                )
+                if bsymbol:
+                    start_limit = int(bsymbol.start_date.timestamp() * 1000)
+                    end_limit = int(bsymbol.end_date.timestamp() * 1000)
+            finally:
+                db.close()
+
         # Fetch the newest candle
         newest_candle = await asyncio.to_thread(
             self.exchange.fetch_ohlcv, symbol, timeframe, None, 1
@@ -332,8 +356,12 @@ class ExchangeService:
 
         # Try cache for oldest candle
         oldest_ts = self._get_cached_oldest(symbol, timeframe)
+        if start_limit is not None and end_limit is not None:
+            # Restrict to backtest symbol's date range
+            oldest_ts = start_limit
+            newest_ts = end_limit
         if oldest_ts is not None:
-            # Debug: Use cached oldest
+            # Debug: Use cached oldest or backtest range
             total_count = ((newest_ts - oldest_ts) // tf_ms) + 1
             total_pages = (total_count + page_size - 1) // page_size
             if page < 1:
@@ -365,6 +393,7 @@ class ExchangeService:
                 "filters": {
                     "symbol": symbol,
                     "timeframe": timeframe,
+                    "backtest_id": backtest_id,
                 },
             }
         else:
@@ -394,6 +423,7 @@ class ExchangeService:
                 "filters": {
                     "symbol": symbol,
                     "timeframe": timeframe,
+                    "backtest_id": backtest_id,
                 },
             }
 

@@ -142,3 +142,21 @@ export const useBacktestStats = (backtestId) => {
     enabled: !!backtestId,
   });
 };
+
+const fetchBacktestSymbols = async (backtestId) => {
+  const response = await fetch(
+    `${import.meta.env.VITE_API_URL}/api/v1/backtest/${backtestId}/symbols`,
+  );
+  if (!response.ok) {
+    throw new Error("Network response was not ok");
+  }
+  return response.json();
+};
+
+export const useBacktestSymbols = (backtestId) => {
+  return useQuery({
+    queryKey: ["backtestSymbols", backtestId],
+    queryFn: () => fetchBacktestSymbols(backtestId),
+    enabled: !!backtestId,
+  });
+};

@@ -27,12 +27,21 @@ const formatVolume = (volume) => {
   }).format(volume);
 };
 
-export const TickerModalRow = ({ ticker, onClick }) => (
+export const TickerModalRow = ({ ticker, onClick, isBacktest }) => (
   <div
     className='grid grid-cols-4 gap-4 p-4 text-sm text-white border-b border-[#2E2E2E] hover:bg-[#2E2E2E] cursor-pointer'
     onClick={onClick}
   >
-    <div className='font-medium'>{ticker.symbol}</div>
+    <div className='font-medium'>
+      {isBacktest ? (
+        <span>
+          <span className='inline-block w-2 h-2 mr-2 rounded-full bg-gray-500 align-middle' />
+          {ticker.symbol}
+        </span>
+      ) : (
+        ticker.symbol
+      )}
+    </div>
     <div className='text-right'>${formatPrice(ticker.last)}</div>
     <div className='text-right'>{formatPercentage(ticker.percentage)}</div>
     <div className='text-right text-gray-400'>

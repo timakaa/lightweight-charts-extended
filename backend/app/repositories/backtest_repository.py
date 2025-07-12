@@ -370,3 +370,22 @@ class BacktestRepository:
             self.db.commit()
             return True
         return False
+
+    def get_symbols_by_backtest_id(self, backtest_id: int):
+        backtest = (
+            self.db.query(BacktestResult)
+            .filter(BacktestResult.id == backtest_id)
+            .first()
+        )
+        if not backtest:
+            return None
+        return [
+            {
+                "ticker": symbol.ticker,
+                "start_date": (
+                    symbol.start_date.isoformat() if symbol.start_date else None
+                ),
+                "end_date": symbol.end_date.isoformat() if symbol.end_date else None,
+            }
+            for symbol in backtest.symbols
+        ]

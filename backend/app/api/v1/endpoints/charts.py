@@ -17,9 +17,13 @@ async def get_candlestick_data(
     page_size: int = Query(
         100, ge=1, le=1000, description="Number of candles per page"
     ),
+    backtest_id: int = Query(
+        None, description="Optional backtest ID to filter candles"
+    ),
 ):
     """
     Get paginated candlestick (OHLCV) data for a symbol from Bybit.
+    Optionally filter by backtest_id if provided.
     Debug: start_time and end_time removed, always paginates by count.
     """
     try:
@@ -28,6 +32,7 @@ async def get_candlestick_data(
             timeframe=timeframe,
             page=page,
             page_size=page_size,
+            backtest_id=backtest_id,
         )
         return result
     except Exception as e:

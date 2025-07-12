@@ -7,11 +7,13 @@ import { useRealtimeUpdates } from "./useRealtimeUpdates";
 import { useDataProcessing } from "./useDataProcessing";
 import { useChartFitting } from "./useChartFitting";
 import { usePagination } from "./usePagination";
+import { useParams } from "react-router-dom";
 
 // Main hook that orchestrates everything
 export const useCandlestickSeries = (chart) => {
   const symbol = useChartStore((s) => s.ticker);
   const timeframe = useChartStore((s) => s.timeframe);
+  const { backtestId } = useParams();
   const pageSize = 1000;
   const [page, setPage] = useState(1);
 
@@ -19,6 +21,7 @@ export const useCandlestickSeries = (chart) => {
     timeframe,
     page,
     pageSize,
+    backtestId,
     enabled: !!chart && !!symbol,
   });
 

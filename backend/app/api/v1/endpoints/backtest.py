@@ -67,3 +67,12 @@ def get_backtest_stats(backtest_id: int, db: Session = Depends(get_db)):
     if not stats:
         raise HTTPException(status_code=404, detail="Backtest not found")
     return stats
+
+
+@router.get("/backtest/{backtest_id}/symbols")
+def get_backtest_symbols(backtest_id: int, db: Session = Depends(get_db)):
+    repository = BacktestRepository(db)
+    symbols = repository.get_symbols_by_backtest_id(backtest_id)
+    if symbols is None:
+        raise HTTPException(status_code=404, detail="Backtest not found")
+    return symbols
