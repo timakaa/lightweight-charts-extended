@@ -115,7 +115,9 @@ const Trades = () => {
         {trades.map((trade) => (
           <div
             key={trade.id}
-            className='bg-[#1A1A1A] cursor-pointer rounded p-2 hover:bg-[#242424] transition-colors'
+            className={`cursor-pointer rounded p-2 hover:bg-[#1e1c1c] transition-colors ${
+              trade.profit >= 0 ? "bg-[#131b17]" : "bg-[#221515]"
+            }`}
           >
             <div className='flex justify-between items-start'>
               <div className='flex items-center gap-1.5'>
