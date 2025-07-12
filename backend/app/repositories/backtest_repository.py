@@ -2,11 +2,84 @@ from sqlalchemy.orm import Session
 from app.models.backtest_results import BacktestResult
 from app.models.backtest_symbol import BacktestSymbol
 from datetime import datetime
+import math
+from typing import Optional, List, Dict, Any
 
 
 class BacktestRepository:
     def __init__(self, db: Session):
         self.db = db
+
+    def _convert_nan_to_none(self, obj: Any) -> Any:
+        """Convert NaN values to None for JSON serialization"""
+        if isinstance(obj, float) and math.isnan(obj):
+            return None
+        elif isinstance(obj, dict):
+            return {key: self._convert_nan_to_none(value) for key, value in obj.items()}
+        elif isinstance(obj, list):
+            return [self._convert_nan_to_none(item) for item in obj]
+        return obj
+
+    def _serialize_backtest(
+        self, backtest: Optional[BacktestResult]
+    ) -> Optional[Dict[str, Any]]:
+        """Convert backtest model to dict with NaN handling"""
+        if not backtest:
+            return None
+
+        result = {
+            "id": backtest.id,
+            "created_at": (
+                backtest.created_at.isoformat()
+                if backtest.created_at is not None
+                else None
+            ),
+            "title": backtest.title,
+            "is_live": backtest.is_live,
+            "initial_balance": backtest.initial_balance,
+            "final_balance": backtest.final_balance,
+            "total_trades": backtest.total_trades,
+            "trading_days": backtest.trading_days,
+            "value_at_risk": backtest.value_at_risk,
+            "win_rate": backtest.win_rate,
+            "profitable_trades": backtest.profitable_trades,
+            "loss_trades": backtest.loss_trades,
+            "long_trades": backtest.long_trades,
+            "short_trades": backtest.short_trades,
+            "total_pnl": backtest.total_pnl,
+            "average_pnl": backtest.average_pnl,
+            "total_pnl_percentage": backtest.total_pnl_percentage,
+            "average_pnl_percentage": backtest.average_pnl_percentage,
+            "sharpe_ratio": backtest.sharpe_ratio,
+            "buy_hold_return": backtest.buy_hold_return,
+            "profit_factor": backtest.profit_factor,
+            "max_drawdown": backtest.max_drawdown,
+            "trades": backtest.trades,
+            "drawings": backtest.drawings,
+            "symbols": (
+                [
+                    {
+                        "id": symbol.id,
+                        "ticker": symbol.ticker,
+                        "start_date": (
+                            symbol.start_date.isoformat()
+                            if symbol.start_date is not None
+                            else None
+                        ),
+                        "end_date": (
+                            symbol.end_date.isoformat()
+                            if symbol.end_date is not None
+                            else None
+                        ),
+                    }
+                    for symbol in backtest.symbols
+                ]
+                if backtest.symbols
+                else []
+            ),
+        }
+
+        return self._convert_nan_to_none(result)
 
     def create(
         self, backtest_data: dict, numerate_title: bool = False
@@ -46,7 +119,7 @@ class BacktestRepository:
 
                     # If original exists but no copies, this is copy 1
                     # If copies exist, increment the highest number
-                    next_copy = max_copy + 1
+                    next_copy = 2 if max_copy == 1 else max_copy + 1
                     title = f"{title} ({next_copy})"
 
         # Create backtest instance
@@ -93,18 +166,25 @@ class BacktestRepository:
         self.db.refresh(backtest)
         return backtest
 
-    def get_by_id(self, backtest_id: int) -> BacktestResult:
-        return (
+    def get_by_id(self, backtest_id: int) -> Optional[Dict[str, Any]]:
+        backtest = (
             self.db.query(BacktestResult)
             .filter(BacktestResult.id == backtest_id)
             .first()
         )
+        return self._serialize_backtest(backtest)
 
-    def get_all(self) -> list[BacktestResult]:
-        return self.db.query(BacktestResult).all()
+    def get_all(self) -> List[Dict[str, Any]]:
+        backtests = self.db.query(BacktestResult).all()
+        serialized = [self._serialize_backtest(backtest) for backtest in backtests]
+        return [item for item in serialized if item is not None]
 
     def delete(self, backtest_id: int) -> bool:
-        backtest = self.get_by_id(backtest_id)
+        backtest = (
+            self.db.query(BacktestResult)
+            .filter(BacktestResult.id == backtest_id)
+            .first()
+        )
         if backtest:
             self.db.delete(backtest)
             self.db.commit()

@@ -14,7 +14,7 @@ def create_backtest(backtest_data: dict, db: Session = Depends(get_db)):
 
 
 @router.get("/backtest/{backtest_id}")
-def get_backtest(backtest_id: str, db: Session = Depends(get_db)):
+def get_backtest(backtest_id: int, db: Session = Depends(get_db)):
     repository = BacktestRepository(db)
     backtest = repository.get_by_id(backtest_id)
     if not backtest:
@@ -29,7 +29,7 @@ def get_all_backtests(db: Session = Depends(get_db)):
 
 
 @router.delete("/backtest/{backtest_id}")
-def delete_backtest(backtest_id: str, db: Session = Depends(get_db)):
+def delete_backtest(backtest_id: int, db: Session = Depends(get_db)):
     repository = BacktestRepository(db)
     if not repository.delete(backtest_id):
         raise HTTPException(status_code=404, detail="Backtest not found")
