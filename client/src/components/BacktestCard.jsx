@@ -1,6 +1,10 @@
 import React from "react";
+import { useParams } from "react-router-dom";
 
 const BacktestCard = ({ backtest, onClick }) => {
+  const { backtestId } = useParams();
+  const isActive = String(backtest.id) === String(backtestId);
+
   const getProfitLossColor = (value) => {
     const numericValue = parseFloat(value);
     if (numericValue > 0) return "text-green-500";
@@ -23,7 +27,11 @@ const BacktestCard = ({ backtest, onClick }) => {
   return (
     <div
       onClick={onClick}
-      className='bg-[#0D0E10] p-4 rounded-lg border border-[#2a2e39] hover:border-[#3a3f4c] cursor-pointer transition-colors'
+      className={`bg-[#0D0E10] p-4 rounded-lg border transition-colors cursor-pointer ${
+        isActive
+          ? "border-blue-500 ring-2 ring-blue-500 bg-blue-500/20"
+          : "border-[#2a2e39] hover:border-[#3a3f4c]"
+      }`}
     >
       <style>
         {`
