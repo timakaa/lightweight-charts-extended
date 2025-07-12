@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app.models.backtest_results import BacktestResult
 from app.models.backtest_symbol import BacktestSymbol
 from datetime import datetime
@@ -178,6 +178,60 @@ class BacktestRepository:
         backtests = self.db.query(BacktestResult).all()
         serialized = [self._serialize_backtest(backtest) for backtest in backtests]
         return [item for item in serialized if item is not None]
+
+    def get_all_summarized(
+        self, page: int = 1, page_size: int = 10, search: Optional[str] = None
+    ) -> Dict[str, Any]:
+        query = self.db.query(BacktestResult).options(
+            joinedload(BacktestResult.symbols)
+        )
+
+        if search:
+            query = query.filter(BacktestResult.title.ilike(f"%{search}%"))
+
+        total_count = query.count()
+        total_pages = (total_count + page_size - 1) // page_size
+
+        offset = (page - 1) * page_size
+        backtests = query.offset(offset).limit(page_size).all()
+
+        summaries = [
+            {
+                "title": backtest.title,
+                "created_at": (
+                    backtest.created_at.isoformat()
+                    if backtest.created_at is not None
+                    else None
+                ),
+                "total_pnl_percentage": backtest.total_pnl_percentage,
+                "is_live": backtest.is_live,
+                "symbols": [
+                    {
+                        "ticker": symbol.ticker,
+                        "start_date": (
+                            symbol.start_date.isoformat() if symbol.start_date else None
+                        ),
+                        "end_date": (
+                            symbol.end_date.isoformat() if symbol.end_date else None
+                        ),
+                    }
+                    for symbol in backtest.symbols
+                ],
+            }
+            for backtest in backtests
+        ]
+
+        return {
+            "backtests": summaries,
+            "pagination": {
+                "page": page,
+                "page_size": page_size,
+                "total_count": total_count,
+                "total_pages": total_pages,
+                "has_next": page < total_pages,
+                "has_prev": page > 1,
+            },
+        }
 
     def delete(self, backtest_id: int) -> bool:
         backtest = (

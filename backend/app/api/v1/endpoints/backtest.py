@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.repositories.backtest_repository import BacktestRepository
-from typing import List
+from typing import List, Optional
 
 router = APIRouter()
 
@@ -11,6 +11,19 @@ router = APIRouter()
 def create_backtest(backtest_data: dict, db: Session = Depends(get_db)):
     repository = BacktestRepository(db)
     return repository.create(backtest_data)
+
+
+@router.get("/backtest/summarized")
+def get_all_backtests_summarized(
+    db: Session = Depends(get_db),
+    page: int = Query(1, ge=1, description="Page number"),
+    page_size: int = Query(10, ge=1, le=100, description="Number of items per page"),
+    search: Optional[str] = Query(None, description="Search term for backtest titles"),
+):
+    repository = BacktestRepository(db)
+    return repository.get_all_summarized(
+        page=page, page_size=page_size, search=search
+    )
 
 
 @router.get("/backtest/{backtest_id}")

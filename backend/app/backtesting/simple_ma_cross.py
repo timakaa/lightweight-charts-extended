@@ -165,7 +165,9 @@ def run_backtest(data: pd.DataFrame, cash: float = 10000, symbol: str = SYMBOL) 
         "total_pnl": total_pnl,
         "average_pnl": average_pnl,
         "total_pnl_percentage": ((stats["Equity Final [$]"] - cash) / cash) * 100,
-        "average_pnl_percentage": stats["Avg. Trade [%]"],
+        "average_pnl_percentage": (
+            (((stats["Equity Final [$]"] - cash) / cash) * 100) / total_trades
+        ),
         "profitable_trades": profitable_trades,
         "loss_trades": loss_trades,
         "long_trades": long_trades,
@@ -185,8 +187,8 @@ def run_backtest(data: pd.DataFrame, cash: float = 10000, symbol: str = SYMBOL) 
     db = next(get_db())
     repository = BacktestRepository(db)
     try:
-        saved_backtest = repository.create(results, numerate_title=True)
-        results["id"] = saved_backtest.id
+        # saved_backtest = repository.create(results, numerate_title=True)
+        # results["id"] = saved_backtest.id
         pass
     finally:
         db.close()

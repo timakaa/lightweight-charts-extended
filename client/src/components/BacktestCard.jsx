@@ -39,16 +39,16 @@ const BacktestCard = ({ backtest, onClick }) => {
         `}
       </style>
       <div className='flex justify-between items-center mb-2'>
-        <span className='text-white font-medium'>{backtest.name}</span>
-        <span className={getProfitLossColor(backtest.profitLoss)}>
-          {backtest.profitLoss}
+        <span className='text-white font-medium'>{backtest.title}</span>
+        <span className={getProfitLossColor(backtest.total_pnl_percentage)}>
+          {backtest.total_pnl_percentage.toFixed(2)}%
         </span>
       </div>
       <div className='flex justify-between items-center'>
         <span className='text-sm text-gray-400'>
-          {formatDate(backtest.created)}
+          {formatDate(backtest.created_at)}
         </span>
-        {backtest.isLive && (
+        {backtest.is_live && (
           <span className='text-xs text-red-500 flex items-center gap-1'>
             <span className='relative flex h-3 w-3 items-center justify-center'>
               <span className='absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping-slow bg-red-500'></span>
