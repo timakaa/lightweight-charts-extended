@@ -91,7 +91,6 @@ def run_backtest(data: pd.DataFrame, cash: float = 10000, symbol: str = SYMBOL) 
     loss_trades = 0
     long_trades = 0
     short_trades = 0
-    total_pnl = 0
     pnl_list = []
 
     for _, trade in trades_df.iterrows():
@@ -110,11 +109,9 @@ def run_backtest(data: pd.DataFrame, cash: float = 10000, symbol: str = SYMBOL) 
         else:
             short_trades += 1
 
-        total_pnl += pnl
-
         trade_info = {
-            "entry_time": str(trade.EntryTime),
-            "exit_time": str(trade.ExitTime),
+            "entry_time": trade.EntryTime.isoformat(),
+            "exit_time": trade.ExitTime.isoformat(),
             "entry_price": float(trade.EntryPrice),
             "exit_price": float(trade.ExitPrice),
             "take_profit": (
@@ -136,8 +133,14 @@ def run_backtest(data: pd.DataFrame, cash: float = 10000, symbol: str = SYMBOL) 
         trades_list.append(trade_info)
 
     total_trades = len(trades_list)
-    average_pnl = total_pnl / total_trades if total_trades > 0 else 0
-    trading_days = len(data)  # Number of candles as trading days
+    # Calculate unique trading days (days with at least one trade executed)
+    if trades_list:
+        unique_days = set(
+            trade["entry_time"][:10] for trade in trades_list if trade["entry_time"]
+        )
+        trading_days = len(unique_days)
+    else:
+        trading_days = 0
 
     # Calculate Value at Risk (95% confidence)
     if pnl_list:
@@ -152,8 +155,8 @@ def run_backtest(data: pd.DataFrame, cash: float = 10000, symbol: str = SYMBOL) 
         "trades": trades_list,
         "initial_balance": cash,
         "final_balance": stats["Equity Final [$]"],
-        "start_time": str(data.index[0]),
-        "end_time": str(data.index[-1]),
+        "start_date": data.index[0].to_pydatetime(),
+        "end_date": data.index[-1].to_pydatetime(),
         "total_trades": total_trades,
         "trading_days": trading_days,
         "win_rate": stats["Win Rate [%]"] / 100,
@@ -162,8 +165,8 @@ def run_backtest(data: pd.DataFrame, cash: float = 10000, symbol: str = SYMBOL) 
         "sharpe_ratio": stats["Sharpe Ratio"],
         "profit_factor": stats["Profit Factor"],
         "value_at_risk": value_at_risk,
-        "total_pnl": total_pnl,
-        "average_pnl": average_pnl,
+        "total_pnl": stats["Equity Final [$]"] - cash,
+        "average_pnl": (stats["Equity Final [$]"] - cash) / total_trades,
         "total_pnl_percentage": ((stats["Equity Final [$]"] - cash) / cash) * 100,
         "average_pnl_percentage": (
             (((stats["Equity Final [$]"] - cash) / cash) * 100) / total_trades
@@ -187,8 +190,8 @@ def run_backtest(data: pd.DataFrame, cash: float = 10000, symbol: str = SYMBOL) 
     db = next(get_db())
     repository = BacktestRepository(db)
     try:
-        # saved_backtest = repository.create(results, numerate_title=True)
-        # results["id"] = saved_backtest.id
+        saved_backtest = repository.create(results, numerate_title=True)
+        results["id"] = saved_backtest.id
         pass
     finally:
         db.close()

@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session, joinedload
 from app.models.backtest_results import BacktestResult
 from app.models.backtest_symbol import BacktestSymbol
+from app.models.trade import Trade
 from datetime import datetime
 import math
 from typing import Optional, List, Dict, Any
@@ -34,6 +35,14 @@ class BacktestRepository:
                 if backtest.created_at is not None
                 else None
             ),
+            "start_date": (
+                backtest.start_date.isoformat()
+                if backtest.start_date is not None
+                else None
+            ),
+            "end_date": (
+                backtest.end_date.isoformat() if backtest.end_date is not None else None
+            ),
             "title": backtest.title,
             "is_live": backtest.is_live,
             "initial_balance": backtest.initial_balance,
@@ -54,7 +63,6 @@ class BacktestRepository:
             "buy_hold_return": backtest.buy_hold_return,
             "profit_factor": backtest.profit_factor,
             "max_drawdown": backtest.max_drawdown,
-            "trades": backtest.trades,
             "drawings": backtest.drawings,
             "symbols": (
                 [
@@ -117,15 +125,17 @@ class BacktestRepository:
                         except (ValueError, IndexError):
                             continue
 
-                    # If original exists but no copies, this is copy 1
+                    # If original exists but no copies, this is copy 2
                     # If copies exist, increment the highest number
-                    next_copy = 2 if max_copy == 1 else max_copy + 1
+                    next_copy = max(2, max_copy + 1)
                     title = f"{title} ({next_copy})"
 
         # Create backtest instance
         backtest = BacktestResult(
             title=title,
             is_live=backtest_data.get("is_live", False),
+            start_date=backtest_data.get("start_date"),
+            end_date=backtest_data.get("end_date"),
             initial_balance=backtest_data.get("initial_balance"),
             final_balance=backtest_data.get("final_balance"),
             total_trades=backtest_data.get("total_trades"),
@@ -144,12 +154,38 @@ class BacktestRepository:
             buy_hold_return=backtest_data.get("buy_hold_return"),
             profit_factor=backtest_data.get("profit_factor"),
             max_drawdown=backtest_data.get("max_drawdown"),
-            trades=backtest_data.get("trades", []),
             drawings=backtest_data.get("drawings", []),
         )
 
         self.db.add(backtest)
         self.db.flush()  # This will assign the ID to the backtest instance
+
+        # Create trade instances
+        trades_data = backtest_data.get("trades", [])
+        for trade_data in trades_data:
+            trade = Trade(
+                backtest_id=backtest.id,
+                entry_time=(
+                    datetime.fromisoformat(trade_data.get("entry_time"))
+                    if trade_data.get("entry_time")
+                    else None
+                ),
+                exit_time=(
+                    datetime.fromisoformat(trade_data.get("exit_time"))
+                    if trade_data.get("exit_time")
+                    else None
+                ),
+                entry_price=trade_data.get("entry_price"),
+                exit_price=trade_data.get("exit_price"),
+                take_profit=trade_data.get("take_profit"),
+                stop_loss=trade_data.get("stop_loss"),
+                pnl=trade_data.get("pnl"),
+                size=trade_data.get("size"),
+                trade_type=trade_data.get("type"),
+                pnl_percentage=trade_data.get("pnl_percentage"),
+                exit_reason=trade_data.get("exit_reason"),
+            )
+            self.db.add(trade)
 
         # Create symbol instances
         symbols_data = backtest_data.get("symbols", [])
@@ -189,6 +225,9 @@ class BacktestRepository:
         if search:
             query = query.filter(BacktestResult.title.ilike(f"%{search}%"))
 
+        # Order by newest first
+        query = query.order_by(BacktestResult.id.desc())
+
         total_count = query.count()
         total_pages = (total_count + page_size - 1) // page_size
 
@@ -197,6 +236,7 @@ class BacktestRepository:
 
         summaries = [
             {
+                "id": backtest.id,
                 "title": backtest.title,
                 "created_at": (
                     backtest.created_at.isoformat()
@@ -232,6 +272,92 @@ class BacktestRepository:
                 "has_prev": page > 1,
             },
         }
+
+    def get_trades_by_backtest_id(
+        self, backtest_id: int, page: int = 1, page_size: int = 10
+    ) -> Dict[str, Any]:
+        query = self.db.query(Trade).filter(Trade.backtest_id == backtest_id)
+
+        total_count = query.count()
+        total_pages = (total_count + page_size - 1) // page_size
+
+        offset = (page - 1) * page_size
+        trades = query.offset(offset).limit(page_size).all()
+
+        return {
+            "trades": [
+                {
+                    "id": trade.id,
+                    "entry_time": (
+                        trade.entry_time.isoformat()
+                        if trade.entry_time is not None
+                        else None
+                    ),
+                    "exit_time": (
+                        trade.exit_time.isoformat()
+                        if trade.exit_time is not None
+                        else None
+                    ),
+                    "entry_price": trade.entry_price,
+                    "exit_price": trade.exit_price,
+                    "take_profit": trade.take_profit,
+                    "stop_loss": trade.stop_loss,
+                    "pnl": trade.pnl,
+                    "size": trade.size,
+                    "trade_type": trade.trade_type,
+                    "pnl_percentage": trade.pnl_percentage,
+                    "exit_reason": trade.exit_reason,
+                }
+                for trade in trades
+            ],
+            "pagination": {
+                "page": page,
+                "page_size": page_size,
+                "total_count": total_count,
+                "total_pages": total_pages,
+                "has_next": page < total_pages,
+                "has_prev": page > 1,
+            },
+        }
+
+    def get_stats_by_id(self, backtest_id: int) -> Optional[Dict[str, Any]]:
+        backtest = (
+            self.db.query(BacktestResult)
+            .filter(BacktestResult.id == backtest_id)
+            .first()
+        )
+        if not backtest:
+            return None
+        result = {
+            "title": backtest.title,
+            "start_date": (
+                backtest.start_date.isoformat()
+                if backtest.start_date is not None
+                else None
+            ),
+            "end_date": (
+                backtest.end_date.isoformat() if backtest.end_date is not None else None
+            ),
+            "initial_balance": backtest.initial_balance,
+            "final_balance": backtest.final_balance,
+            "total_trades": backtest.total_trades,
+            "trading_days": backtest.trading_days,
+            "value_at_risk": backtest.value_at_risk,
+            "win_rate": backtest.win_rate,
+            "profitable_trades": backtest.profitable_trades,
+            "loss_trades": backtest.loss_trades,
+            "long_trades": backtest.long_trades,
+            "short_trades": backtest.short_trades,
+            "total_pnl": backtest.total_pnl,
+            "average_pnl": backtest.average_pnl,
+            "total_pnl_percentage": backtest.total_pnl_percentage,
+            "average_pnl_percentage": backtest.average_pnl_percentage,
+            "sharpe_ratio": backtest.sharpe_ratio,
+            "buy_hold_return": backtest.buy_hold_return,
+            "profit_factor": backtest.profit_factor,
+            "max_drawdown": backtest.max_drawdown,
+        }
+        return self._convert_nan_to_none(result)
 
     def delete(self, backtest_id: int) -> bool:
         backtest = (

@@ -30,7 +30,7 @@ const BacktestModalContent = ({ onClose }) => {
   const { data, isLoading, error, isFetching } = useBacktestsSummarized(
     page,
     10,
-    debouncedSearch
+    debouncedSearch,
   );
 
   useEffect(() => {
@@ -42,7 +42,7 @@ const BacktestModalContent = ({ onClose }) => {
   useEffect(() => {
     if (data?.backtests) {
       setBacktests((prev) =>
-        page === 1 ? data.backtests : [...prev, ...data.backtests]
+        page === 1 ? data.backtests : [...prev, ...data.backtests],
       );
       setHasNext(data.pagination?.has_next);
     }
@@ -55,9 +55,10 @@ const BacktestModalContent = ({ onClose }) => {
     offset: 200,
   });
 
-  const handleBacktestSelect = () => {
+  const handleBacktestSelect = (backtest) => {
+    const { id } = backtest;
     onClose();
-    navigate("/backtest");
+    navigate(`/backtest/${id}`);
   };
 
   return (
@@ -91,14 +92,14 @@ const BacktestModalContent = ({ onClose }) => {
           <div className='flex items-center justify-center p-8'>
             <div className='text-red-500'>Error: {error.message}</div>
           </div>
-        ) : (
+        ) : backtests.length > 0 ? (
           <>
             <div className='space-y-3'>
               {backtests.map((backtest, index) => (
                 <BacktestCard
                   key={`${backtest.id}-${index}`}
                   backtest={backtest}
-                  onClick={handleBacktestSelect}
+                  onClick={() => handleBacktestSelect(backtest)}
                 />
               ))}
             </div>
@@ -113,6 +114,10 @@ const BacktestModalContent = ({ onClose }) => {
               </div>
             )}
           </>
+        ) : (
+          <div className='flex items-center justify-center p-8'>
+            <div className='text-white'>No backtests found</div>
+          </div>
         )}
       </div>
     </div>

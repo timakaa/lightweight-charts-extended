@@ -1,4 +1,9 @@
+import sys
+import os
 from logging.config import fileConfig
+
+# Add the project root to the Python path
+sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), '..')))
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
@@ -8,9 +13,11 @@ from alembic import context
 from app.db.database import Base
 from app.models.backtest_results import BacktestResult
 from app.models.undelivered_drawings import UndeliveredDrawing
+from app.models.trade import Trade
+from app.models.backtest_symbol import BacktestSymbol
 
 # Import all models here to ensure they are registered with SQLAlchemy
-__all__ = ["BacktestResult", "UndeliveredDrawing"]
+__all__ = ["BacktestResult", "UndeliveredDrawing", "Trade", "BacktestSymbol"]
 
 config = context.config
 

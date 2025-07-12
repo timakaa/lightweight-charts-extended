@@ -27,7 +27,7 @@ function App() {
               </div>
             }
           />
-          <Route path='/backtest' element={<Backtest />} />
+          <Route path='/backtest/:backtestId' element={<Backtest />} />
         </Routes>
       </Router>
     </QueryClientProvider>

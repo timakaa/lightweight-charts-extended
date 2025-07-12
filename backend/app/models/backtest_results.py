@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, Float, String, JSON, DateTime, Boolean
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.db.database import Base
+from app.models.trade import Trade
 
 
 class BacktestResult(Base):
@@ -12,9 +13,17 @@ class BacktestResult(Base):
     title = Column(String)
     is_live = Column(Boolean, default=False)
 
+    start_date = Column(DateTime, nullable=True)
+    end_date = Column(DateTime, nullable=True)
+
     # Symbols relationship
     symbols = relationship(
         "BacktestSymbol", back_populates="backtest", cascade="all, delete-orphan"
+    )
+
+    # Trades relationship
+    trades = relationship(
+        "Trade", back_populates="backtest", cascade="all, delete-orphan"
     )
 
     # Balance info
@@ -46,5 +55,4 @@ class BacktestResult(Base):
     max_drawdown = Column(Float)
 
     # Arrays of trades and drawings
-    trades = Column(JSON)  # Array of trade objects
     drawings = Column(JSON)  # Array of drawing objects

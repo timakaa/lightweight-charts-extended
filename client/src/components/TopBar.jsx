@@ -17,7 +17,7 @@ const TopBar = ({ onOpenTickerModal }) => {
   const timeframe = useChartStore((state) => state.timeframe);
   const setTimeframe = useChartStore((state) => state.setTimeframe);
 
-  const isBacktestPage = location.pathname === "/backtest";
+  const isBacktestPage = location.pathname.startsWith("/backtest");
 
   // On mount, set ticker and timeframe from URL if present, otherwise set defaults if store is null
   useEffect(() => {

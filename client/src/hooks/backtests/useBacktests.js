@@ -1,6 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-const fetchBacktestsSummarized = async (page = 1, pageSize = 10, search = "") => {
+const fetchBacktestsSummarized = async (
+  page = 1,
+  pageSize = 10,
+  search = "",
+) => {
   const searchParams = new URLSearchParams({
     page,
     page_size: pageSize,
@@ -13,7 +17,7 @@ const fetchBacktestsSummarized = async (page = 1, pageSize = 10, search = "") =>
   const response = await fetch(
     `${
       import.meta.env.VITE_API_URL
-    }/api/v1/backtest/summarized?${searchParams.toString()}`
+    }/api/v1/backtest/summarized?${searchParams.toString()}`,
   );
   if (!response.ok) {
     throw new Error("Network response was not ok");
@@ -30,7 +34,7 @@ export const useBacktestsSummarized = (page, pageSize, search) => {
 
 const fetchBacktestById = async (backtestId) => {
   const response = await fetch(
-    `${import.meta.env.VITE_API_URL}/api/v1/backtest/${backtestId}`
+    `${import.meta.env.VITE_API_URL}/api/v1/backtest/${backtestId}`,
   );
   if (!response.ok) {
     throw new Error("Network response was not ok");
@@ -55,7 +59,7 @@ const createBacktest = async (backtestData) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(backtestData),
-    }
+    },
   );
   if (!response.ok) {
     throw new Error("Network response was not ok");
@@ -78,7 +82,7 @@ const deleteBacktest = async (backtestId) => {
     `${import.meta.env.VITE_API_URL}/api/v1/backtest/${backtestId}`,
     {
       method: "DELETE",
-    }
+    },
   );
   if (!response.ok) {
     throw new Error("Network response was not ok");
@@ -93,5 +97,48 @@ export const useDeleteBacktest = () => {
     onSuccess: () => {
       queryClient.invalidateQueries("backtestsSummarized");
     },
+  });
+};
+
+const fetchTradesByBacktestId = async (backtestId, page = 1, pageSize = 10) => {
+  const searchParams = new URLSearchParams({
+    page,
+    page_size: pageSize,
+  });
+
+  const response = await fetch(
+    `${
+      import.meta.env.VITE_API_URL
+    }/api/v1/backtest/${backtestId}/trades?${searchParams.toString()}`,
+  );
+  if (!response.ok) {
+    throw new Error("Network response was not ok");
+  }
+  return response.json();
+};
+
+export const useTradesByBacktestId = (backtestId, page = 1, pageSize = 10) => {
+  return useQuery({
+    queryKey: ["trades", backtestId, page, pageSize],
+    queryFn: () => fetchTradesByBacktestId(backtestId, page, pageSize),
+    enabled: !!backtestId,
+  });
+};
+
+const fetchBacktestStats = async (backtestId) => {
+  const response = await fetch(
+    `${import.meta.env.VITE_API_URL}/api/v1/backtest/${backtestId}/stats`,
+  );
+  if (!response.ok) {
+    throw new Error("Network response was not ok");
+  }
+  return response.json();
+};
+
+export const useBacktestStats = (backtestId) => {
+  return useQuery({
+    queryKey: ["backtestStats", backtestId],
+    queryFn: () => fetchBacktestStats(backtestId),
+    enabled: !!backtestId,
   });
 };

@@ -229,10 +229,10 @@ const TradingChart = () => {
             <div
               ref={chartContainerRef}
               className={`w-full -mb-1 h-full ${
-                pathname === "/backtest" ? "mb-[350px]" : ""
+                pathname.startsWith("/backtest") ? "mb-[350px]" : ""
               }`}
             />
-            {pathname === "/backtest" ? <Trades /> : ""}
+            {pathname.startsWith("/backtest") ? <Trades /> : ""}
             {(selectedLineId ||
               selectedBoxId ||
               selectedLongPositionId ||
