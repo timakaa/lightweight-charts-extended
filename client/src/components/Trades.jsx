@@ -86,7 +86,10 @@ const Trades = () => {
                 >
                   {trade.trade_type.toUpperCase()}
                 </span>
-                <h3 className='text-xs font-medium'>Trade #{index + 1}</h3>
+                <h3 className='text-xs font-medium'>
+                  {trade.symbol}{" "}
+                  <span className='text-gray-400'>#{index + 1}</span>
+                </h3>
               </div>
               <span
                 className={`text-xs font-mono ${

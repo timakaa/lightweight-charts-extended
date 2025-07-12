@@ -165,6 +165,7 @@ class BacktestRepository:
         for trade_data in trades_data:
             trade = Trade(
                 backtest_id=backtest.id,
+                symbol=trade_data.get("symbol"),
                 entry_time=(
                     datetime.fromisoformat(trade_data.get("entry_time"))
                     if trade_data.get("entry_time")
@@ -288,6 +289,7 @@ class BacktestRepository:
             "trades": [
                 {
                     "id": trade.id,
+                    "symbol": trade.symbol,
                     "entry_time": (
                         trade.entry_time.isoformat()
                         if trade.entry_time is not None

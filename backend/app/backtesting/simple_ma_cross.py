@@ -110,6 +110,7 @@ def run_backtest(data: pd.DataFrame, cash: float = 10000, symbol: str = SYMBOL) 
             short_trades += 1
 
         trade_info = {
+            "symbol": symbol,
             "entry_time": trade.EntryTime.isoformat(),
             "exit_time": trade.ExitTime.isoformat(),
             "entry_price": float(trade.EntryPrice),

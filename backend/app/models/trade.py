@@ -17,6 +17,7 @@ class Trade(Base):
     backtest_id = Column(Integer, ForeignKey("backtest_results.id"), nullable=False)
 
     entry_time = Column(DateTime, nullable=False)
+    symbol = Column(String, nullable=False)
     exit_time = Column(DateTime, nullable=True)
     entry_price = Column(Float, nullable=False)
     exit_price = Column(Float, nullable=True)
