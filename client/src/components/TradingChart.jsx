@@ -30,7 +30,7 @@ import TickerModal from "./TickerModal";
 import Trades from "./Trades";
 import { useLocation } from "react-router-dom";
 
-const TradingChart = () => {
+const TradingChart = ({ drawings }) => {
   const chartContainerRef = useRef();
   const { pathname } = useLocation();
 
@@ -134,6 +134,7 @@ const TradingChart = () => {
     chart,
     candlestickSeries,
     candleData,
+    drawingsData: drawings,
     setBoxesData,
     setLinesData,
     setLongPositionsData,

@@ -76,3 +76,12 @@ def get_backtest_symbols(backtest_id: int, db: Session = Depends(get_db)):
     if symbols is None:
         raise HTTPException(status_code=404, detail="Backtest not found")
     return symbols
+
+
+@router.get("/backtest/{backtest_id}/drawings")
+def get_backtest_drawings(backtest_id: int, db: Session = Depends(get_db)):
+    repository = BacktestRepository(db)
+    drawings = repository.get_drawings_by_backtest_id(backtest_id)
+    if drawings is None:
+        raise HTTPException(status_code=404, detail="Backtest not found")
+    return drawings

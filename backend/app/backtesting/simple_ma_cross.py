@@ -96,6 +96,7 @@ def run_backtest(data: pd.DataFrame, cash: float = 10000, symbol: str = SYMBOL) 
     for _, trade in trades_df.iterrows():
         pnl = float(trade.PnL)
         size = int(trade.Size)
+        entry_price = float(trade.EntryPrice)
         pnl_list.append(pnl)
 
         # Count trade types
@@ -109,25 +110,39 @@ def run_backtest(data: pd.DataFrame, cash: float = 10000, symbol: str = SYMBOL) 
         else:
             short_trades += 1
 
+        # Calculate stop loss and take profit based on strategy parameters
+        if size > 0:  # Long position
+            calculated_stop_loss = entry_price * (1 - 0.02)  # 2% stop loss
+            calculated_take_profit = entry_price * (1 + (0.02 * 2))  # 1:2 risk:reward
+        else:  # Short position
+            calculated_stop_loss = entry_price * (1 + 0.02)  # 2% stop loss
+            calculated_take_profit = entry_price * (1 - (0.02 * 2))  # 1:2 risk:reward
+
         trade_info = {
             "symbol": symbol,
-            "entry_time": trade.EntryTime.isoformat(),
-            "exit_time": trade.ExitTime.isoformat(),
-            "entry_price": float(trade.EntryPrice),
+            "entry_time": trade.EntryTime.tz_localize("UTC").isoformat(),
+            "exit_time": trade.ExitTime.tz_localize("UTC").isoformat(),
+            "entry_price": entry_price,
             "exit_price": float(trade.ExitPrice),
             "take_profit": (
-                float(trade.TP) if hasattr(trade, "TP") else None
-            ),  # Take profit level if exists
+                float(trade.TP)
+                if hasattr(trade, "TP") and not pd.isna(trade.TP)
+                else calculated_take_profit
+            ),
             "stop_loss": (
-                float(trade.SL) if hasattr(trade, "SL") else None
-            ),  # Stop loss level if exists
+                float(trade.SL)
+                if hasattr(trade, "SL") and not pd.isna(trade.SL)
+                else calculated_stop_loss
+            ),
             "pnl": pnl,
             "size": size,
             "type": "long" if size > 0 else "short",
             "pnl_percentage": float(trade.ReturnPct) * 100,
             "exit_reason": (
                 "take_profit"
-                if hasattr(trade, "TP") and trade.ExitPrice == trade.TP
+                if hasattr(trade, "TP")
+                and not pd.isna(trade.TP)
+                and trade.ExitPrice == trade.TP
                 else "stop_loss"
             ),
         }
@@ -164,13 +179,17 @@ def run_backtest(data: pd.DataFrame, cash: float = 10000, symbol: str = SYMBOL) 
                 "entryPrice": trade["entry_price"],
                 "targetPrice": (
                     trade["take_profit"]
-                    if trade["take_profit"]
+                    if trade["take_profit"] is not None
                     else trade["exit_price"]
                 ),
                 "stopPrice": (
                     trade["stop_loss"]
-                    if trade["stop_loss"]
-                    else trade["entry_price"] * 0.98
+                    if trade["stop_loss"] is not None
+                    else (
+                        trade["entry_price"] * 0.98
+                        if trade["entry_price"] is not None
+                        else None
+                    )
                 ),
             }
         else:  # short position
@@ -183,13 +202,17 @@ def run_backtest(data: pd.DataFrame, cash: float = 10000, symbol: str = SYMBOL) 
                 "entryPrice": trade["entry_price"],
                 "targetPrice": (
                     trade["take_profit"]
-                    if trade["take_profit"]
+                    if trade["take_profit"] is not None
                     else trade["exit_price"]
                 ),
                 "stopPrice": (
                     trade["stop_loss"]
-                    if trade["stop_loss"]
-                    else trade["entry_price"] * 1.02
+                    if trade["stop_loss"] is not None
+                    else (
+                        trade["entry_price"] * 1.02
+                        if trade["entry_price"] is not None
+                        else None
+                    )
                 ),
             }
         drawings.append(drawing)
@@ -199,8 +222,8 @@ def run_backtest(data: pd.DataFrame, cash: float = 10000, symbol: str = SYMBOL) 
         "trades": trades_list,
         "initial_balance": cash,
         "final_balance": stats["Equity Final [$]"],
-        "start_date": data.index[0].to_pydatetime(),
-        "end_date": data.index[-1].to_pydatetime(),
+        "start_date": data.index[0].tz_localize("UTC").to_pydatetime(),
+        "end_date": data.index[-1].tz_localize("UTC").to_pydatetime(),
         "total_trades": total_trades,
         "trading_days": trading_days,
         "win_rate": stats["Win Rate [%]"] / 100,
@@ -224,8 +247,8 @@ def run_backtest(data: pd.DataFrame, cash: float = 10000, symbol: str = SYMBOL) 
         "symbols": [
             {
                 "ticker": symbol,
-                "start_date": str(data.index[0]),
-                "end_date": str(data.index[-1]),
+                "start_date": data.index[0].tz_localize("UTC").isoformat(),
+                "end_date": data.index[-1].tz_localize("UTC").isoformat(),
             }
         ],
     }

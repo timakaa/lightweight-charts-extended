@@ -159,5 +159,5 @@ export function useCreateDrawings({
       timeframe,
       drawingsCreated: true,
     };
-  }, [chart, candlestickSeries, candleData, storeDrawings]);
+  }, [chart, candlestickSeries, candleData, storeDrawings, drawingsData]);
 }

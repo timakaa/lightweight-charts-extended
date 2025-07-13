@@ -391,3 +391,13 @@ class BacktestRepository:
             }
             for symbol in backtest.symbols
         ]
+
+    def get_drawings_by_backtest_id(self, backtest_id: int):
+        backtest = (
+            self.db.query(BacktestResult)
+            .filter(BacktestResult.id == backtest_id)
+            .first()
+        )
+        if not backtest:
+            return None
+        return self._convert_nan_to_none(backtest.drawings)

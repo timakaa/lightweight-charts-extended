@@ -160,3 +160,21 @@ export const useBacktestSymbols = (backtestId) => {
     enabled: !!backtestId,
   });
 };
+
+const fetchBacktestDrawings = async (backtestId) => {
+  const response = await fetch(
+    `${import.meta.env.VITE_API_URL}/api/v1/backtest/${backtestId}/drawings`,
+  );
+  if (!response.ok) {
+    throw new Error("Network response was not ok");
+  }
+  return response.json();
+};
+
+export const useBacktestDrawings = (backtestId) => {
+  return useQuery({
+    queryKey: ["backtestDrawings", backtestId],
+    queryFn: () => fetchBacktestDrawings(backtestId),
+    enabled: !!backtestId,
+  });
+};
