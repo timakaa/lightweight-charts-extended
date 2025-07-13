@@ -151,6 +151,49 @@ def run_backtest(data: pd.DataFrame, cash: float = 10000, symbol: str = SYMBOL) 
     else:
         value_at_risk = 0
 
+    # Create drawings array from trades
+    drawings = []
+    for i, trade in enumerate(trades_list):
+        if trade["type"] == "long":
+            drawing = {
+                "type": "long_position",
+                "id": f"trade_{i}",
+                "ticker": symbol,
+                "startTime": trade["entry_time"],
+                "endTime": trade["exit_time"],
+                "entryPrice": trade["entry_price"],
+                "targetPrice": (
+                    trade["take_profit"]
+                    if trade["take_profit"]
+                    else trade["exit_price"]
+                ),
+                "stopPrice": (
+                    trade["stop_loss"]
+                    if trade["stop_loss"]
+                    else trade["entry_price"] * 0.98
+                ),
+            }
+        else:  # short position
+            drawing = {
+                "type": "short_position",
+                "id": f"trade_{i}",
+                "ticker": symbol,
+                "startTime": trade["entry_time"],
+                "endTime": trade["exit_time"],
+                "entryPrice": trade["entry_price"],
+                "targetPrice": (
+                    trade["take_profit"]
+                    if trade["take_profit"]
+                    else trade["exit_price"]
+                ),
+                "stopPrice": (
+                    trade["stop_loss"]
+                    if trade["stop_loss"]
+                    else trade["entry_price"] * 1.02
+                ),
+            }
+        drawings.append(drawing)
+
     results = {
         "title": f"SMA Cross Strategy Backtest",
         "trades": trades_list,
@@ -176,7 +219,7 @@ def run_backtest(data: pd.DataFrame, cash: float = 10000, symbol: str = SYMBOL) 
         "loss_trades": loss_trades,
         "long_trades": long_trades,
         "short_trades": short_trades,
-        "drawings": [],  # Empty array for drawings
+        "drawings": drawings,
         "is_live": False,  # Always False for backtests
         "symbols": [
             {
