@@ -30,7 +30,6 @@ function useShortPositionDrawingTool(
       activeResizeHandleRef,
     );
     return () => {
-      shortPositionDrawingTool.current?.remove();
       shortPositionDrawingTool.current = null;
     };
   }, [

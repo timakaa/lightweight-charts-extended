@@ -31,7 +31,6 @@ function useRectangleDrawingTool(
       candleData,
     );
     return () => {
-      rectangleDrawingTool.current?.remove();
       rectangleDrawingTool.current = null;
     };
   }, [

@@ -30,7 +30,6 @@ function useLongPositionDrawingTool(
       activeResizeHandleRef,
     );
     return () => {
-      longPositionDrawingTool.current?.remove();
       longPositionDrawingTool.current = null;
     };
   }, [
