@@ -34,8 +34,7 @@ export const onDrawing = ({
 
       const addedDrawings = drawingDatas.map((data) => {
         if (!data.id) {
-          console.error("Drawing data missing ID from backend:", data);
-          return null;
+          console.warn("Drawing data missing ID from backend:", data);
         }
         return addDrawing({
           ...data,
@@ -75,11 +74,11 @@ export const onDrawing = ({
             ? rectangleDrawingTool.current?._rectangles
             : drawing.type === "line"
             ? lineDrawingTool.current?._lines
-            : drawing.type === "long-position"
+            : drawing.type === "long_position"
             ? longPositionDrawingTool.current?._positions
-            : drawing.type === "short-position"
+            : drawing.type === "short_position"
             ? shortPositionDrawingTool.current?._positions
-            : drawing.type === "fib-retracement"
+            : drawing.type === "fib_retracement"
             ? fibRetracementDrawingTool.current?._retracements
             : null;
 

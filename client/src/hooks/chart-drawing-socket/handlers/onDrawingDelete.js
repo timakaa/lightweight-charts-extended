@@ -26,7 +26,7 @@ export const onDrawingDelete = ({
       );
       if (line) lineDrawingTool.current._removeLine(line);
     } else if (
-      drawing.type === "long-position" &&
+      drawing.type === "long_position" &&
       longPositionDrawingTool.current
     ) {
       const pos = Array.from(longPositionDrawingTool.current._positions).find(
@@ -34,7 +34,7 @@ export const onDrawingDelete = ({
       );
       if (pos) longPositionDrawingTool.current._removePosition(pos);
     } else if (
-      drawing.type === "short-position" &&
+      drawing.type === "short_position" &&
       shortPositionDrawingTool.current
     ) {
       const pos = Array.from(shortPositionDrawingTool.current._positions).find(
@@ -42,7 +42,7 @@ export const onDrawingDelete = ({
       );
       if (pos) shortPositionDrawingTool.current._removePosition(pos);
     } else if (
-      drawing.type === "fib-retracement" &&
+      drawing.type === "fib_retracement" &&
       fibRetracementDrawingTool.current
     ) {
       const fib = Array.from(

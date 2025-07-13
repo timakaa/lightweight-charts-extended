@@ -155,26 +155,12 @@ function useShortPositionDrawingTool(
         const stopPrice = entryPrice + risk;
         const targetPrice = entryPrice - risk;
 
-        // Create enhanced points with logical indices
-        const entry = {
-          time: entryPoint.time,
-          price: entryPrice,
-          logicalIndex: entryPoint.logicalIndex,
-        };
-        const target = {
-          time: targetTime,
-          price: targetPrice,
-          logicalIndex: targetLogicalIndex,
-        };
-        const stop = {
-          time: targetTime,
-          price: stopPrice,
-          logicalIndex: targetLogicalIndex,
-        };
         const newPosition = shortPositionDrawingTool.current._createPosition(
-          entry,
-          target,
-          stop,
+          entryPrice,
+          targetPrice,
+          stopPrice,
+          entryPoint.time,
+          targetTime,
         );
 
         // Attach the position to the series

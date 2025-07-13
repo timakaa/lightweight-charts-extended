@@ -60,18 +60,11 @@ export class LongPositionDrawingTool extends BasePositionDrawingTool {
     const positionData = {
       type: "long_position",
       ticker: ticker.replace("/", ""),
-      entry: {
-        time: new Date(position._entryPrice.time * 1000).toISOString(),
-        price: position._entryPrice.price,
-      },
-      target: {
-        time: new Date(position._targetPrice.time * 1000).toISOString(),
-        price: position._targetPrice.price,
-      },
-      stop: {
-        time: new Date(position._stopPrice.time * 1000).toISOString(),
-        price: position._stopPrice.price,
-      },
+      startTime: new Date(position._startTime * 1000).toISOString(),
+      endTime: new Date(position._endTime * 1000).toISOString(),
+      entryPrice: position._entryPrice.price,
+      targetPrice: position._targetPrice.price,
+      stopPrice: position._stopPrice.price,
       primitiveId: position.id,
       style: {
         // Add any style properties if needed
@@ -94,8 +87,14 @@ export class LongPositionDrawingTool extends BasePositionDrawingTool {
   }
 
   // Override the base class's _createPosition to add store persistence
-  _createPosition(entry, target, stop) {
-    const position = super._createPosition(entry, target, stop);
+  _createPosition(entryPrice, targetPrice, stopPrice, startTime, endTime) {
+    const position = super._createPosition(
+      entryPrice,
+      targetPrice,
+      stopPrice,
+      startTime,
+      endTime,
+    );
     this._saveLongPositionToStore(position);
     return position;
   }

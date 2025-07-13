@@ -82,6 +82,26 @@ async def test_multiple_drawings():
             "startPrice": 151.68,
             "endPrice": 152.79,
         },
+        {
+            "id": "long_position-1752069870768-7623d884-f9c1-44bc-b35b-a62074510b72",
+            "type": "long_position",
+            "ticker": "SOLUSDT",
+            "startTime": "2025-07-13T23:00:00Z",
+            "endTime": "2025-07-13T02:00:00Z",
+            "entryPrice": 171.31,
+            "targetPrice": 184.93,
+            "stopPrice": 168.0,
+        },
+        {
+            "id": "short_position-1752069870768-7623d884-f9c1-44bc-b35b-a62074510b72",
+            "type": "short_position",
+            "ticker": "SOLUSDT",
+            "startTime": "2025-07-13T14:00:00Z",
+            "endTime": "2025-07-13T10:00:00Z",
+            "entryPrice": 182.04,
+            "targetPrice": 173.19,
+            "stopPrice": 187.14,
+        },
     ]
 
     await chart_service.emit_chart_drawing(
