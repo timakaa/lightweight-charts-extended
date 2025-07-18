@@ -28,7 +28,7 @@ export const useChartFitting = (
 
     if (!fitDoneRef.current.done && realCandles.length >= barsToShow) {
       requestAnimationFrame(() => {
-        fitChartToRecentBars(chart, series, combinedData, barsToShow, 10);
+        fitChartToRecentBars(chart, series, combinedData, barsToShow);
         fitDoneRef.current.done = true;
         prevSymbolRef.current = symbol;
         prevTimeframeRef.current = timeframe;

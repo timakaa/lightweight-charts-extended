@@ -1,4 +1,4 @@
-import { useRef, useMemo } from "react";
+import { useRef, useMemo, useEffect } from "react";
 import chartDataUrl from "../charts/SOLUSDT-1h-bybit.csv?url";
 import { useChart } from "../hooks/useChart";
 import { useCandlestickSeries } from "../hooks/useCandlestickSeries";
@@ -28,11 +28,19 @@ import { useUndeliveredDrawings } from "../hooks/useUndeliveredDrawings";
 import { getSymbol } from "../helpers/symbol";
 import TickerModal from "./TickerModal";
 import Trades from "./Trades";
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
+import { fitChartToRecentBars } from "../helpers/fitChartToRecentBars";
 
 const TradingChart = ({ drawings }) => {
   const chartContainerRef = useRef();
   const { pathname } = useLocation();
+  const { backtestId } = useParams();
+
+  useEffect(() => {
+    if (backtestId) {
+      fitChartToRecentBars(chart, candlestickSeries, candleData);
+    }
+  }, [backtestId]);
 
   const chart = useChart(chartContainerRef);
   const [candlestickSeries, candleData] = useCandlestickSeries(
