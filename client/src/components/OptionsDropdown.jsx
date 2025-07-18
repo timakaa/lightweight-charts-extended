@@ -3,10 +3,11 @@ import { Menu, Transition } from "@headlessui/react";
 import Trash from "./icons/Trash";
 import Edit from "./icons/Edit";
 import { useDeleteBacktest } from "../hooks/backtests/useBacktests";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const OptionsDropdown = ({ backtestId }) => {
   const navigate = useNavigate();
+  const { backtestId: currentBacktestId } = useParams();
   const { mutate: deleteBacktest } = useDeleteBacktest();
 
   const onEdit = () => {
@@ -16,13 +17,16 @@ const OptionsDropdown = ({ backtestId }) => {
   const onDelete = () => {
     deleteBacktest(backtestId, {
       onSuccess: () => {
-        navigate("/backtest");
+        // Only navigate back if we're deleting the currently viewed backtest
+        if (String(backtestId) === String(currentBacktestId)) {
+          navigate("/backtest");
+        }
       },
     });
   };
 
   return (
-    <Menu as='div' className='relative' data-menu='true'>
+    <Menu as='div' className='relative z-50' data-menu='true'>
       <Menu.Button className='p-1 hover:bg-[#1e222d] rounded-full transition-colors'>
         <svg
           xmlns='http://www.w3.org/2000/svg'
@@ -34,7 +38,7 @@ const OptionsDropdown = ({ backtestId }) => {
         </svg>
       </Menu.Button>
       <Transition
-        as={Fragment}
+        as='div'
         enter='transition ease-out duration-100'
         enterFrom='transform opacity-0 scale-95'
         enterTo='transform opacity-100 scale-100'
