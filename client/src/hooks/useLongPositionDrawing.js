@@ -18,7 +18,7 @@ import {
   useViewportDrawings,
   getPositionTimeRange,
 } from "./useViewportDrawings";
-import { useOptimizedSelection } from "./useOptimizedSelection";
+import { useOptimizedPositionSelection } from "./useOptimizedSelection";
 
 // Integrates all hooks and logic for long position drawing, selection, drag, resize, and keyboard shortcuts
 export const useLongPositionDrawing = (
@@ -109,7 +109,7 @@ export const useLongPositionDrawing = (
 
   // Use optimized selection management
   const { updateSelection, updateEntryTappedLogic, resetSelection } =
-    useOptimizedSelection(longPositionsData);
+    useOptimizedPositionSelection(longPositionsData);
 
   // Optimized selection management - only update affected drawings
   React.useEffect(() => {

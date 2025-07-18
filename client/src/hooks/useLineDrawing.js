@@ -13,6 +13,7 @@ import useLineChartEvents from "./line/useLineChartEvents";
 import useLineDrag from "./line/useLineDrag";
 import useLineResize from "./line/useLineResize";
 import useLineCursor from "./line/useLineCursor";
+import { useOptimizedLineSelection } from "./useOptimizedSelection";
 
 // useLineDrawing integrates all hooks and logic for line drawing, selection, drag, resize, and keyboard shortcuts
 export const useLineDrawing = (chart, candlestickSeries, candleData) => {
@@ -80,27 +81,14 @@ export const useLineDrawing = (chart, candlestickSeries, candleData) => {
     candleData,
   );
 
-  // Show/hide handles on hover/selection
-  const prevLineState = useRef({ selectedLineId: null, hoveredLineId: null });
+  // Use optimized selection management for lines
+  const { updateSelection, resetSelection } =
+    useOptimizedLineSelection(linesData);
+
+  // Optimized selection management - only update affected drawings
   useEffect(() => {
-    const prev = prevLineState.current;
-    const curr = { selectedLineId, hoveredLineId };
-
-    linesDataRef.current.forEach((line) => {
-      const isSelected = line.id === curr.selectedLineId;
-      const isHovered = line.id === curr.hoveredLineId;
-      const wasSelected = line.id === prev.selectedLineId;
-      const wasHovered = line.id === prev.hoveredLineId;
-
-      const shouldShowHandles = isSelected || isHovered;
-      const wasShowingHandles = wasSelected || wasHovered;
-      if (shouldShowHandles !== wasShowingHandles) {
-        line.applyOptions({ showHandles: shouldShowHandles });
-      }
-    });
-
-    prevLineState.current = curr;
-  }, [selectedLineId, hoveredLineId]);
+    updateSelection(selectedLineId, hoveredLineId);
+  }, [selectedLineId, hoveredLineId, updateSelection]);
 
   // Subscribe to chart click and crosshair move events for selection/hover
   useLineChartEvents(

@@ -4,7 +4,7 @@
 // It integrates with the chart and candlestick series, and coordinates user interactions (mouse, keyboard) with the box drawing tool.
 // The hook exposes the current boxes data and provides functions to delete selected or all boxes.
 
-import React, { useRef, useCallback } from "react";
+import React, { useRef, useCallback, useEffect } from "react";
 import { useToolStore, TOOL_BOX, TOOL_CROSSHAIR } from "../store/tool";
 import useBoxState from "./rectangle/useBoxState";
 import useBoxDrag from "./rectangle/useBoxDrag";
@@ -17,6 +17,7 @@ import {
 } from "./rectangle/tools/boxDeleteTools";
 import useBoxResize from "./rectangle/useBoxResize";
 import useBoxCursor from "./rectangle/useBoxCursor";
+import { useOptimizedBoxSelection } from "./useOptimizedSelection";
 
 export const useBoxDrawing = (chart, candlestickSeries, candleData) => {
   // Use the new box state management hook
@@ -64,23 +65,14 @@ export const useBoxDrawing = (chart, candlestickSeries, candleData) => {
     }
   }, [selectedBoxId, rectangleDrawingTool]);
 
-  // Track previous selection/hover state to update box handle visibility
-  const prevBoxState = useRef({ selectedBoxId: null, hoveredBoxId: null });
-  // Handles showing/hiding handles for selected/hovered boxes
-  // (This logic is still local, as it is tightly coupled to the state)
-  React.useEffect(() => {
-    const prev = prevBoxState.current;
-    const curr = { selectedBoxId, hoveredBoxId };
-    boxesDataRef.current.forEach((box) => {
-      const shouldShow =
-        box.id === curr.selectedBoxId || box.id === curr.hoveredBoxId;
-      const wasShown =
-        box.id === prev.selectedBoxId || box.id === prev.hoveredBoxId;
-      if (shouldShow && !wasShown) box.applyOptions({ showHandles: true });
-      if (!shouldShow && wasShown) box.applyOptions({ showHandles: false });
-    });
-    prevBoxState.current = curr;
-  }, [selectedBoxId, hoveredBoxId]);
+  // Use optimized selection management for boxes
+  const { updateSelection, resetSelection } =
+    useOptimizedBoxSelection(boxesData);
+
+  // Optimized selection management - only update affected drawings
+  useEffect(() => {
+    updateSelection(selectedBoxId, hoveredBoxId);
+  }, [selectedBoxId, hoveredBoxId, updateSelection]);
 
   // Use the new resize logic
   useBoxResize(

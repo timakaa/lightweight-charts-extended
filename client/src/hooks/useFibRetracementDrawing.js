@@ -1,5 +1,5 @@
 // useFibRetracementDrawing.js - React hook for managing the lifecycle of the FibRetracementDrawingTool
-import React, { useRef, useCallback } from "react";
+import React, { useRef, useCallback, useEffect } from "react";
 import { FibRetracementDrawingTool } from "../drawing-tools/fib-retracement";
 import { TOOL_FIB_RETRACEMENT, TOOL_CROSSHAIR } from "../store/tool";
 import useFibRetracementState from "./fib-retracement/useFibRetracementState";
@@ -13,6 +13,7 @@ import useFibRetracementKeyboardShortcuts from "./fib-retracement/useFibRetracem
 import useFibRetracementDrawingTool from "./fib-retracement/useFibRetracementDrawingTool";
 import useFibRetracementResize from "./fib-retracement/useFibRetracementResize";
 import useFibRetracementCursor from "./fib-retracement/useFibRetracementCursor";
+import { useOptimizedFibSelection } from "./useOptimizedSelection";
 
 function useFibRetracementDrawing(
   chart,
@@ -89,26 +90,14 @@ function useFibRetracementDrawing(
     }
   }, [selectedFibRetracementId, fibRetracementDrawingTool]);
 
-  // Track previous selection/hover state to update fib handle visibility
-  const prevFibState = React.useRef({
-    selectedFibRetracementId: null,
-    hoveredFibRetracementId: null,
-  });
-  React.useEffect(() => {
-    const prev = prevFibState.current;
-    const curr = { selectedFibRetracementId, hoveredFibRetracementId };
-    retracementsDataRef.current.forEach((fib) => {
-      const shouldShow =
-        fib.id === curr.selectedFibRetracementId ||
-        fib.id === curr.hoveredFibRetracementId;
-      const wasShown =
-        fib.id === prev.selectedFibRetracementId ||
-        fib.id === prev.hoveredFibRetracementId;
-      if (shouldShow && !wasShown) fib.applyOptions({ showHandles: true });
-      if (!shouldShow && wasShown) fib.applyOptions({ showHandles: false });
-    });
-    prevFibState.current = curr;
-  }, [selectedFibRetracementId, hoveredFibRetracementId]);
+  // Use optimized selection management for fibonacci retracements
+  const { updateSelection, resetSelection } =
+    useOptimizedFibSelection(retracementsData);
+
+  // Optimized selection management - only update affected drawings
+  useEffect(() => {
+    updateSelection(selectedFibRetracementId, hoveredFibRetracementId);
+  }, [selectedFibRetracementId, hoveredFibRetracementId, updateSelection]);
 
   // Delete the currently selected fib retracement (if any)
   const deleteSelectedFibRetracement = useCallback(() => {
