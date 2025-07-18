@@ -38,7 +38,6 @@ export function createLongPosition(
   const targetPrice = longPositionData.targetPrice;
   const stopPrice = longPositionData.stopPrice;
 
-  // Create long position instance with activeResizeHandleRef for handle hiding
   const longPosition = new LongPosition(
     entryPrice,
     targetPrice,
@@ -51,7 +50,7 @@ export function createLongPosition(
     activeResizeHandleRef,
     candleData,
     { showHandles: false }, // Disable handles for programmatic creation
-    longPositionData.id, // Pass through the id
+    longPositionData.id, // Use consistent ID
   );
 
   // Attach to the series
@@ -67,12 +66,8 @@ export function createLongPosition(
     longPositionDrawingTool.current._positions.add(longPosition);
   }
 
-  // Update store IDs if this position was loaded from store
-  if (longPositionData.id) {
-    // This position was loaded from store - update the primitive ID in store to match new primitive
-    const { updateDrawing } = useDrawingsStore.getState();
-    updateDrawing(longPositionData.id, { primitiveId: longPosition.id });
-  }
+  // Note: We should NOT update the primitiveId in store when loading from store
+  // The primitiveId should remain consistent for drag/resize updates to work
 
   return longPosition;
 }

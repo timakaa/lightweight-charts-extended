@@ -18,6 +18,10 @@ import {
 import useBoxResize from "./rectangle/useBoxResize";
 import useBoxCursor from "./rectangle/useBoxCursor";
 import { useOptimizedBoxSelection } from "./useOptimizedSelection";
+import {
+  useViewportDrawings,
+  getRectangleTimeRange,
+} from "./useViewportDrawings";
 
 export const useBoxDrawing = (chart, candlestickSeries, candleData) => {
   // Use the new box state management hook
@@ -65,6 +69,16 @@ export const useBoxDrawing = (chart, candlestickSeries, candleData) => {
     }
   }, [selectedBoxId, rectangleDrawingTool]);
 
+  // Use viewport-based drawing management for performance
+  const { visibleDrawings: visibleBoxes } = useViewportDrawings(
+    chart,
+    boxesData,
+    getRectangleTimeRange,
+  );
+
+  // Track previously attached boxes to handle deletions properly
+  const previouslyAttachedRef = useRef(new Set());
+
   // Use optimized selection management for boxes
   const { updateSelection, resetSelection } =
     useOptimizedBoxSelection(boxesData);
@@ -73,6 +87,44 @@ export const useBoxDrawing = (chart, candlestickSeries, candleData) => {
   useEffect(() => {
     updateSelection(selectedBoxId, hoveredBoxId);
   }, [selectedBoxId, hoveredBoxId, updateSelection]);
+
+  // Re-attach only visible boxes to the chart/series when chart or series changes
+  useEffect(() => {
+    // Skip re-attachment when no chart/series available
+    if (!chart || !candlestickSeries) return;
+
+    // Get current box IDs for comparison
+    const currentBoxIds = new Set(boxesData.map((box) => box.id));
+
+    // Detach boxes that are no longer in the data (deleted boxes)
+    previouslyAttachedRef.current.forEach((attachedBox) => {
+      if (!currentBoxIds.has(attachedBox.id)) {
+        // Box was deleted - force detach it
+        if (attachedBox._series && attachedBox._series.detachPrimitive) {
+          attachedBox._series.detachPrimitive(attachedBox);
+        }
+      }
+    });
+
+    // Detach all current boxes first (clean slate)
+    boxesData.forEach((box) => {
+      if (box._series && box._series.detachPrimitive) {
+        box._series.detachPrimitive(box);
+      }
+    });
+
+    // Attach only visible boxes
+    visibleBoxes.forEach((box) => {
+      // Attach to the new series
+      candlestickSeries.attachPrimitive(box);
+      // Update references
+      box._series = candlestickSeries;
+      box._chart = chart;
+    });
+
+    // Update tracking of attached boxes
+    previouslyAttachedRef.current = new Set(visibleBoxes);
+  }, [chart, candlestickSeries, boxesData, visibleBoxes]);
 
   // Use the new resize logic
   useBoxResize(

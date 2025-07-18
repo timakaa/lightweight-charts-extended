@@ -14,6 +14,7 @@ import useFibRetracementDrawingTool from "./fib-retracement/useFibRetracementDra
 import useFibRetracementResize from "./fib-retracement/useFibRetracementResize";
 import useFibRetracementCursor from "./fib-retracement/useFibRetracementCursor";
 import { useOptimizedFibSelection } from "./useOptimizedSelection";
+import { useViewportDrawings, getLineTimeRange } from "./useViewportDrawings";
 
 function useFibRetracementDrawing(
   chart,
@@ -90,6 +91,16 @@ function useFibRetracementDrawing(
     }
   }, [selectedFibRetracementId, fibRetracementDrawingTool]);
 
+  // Use viewport-based drawing management for performance
+  const { visibleDrawings: visibleFibRetracements } = useViewportDrawings(
+    chart,
+    retracementsData,
+    getLineTimeRange, // Fib retracements use same time range logic as lines
+  );
+
+  // Track previously attached fib retracements to handle deletions properly
+  const previouslyAttachedRef = useRef(new Set());
+
   // Use optimized selection management for fibonacci retracements
   const { updateSelection, resetSelection } =
     useOptimizedFibSelection(retracementsData);
@@ -98,6 +109,44 @@ function useFibRetracementDrawing(
   useEffect(() => {
     updateSelection(selectedFibRetracementId, hoveredFibRetracementId);
   }, [selectedFibRetracementId, hoveredFibRetracementId, updateSelection]);
+
+  // Re-attach only visible fib retracements to the chart/series when chart or series changes
+  useEffect(() => {
+    // Skip re-attachment when no chart/series available
+    if (!chart || !candlestickSeries) return;
+
+    // Get current fib IDs for comparison
+    const currentFibIds = new Set(retracementsData.map((fib) => fib.id));
+
+    // Detach fibs that are no longer in the data (deleted fibs)
+    previouslyAttachedRef.current.forEach((attachedFib) => {
+      if (!currentFibIds.has(attachedFib.id)) {
+        // Fib was deleted - force detach it
+        if (attachedFib._series && attachedFib._series.detachPrimitive) {
+          attachedFib._series.detachPrimitive(attachedFib);
+        }
+      }
+    });
+
+    // Detach all current fibs first (clean slate)
+    retracementsData.forEach((fib) => {
+      if (fib._series && fib._series.detachPrimitive) {
+        fib._series.detachPrimitive(fib);
+      }
+    });
+
+    // Attach only visible fibs
+    visibleFibRetracements.forEach((fib) => {
+      // Attach to the new series
+      candlestickSeries.attachPrimitive(fib);
+      // Update references
+      fib._series = candlestickSeries;
+      fib._chart = chart;
+    });
+
+    // Update tracking of attached fibs
+    previouslyAttachedRef.current = new Set(visibleFibRetracements);
+  }, [chart, candlestickSeries, retracementsData, visibleFibRetracements]);
 
   // Delete the currently selected fib retracement (if any)
   const deleteSelectedFibRetracement = useCallback(() => {
