@@ -102,7 +102,7 @@ if os.name == "nt":  # for Windows
 params: List[Dict[str, Any]] = [
     {
         "exchange": "bybit",
-        "symbol": "solusdt",
+        "symbol": "btcusdt",
         "timeframe": [
             Timeframe.HOUR_1,
         ],

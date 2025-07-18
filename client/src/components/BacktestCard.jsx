@@ -1,5 +1,6 @@
 import React from "react";
 import { useParams } from "react-router-dom";
+import OptionsDropdown from "./OptionsDropdown";
 
 const BacktestCard = ({ backtest, onClick }) => {
   const { backtestId } = useParams();
@@ -24,10 +25,18 @@ const BacktestCard = ({ backtest, onClick }) => {
     });
   };
 
+  const handleCardClick = (e) => {
+    // Prevent card click when clicking on the menu
+    if (e.target.closest('[data-menu="true"]')) {
+      return;
+    }
+    onClick();
+  };
+
   return (
     <div
-      onClick={onClick}
-      className={`bg-[#0D0E10] p-4 rounded-lg border transition-colors cursor-pointer ${
+      onClick={handleCardClick}
+      className={`bg-[#0D0E10] p-4 rounded-lg border transition-colors cursor-pointer relative ${
         isActive
           ? "border-blue-500 ring-2 ring-blue-500 bg-blue-500/20"
           : "border-[#2a2e39] hover:border-[#3a3f4c]"
@@ -48,9 +57,12 @@ const BacktestCard = ({ backtest, onClick }) => {
       </style>
       <div className='flex justify-between items-center mb-2'>
         <span className='text-white font-medium'>{backtest.title}</span>
-        <span className={getProfitLossColor(backtest.total_pnl_percentage)}>
-          {backtest.total_pnl_percentage.toFixed(2)}%
-        </span>
+        <div className='flex items-center gap-2'>
+          <span className={getProfitLossColor(backtest.total_pnl_percentage)}>
+            {backtest.total_pnl_percentage.toFixed(2)}%
+          </span>
+          <OptionsDropdown backtestId={backtest.id} />
+        </div>
       </div>
       <div className='flex justify-between items-center'>
         <span className='text-sm text-gray-400'>

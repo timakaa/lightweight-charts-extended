@@ -14,7 +14,8 @@ from app.repositories.backtest_repository import BacktestRepository
 from datetime import datetime
 
 # Configuration
-SYMBOL = "SOLUSDT"  # Trading symbol
+SYMBOL = "BTCUSDT"  # Trading symbol
+SAVE_TO_DB = False
 
 
 class MACrossStrategy(Strategy):
@@ -233,10 +234,14 @@ def run_backtest(data: pd.DataFrame, cash: float = 10000, symbol: str = SYMBOL) 
         "profit_factor": stats["Profit Factor"],
         "value_at_risk": value_at_risk,
         "total_pnl": stats["Equity Final [$]"] - cash,
-        "average_pnl": (stats["Equity Final [$]"] - cash) / total_trades,
+        "average_pnl": (
+            (stats["Equity Final [$]"] - cash) / total_trades if total_trades > 0 else 0
+        ),
         "total_pnl_percentage": ((stats["Equity Final [$]"] - cash) / cash) * 100,
         "average_pnl_percentage": (
-            (((stats["Equity Final [$]"] - cash) / cash) * 100) / total_trades
+            ((((stats["Equity Final [$]"] - cash) / cash) * 100) / total_trades)
+            if total_trades > 0
+            else 0
         ),
         "profitable_trades": profitable_trades,
         "loss_trades": loss_trades,
@@ -257,9 +262,11 @@ def run_backtest(data: pd.DataFrame, cash: float = 10000, symbol: str = SYMBOL) 
     db = next(get_db())
     repository = BacktestRepository(db)
     try:
-        saved_backtest = repository.create(results, numerate_title=True)
-        results["id"] = saved_backtest.id
-        pass
+        if SAVE_TO_DB:
+            saved_backtest = repository.create(results, numerate_title=True)
+            results["id"] = saved_backtest.id
+        else:
+            pass
     finally:
         db.close()
 
@@ -290,7 +297,7 @@ if __name__ == "__main__":
     data = data.sort_index().drop_duplicates()
 
     # Run backtest
-    results = run_backtest(data, symbol=SYMBOL)
+    results = run_backtest(data, 1_000_000, symbol=SYMBOL)
     print("\nBacktest Results:")
     for key, value in results.items():
         print(f"{key}: {value}")
