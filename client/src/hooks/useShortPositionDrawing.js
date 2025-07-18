@@ -141,6 +141,9 @@ export const useShortPositionDrawing = (
     resetSelection();
   }, [timeframe, ticker, resetSelection]);
 
+  // Track previously attached positions to handle deletions properly
+  const previouslyAttachedRef = useRef(new Set());
+
   // Re-attach only visible short positions to the chart/series when chart or series changes
   // This is needed for real-time animation during resize operations
   useEffect(() => {
@@ -149,10 +152,26 @@ export const useShortPositionDrawing = (
       return;
     }
 
-    // Skip re-attachment when no positions exist
-    if (!chart || !candlestickSeries || shortPositionsData.length === 0) return;
+    // Skip re-attachment when no chart/series available
+    if (!chart || !candlestickSeries) return;
 
-    // Detach all positions first
+    // Get current position IDs for comparison
+    const currentPositionIds = new Set(shortPositionsData.map((pos) => pos.id));
+    const visiblePositionIds = new Set(
+      visibleShortPositions.map((pos) => pos.id),
+    );
+
+    // Detach positions that are no longer in the data (deleted positions)
+    previouslyAttachedRef.current.forEach((attachedPos) => {
+      if (!currentPositionIds.has(attachedPos.id)) {
+        // Position was deleted - force detach it
+        if (attachedPos._series && attachedPos._series.detachPrimitive) {
+          attachedPos._series.detachPrimitive(attachedPos);
+        }
+      }
+    });
+
+    // Detach all current positions first (clean slate)
     shortPositionsData.forEach((pos) => {
       if (pos._series && pos._series.detachPrimitive) {
         pos._series.detachPrimitive(pos);
@@ -167,6 +186,9 @@ export const useShortPositionDrawing = (
       pos._series = candlestickSeries;
       pos._chart = chart;
     });
+
+    // Update tracking of attached positions
+    previouslyAttachedRef.current = new Set(visibleShortPositions);
   }, [chart, candlestickSeries, shortPositionsData, visibleShortPositions]);
 
   // Enable resizing of short position handles

@@ -141,6 +141,9 @@ export const useLongPositionDrawing = (
     resetSelection();
   }, [timeframe, ticker, resetSelection]);
 
+  // Track previously attached positions to handle deletions properly
+  const previouslyAttachedRef = useRef(new Set());
+
   // Re-attach only visible long positions to the chart/series when chart or series changes
   // This is needed for real-time animation during resize operations
   useEffect(() => {
@@ -149,10 +152,26 @@ export const useLongPositionDrawing = (
       return;
     }
 
-    // Skip re-attachment when no positions exist
-    if (!chart || !candlestickSeries || longPositionsData.length === 0) return;
+    // Skip re-attachment when no chart/series available
+    if (!chart || !candlestickSeries) return;
 
-    // Detach all positions first
+    // Get current position IDs for comparison
+    const currentPositionIds = new Set(longPositionsData.map((pos) => pos.id));
+    const visiblePositionIds = new Set(
+      visibleLongPositions.map((pos) => pos.id),
+    );
+
+    // Detach positions that are no longer in the data (deleted positions)
+    previouslyAttachedRef.current.forEach((attachedPos) => {
+      if (!currentPositionIds.has(attachedPos.id)) {
+        // Position was deleted - force detach it
+        if (attachedPos._series && attachedPos._series.detachPrimitive) {
+          attachedPos._series.detachPrimitive(attachedPos);
+        }
+      }
+    });
+
+    // Detach all current positions first (clean slate)
     longPositionsData.forEach((pos) => {
       if (pos._series && pos._series.detachPrimitive) {
         pos._series.detachPrimitive(pos);
@@ -167,6 +186,9 @@ export const useLongPositionDrawing = (
       pos._series = candlestickSeries;
       pos._chart = chart;
     });
+
+    // Update tracking of attached positions
+    previouslyAttachedRef.current = new Set(visibleLongPositions);
   }, [chart, candlestickSeries, longPositionsData, visibleLongPositions]);
 
   // Enable resizing of long position handles
