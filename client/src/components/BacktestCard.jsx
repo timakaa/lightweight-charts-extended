@@ -61,7 +61,7 @@ const BacktestCard = ({ backtest, onClick }) => {
           <span className={getProfitLossColor(backtest.total_pnl_percentage)}>
             {backtest.total_pnl_percentage.toFixed(2)}%
           </span>
-          <OptionsDropdown backtestId={backtest.id} />
+          <OptionsDropdown backtest={backtest} />
         </div>
       </div>
       <div className='flex justify-between items-center'>

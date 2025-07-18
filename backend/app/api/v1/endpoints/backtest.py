@@ -3,8 +3,15 @@ from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.repositories.backtest_repository import BacktestRepository
 from typing import List, Optional
+from pydantic import BaseModel, Field
 
 router = APIRouter()
+
+
+class BacktestUpdate(BaseModel):
+    title: str = Field(
+        min_length=1, max_length=100, description="New title for the backtest"
+    )
 
 
 @router.post("/backtest")
@@ -45,6 +52,17 @@ def delete_backtest(backtest_id: int, db: Session = Depends(get_db)):
     if not repository.delete(backtest_id):
         raise HTTPException(status_code=404, detail="Backtest not found")
     return {"message": "Backtest deleted successfully"}
+
+
+@router.patch("/backtest/{backtest_id}")
+def update_backtest(
+    backtest_id: int, update_data: BacktestUpdate, db: Session = Depends(get_db)
+):
+    repository = BacktestRepository(db)
+    updated_backtest = repository.update(backtest_id, update_data.model_dump())
+    if not updated_backtest:
+        raise HTTPException(status_code=404, detail="Backtest not found")
+    return updated_backtest
 
 
 @router.get("/backtest/{backtest_id}/trades")

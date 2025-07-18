@@ -100,6 +100,33 @@ export const useDeleteBacktest = () => {
   });
 };
 
+const updateBacktest = async (data) => {
+  const response = await fetch(
+    `${import.meta.env.VITE_API_URL}/api/v1/backtest/${data.id}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ title: data.title }),
+    },
+  );
+  if (!response.ok) {
+    throw new Error("Network response was not ok");
+  }
+  return response.json();
+};
+
+export const useUpdateBacktest = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateBacktest,
+    onSuccess: () => {
+      queryClient.invalidateQueries("backtestsSummarized");
+    },
+  });
+};
+
 const fetchTradesByBacktestId = async (backtestId, page = 1, pageSize = 10) => {
   const searchParams = new URLSearchParams({
     page,

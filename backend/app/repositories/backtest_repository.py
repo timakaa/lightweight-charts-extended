@@ -361,6 +361,23 @@ class BacktestRepository:
         }
         return self._convert_nan_to_none(result)
 
+    def update(self, backtest_id: int, update_data: dict) -> Optional[Dict[str, Any]]:
+        backtest = (
+            self.db.query(BacktestResult)
+            .filter(BacktestResult.id == backtest_id)
+            .first()
+        )
+        if not backtest:
+            return None
+
+        # Only allow title updates
+        if "title" in update_data:
+            backtest.title = update_data["title"]
+
+        self.db.commit()
+        self.db.refresh(backtest)
+        return self._serialize_backtest(backtest)
+
     def delete(self, backtest_id: int) -> bool:
         backtest = (
             self.db.query(BacktestResult)
