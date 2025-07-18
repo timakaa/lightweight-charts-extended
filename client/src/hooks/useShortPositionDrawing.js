@@ -18,6 +18,7 @@ import {
   useViewportDrawings,
   getPositionTimeRange,
 } from "./useViewportDrawings";
+import { useOptimizedSelection } from "./useOptimizedSelection";
 
 // Integrates all hooks and logic for short position drawing, selection, drag, resize, and keyboard shortcuts
 export const useShortPositionDrawing = (
@@ -99,7 +100,18 @@ export const useShortPositionDrawing = (
     }
   }, [timeframe, ticker]);
 
-  // Ensure short positions are aware of selection/hover for label/handle visibility
+  // Use viewport-based drawing management for performance
+  const { visibleDrawings: visibleShortPositions } = useViewportDrawings(
+    chart,
+    shortPositionsData,
+    getPositionTimeRange,
+  );
+
+  // Use optimized selection management
+  const { updateSelection, updateEntryTappedLogic, resetSelection } =
+    useOptimizedSelection(shortPositionsData);
+
+  // Optimized selection management - only update affected drawings
   React.useEffect(() => {
     if (shortPositionDrawingTool.current) {
       shortPositionDrawingTool.current.setSelectedPositionId(
@@ -109,52 +121,25 @@ export const useShortPositionDrawing = (
         hoveredShortPositionId,
       );
     }
-    // Toggle showHandles for hovered/selected positions (crucial for cursor logic)
-    shortPositionsDataRef.current.forEach((pos) => {
-      const shouldShow =
-        pos.id === selectedShortPositionId || pos.id === hoveredShortPositionId;
-      pos.applyOptions({ showHandles: shouldShow });
-    });
 
-    // ENTRY TAPPED LOGIC
-    shortPositionsDataRef.current.forEach((pos) => {
-      if (!pos._entryPrice || !candleData || !Array.isArray(candleData)) {
-        pos.setEntryTapped(false);
-        return;
-      }
-      const entryTime = pos._entryPrice.time;
-      const entryPrice = pos._entryPrice.price;
-      // Find the index of the entry candle
-      const entryIdx = candleData.findIndex((c) => c.time === entryTime);
-      if (entryIdx === -1) {
-        pos.setEntryTapped(false);
-        return;
-      }
-      // Check all candles after entry (including entry candle)
-      let tapped = false;
-      for (let i = entryIdx; i < candleData.length; ++i) {
-        const c = candleData[i];
-        if (c.low <= entryPrice && entryPrice <= c.high) {
-          tapped = true;
-          break;
-        }
-      }
-      pos.setEntryTapped(tapped);
-    });
+    // Use optimized selection update (only affects changed drawings)
+    updateSelection(selectedShortPositionId, hoveredShortPositionId);
   }, [
     selectedShortPositionId,
     hoveredShortPositionId,
     shortPositionDrawingTool,
-    shortPositionsDataRef,
-    candleData,
+    updateSelection,
   ]);
 
-  // Use viewport-based drawing management for performance
-  const { visibleDrawings: visibleShortPositions } = useViewportDrawings(
-    chart,
-    shortPositionsData,
-    getPositionTimeRange,
-  );
+  // Optimized entry tapped logic - only process visible drawings
+  React.useEffect(() => {
+    updateEntryTappedLogic(visibleShortPositions, candleData);
+  }, [visibleShortPositions, candleData, updateEntryTappedLogic]);
+
+  // Reset selection tracking on timeframe/ticker changes
+  React.useEffect(() => {
+    resetSelection();
+  }, [timeframe, ticker, resetSelection]);
 
   // Re-attach only visible short positions to the chart/series when chart or series changes
   // This is needed for real-time animation during resize operations

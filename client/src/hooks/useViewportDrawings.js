@@ -47,7 +47,7 @@ export const useViewportDrawings = (
         if (!drawingRange) return false;
 
         // Add buffer zone (show drawings well before they come into view for smooth panning)
-        const bufferPercent = 0.5; // 50% buffer on each side
+        const bufferPercent = 0.2; // 50% buffer on each side
         const rangeSize = viewportRange.to - viewportRange.from;
         const buffer = rangeSize * bufferPercent;
 

@@ -18,6 +18,7 @@ import {
   useViewportDrawings,
   getPositionTimeRange,
 } from "./useViewportDrawings";
+import { useOptimizedSelection } from "./useOptimizedSelection";
 
 // Integrates all hooks and logic for long position drawing, selection, drag, resize, and keyboard shortcuts
 export const useLongPositionDrawing = (
@@ -99,8 +100,18 @@ export const useLongPositionDrawing = (
     }
   }, [timeframe, ticker]);
 
-  // Ensure long positions are aware of selection/hover for label/handle visibility
-  // (mirrors useBoxDrawing logic)
+  // Use viewport-based drawing management for performance
+  const { visibleDrawings: visibleLongPositions } = useViewportDrawings(
+    chart,
+    longPositionsData,
+    getPositionTimeRange,
+  );
+
+  // Use optimized selection management
+  const { updateSelection, updateEntryTappedLogic, resetSelection } =
+    useOptimizedSelection(longPositionsData);
+
+  // Optimized selection management - only update affected drawings
   React.useEffect(() => {
     if (longPositionDrawingTool.current) {
       longPositionDrawingTool.current.setSelectedPositionId(
@@ -110,52 +121,25 @@ export const useLongPositionDrawing = (
         hoveredLongPositionId,
       );
     }
-    // Toggle showHandles for hovered/selected positions (crucial for cursor logic)
-    longPositionsDataRef.current.forEach((pos) => {
-      const shouldShow =
-        pos.id === selectedLongPositionId || pos.id === hoveredLongPositionId;
-      pos.applyOptions({ showHandles: shouldShow });
-    });
 
-    // ENTRY TAPPED LOGIC
-    longPositionsDataRef.current.forEach((pos) => {
-      if (!pos._entryPrice || !candleData || !Array.isArray(candleData)) {
-        pos.setEntryTapped(false);
-        return;
-      }
-      const entryTime = pos._entryPrice.time;
-      const entryPrice = pos._entryPrice.price;
-      // Find the index of the entry candle
-      const entryIdx = candleData.findIndex((c) => c.time === entryTime);
-      if (entryIdx === -1) {
-        pos.setEntryTapped(false);
-        return;
-      }
-      // Check all candles after entry (including entry candle)
-      let tapped = false;
-      for (let i = entryIdx; i < candleData.length; ++i) {
-        const c = candleData[i];
-        if (c.low <= entryPrice && entryPrice <= c.high) {
-          tapped = true;
-          break;
-        }
-      }
-      pos.setEntryTapped(tapped);
-    });
+    // Use optimized selection update (only affects changed drawings)
+    updateSelection(selectedLongPositionId, hoveredLongPositionId);
   }, [
     selectedLongPositionId,
     hoveredLongPositionId,
     longPositionDrawingTool,
-    longPositionsDataRef,
-    candleData,
+    updateSelection,
   ]);
 
-  // Use viewport-based drawing management for performance
-  const { visibleDrawings: visibleLongPositions } = useViewportDrawings(
-    chart,
-    longPositionsData,
-    getPositionTimeRange,
-  );
+  // Optimized entry tapped logic - only process visible drawings
+  React.useEffect(() => {
+    updateEntryTappedLogic(visibleLongPositions, candleData);
+  }, [visibleLongPositions, candleData, updateEntryTappedLogic]);
+
+  // Reset selection tracking on timeframe/ticker changes
+  React.useEffect(() => {
+    resetSelection();
+  }, [timeframe, ticker, resetSelection]);
 
   // Re-attach only visible long positions to the chart/series when chart or series changes
   // This is needed for real-time animation during resize operations
