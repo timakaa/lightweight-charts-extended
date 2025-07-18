@@ -66,8 +66,12 @@ export function createLongPosition(
     longPositionDrawingTool.current._positions.add(longPosition);
   }
 
-  // Note: We should NOT update the primitiveId in store when loading from store
-  // The primitiveId should remain consistent for drag/resize updates to work
+  // Update store IDs if this position was loaded from store
+  if (longPositionData.id) {
+    // This position was loaded from store - update the primitive ID in store to match new primitive
+    const { updateDrawing } = useDrawingsStore.getState();
+    updateDrawing(longPositionData.id, { primitiveId: longPosition.id });
+  }
 
   return longPosition;
 }
