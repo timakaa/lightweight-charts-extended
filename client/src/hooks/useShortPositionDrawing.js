@@ -14,6 +14,10 @@ import { useShortPositionDrawingTool } from "./short-position/useShortPositionDr
 import usePositionKeyboardShortcuts from "./position/usePositionKeyboardShortcuts";
 import useShortPositionCursor from "./short-position/useShortPositionCursor";
 import { useChartStore } from "../store/chart";
+import {
+  useViewportDrawings,
+  getPositionTimeRange,
+} from "./useViewportDrawings";
 
 // Integrates all hooks and logic for short position drawing, selection, drag, resize, and keyboard shortcuts
 export const useShortPositionDrawing = (
@@ -145,7 +149,14 @@ export const useShortPositionDrawing = (
     candleData,
   ]);
 
-  // Re-attach all short positions to the chart/series when chart or series changes
+  // Use viewport-based drawing management for performance
+  const { visibleDrawings: visibleShortPositions } = useViewportDrawings(
+    chart,
+    shortPositionsData,
+    getPositionTimeRange,
+  );
+
+  // Re-attach only visible short positions to the chart/series when chart or series changes
   // This is needed for real-time animation during resize operations
   useEffect(() => {
     // Skip re-attachment during timeframe/ticker transitions to prevent race conditions
@@ -156,18 +167,22 @@ export const useShortPositionDrawing = (
     // Skip re-attachment when no positions exist
     if (!chart || !candlestickSeries || shortPositionsData.length === 0) return;
 
+    // Detach all positions first
     shortPositionsData.forEach((pos) => {
-      // Detach from any previous series
       if (pos._series && pos._series.detachPrimitive) {
         pos._series.detachPrimitive(pos);
       }
+    });
+
+    // Attach only visible positions
+    visibleShortPositions.forEach((pos) => {
       // Attach to the new series
       candlestickSeries.attachPrimitive(pos);
       // Update references
       pos._series = candlestickSeries;
       pos._chart = chart;
     });
-  }, [chart, candlestickSeries, shortPositionsData]);
+  }, [chart, candlestickSeries, shortPositionsData, visibleShortPositions]);
 
   // Enable resizing of short position handles
   useShortPositionResize(

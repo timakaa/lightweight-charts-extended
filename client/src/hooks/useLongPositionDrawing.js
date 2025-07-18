@@ -14,6 +14,10 @@ import {
   deleteAllPositions,
 } from "./position/tools/positionDeleteTools";
 import useLongPositionCursor from "./long-position/useLongPositionCursor";
+import {
+  useViewportDrawings,
+  getPositionTimeRange,
+} from "./useViewportDrawings";
 
 // Integrates all hooks and logic for long position drawing, selection, drag, resize, and keyboard shortcuts
 export const useLongPositionDrawing = (
@@ -146,7 +150,14 @@ export const useLongPositionDrawing = (
     candleData,
   ]);
 
-  // Re-attach all long positions to the chart/series when chart or series changes
+  // Use viewport-based drawing management for performance
+  const { visibleDrawings: visibleLongPositions } = useViewportDrawings(
+    chart,
+    longPositionsData,
+    getPositionTimeRange,
+  );
+
+  // Re-attach only visible long positions to the chart/series when chart or series changes
   // This is needed for real-time animation during resize operations
   useEffect(() => {
     // Skip re-attachment during timeframe/ticker transitions to prevent race conditions
@@ -157,18 +168,22 @@ export const useLongPositionDrawing = (
     // Skip re-attachment when no positions exist
     if (!chart || !candlestickSeries || longPositionsData.length === 0) return;
 
+    // Detach all positions first
     longPositionsData.forEach((pos) => {
-      // Detach from any previous series
       if (pos._series && pos._series.detachPrimitive) {
         pos._series.detachPrimitive(pos);
       }
+    });
+
+    // Attach only visible positions
+    visibleLongPositions.forEach((pos) => {
       // Attach to the new series
       candlestickSeries.attachPrimitive(pos);
       // Update references
       pos._series = candlestickSeries;
       pos._chart = chart;
     });
-  }, [chart, candlestickSeries, longPositionsData]);
+  }, [chart, candlestickSeries, longPositionsData, visibleLongPositions]);
 
   // Enable resizing of long position handles
   useLongPositionResize(
