@@ -176,5 +176,7 @@ export const useBacktestDrawings = (backtestId) => {
     queryKey: ["backtestDrawings", backtestId],
     queryFn: () => fetchBacktestDrawings(backtestId),
     enabled: !!backtestId,
+    staleTime: 0,
+    gcTime: 0,
   });
 };
