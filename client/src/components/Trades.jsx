@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useTradesByBacktestId } from "../hooks/backtests/useBacktests";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
+import { navigateToTradeDate } from "../helpers/navigateToTradeDate";
 
-const Trades = () => {
+const Trades = ({ chart, candleData }) => {
   const { backtestId } = useParams();
   const [page, setPage] = useState(1);
   const [trades, setTrades] = useState([]);
@@ -38,6 +39,20 @@ const Trades = () => {
     offset: 200,
   });
 
+  const handleTradeClick = (trade) => {
+    if (chart && candleData && candleData.length > 0 && trade.entry_time) {
+      console.log("Navigating to trade:", trade.entry_time);
+      navigateToTradeDate(chart, candleData, trade.entry_time);
+    } else {
+      console.log("Cannot navigate - missing requirements:", {
+        hasChart: !!chart,
+        hasCandleData: !!candleData,
+        candleDataLength: candleData?.length || 0,
+        hasEntryTime: !!trade.entry_time,
+      });
+    }
+  };
+
   if (isLoading && page === 1) {
     return (
       <div className='border-t-[4px] cursor-default z-10 h-[350px] border-t-[#2E2E2E] bg-modal text-white absolute bottom-0 left-0 right-0 p-4 overflow-auto'>
@@ -71,9 +86,11 @@ const Trades = () => {
         {trades.map((trade, index) => (
           <div
             key={index}
-            className={`cursor-pointer rounded p-2 hover:bg-[#1e1c1c] transition-colors ${
+            onClick={() => handleTradeClick(trade)}
+            className={`cursor-pointer rounded p-2 hover:bg-[#1e1c1c] hover:shadow-md transition-all duration-200 ${
               (trade.pnl || 0) >= 0 ? "bg-[#131b17]" : "bg-[#221515]"
             }`}
+            title='Click to navigate to trade on chart'
           >
             <div className='flex justify-between items-start'>
               <div className='flex items-center gap-1.5'>

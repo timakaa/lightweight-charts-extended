@@ -241,7 +241,11 @@ const TradingChart = ({ drawings }) => {
                 pathname.startsWith("/backtest") ? "mb-[350px]" : ""
               }`}
             />
-            {pathname.startsWith("/backtest") ? <Trades /> : ""}
+            {pathname.startsWith("/backtest") ? (
+              <Trades chart={chart} candleData={candleData} />
+            ) : (
+              ""
+            )}
             {(selectedLineId ||
               selectedBoxId ||
               selectedLongPositionId ||
