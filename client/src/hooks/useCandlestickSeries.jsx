@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useCandlestickData } from "./useCandlestickData";
 import { useChartStore } from "../store/chart";
 import { useSeriesManagement } from "./useSeriesManagement";
@@ -16,6 +16,7 @@ export const useCandlestickSeries = (chart) => {
   const { backtestId } = useParams();
   const pageSize = 1000;
   const [page, setPage] = useState(1);
+  const loadingRef = useRef(false);
 
   const { data, isLoading, error } = useCandlestickData(symbol, {
     timeframe,
@@ -56,6 +57,19 @@ export const useCandlestickSeries = (chart) => {
   return [
     series,
     combinedData,
-    { isLoading, error, pagination: data?.pagination },
+    {
+      isLoading,
+      error,
+      pagination: data?.pagination,
+      loadMore: () => {
+        if (!loadingRef.current && !isLoading && data?.pagination?.has_next) {
+          loadingRef.current = true;
+          setPage((p) => p + 1);
+          setTimeout(() => {
+            loadingRef.current = false;
+          }, 1000);
+        }
+      },
+    },
   ];
 };

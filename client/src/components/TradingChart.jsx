@@ -43,7 +43,7 @@ const TradingChart = ({ drawings }) => {
   }, [backtestId]);
 
   const chart = useChart(chartContainerRef);
-  const [candlestickSeries, candleData] = useCandlestickSeries(
+  const [candlestickSeries, candleData, chartDataInfo] = useCandlestickSeries(
     chart,
     chartDataUrl,
   );
@@ -242,7 +242,11 @@ const TradingChart = ({ drawings }) => {
               }`}
             />
             {pathname.startsWith("/backtest") ? (
-              <Trades chart={chart} candleData={candleData} />
+              <Trades
+                chart={chart}
+                candleData={candleData}
+                chartDataInfo={chartDataInfo}
+              />
             ) : (
               ""
             )}
