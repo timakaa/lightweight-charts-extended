@@ -16,6 +16,7 @@ export const useCandlestickSeries = (chart) => {
   const { backtestId } = useParams();
   const pageSize = 1000;
   const [page, setPage] = useState(1);
+
   const loadMorePromiseRef = useRef(null);
   const prevDataLengthRef = useRef(0);
   const isLoadingMoreRef = useRef(false);
@@ -37,6 +38,7 @@ export const useCandlestickSeries = (chart) => {
     symbol,
     timeframe,
     page,
+    backtestId,
   );
 
   // Handle real-time updates
@@ -75,12 +77,28 @@ export const useCandlestickSeries = (chart) => {
   // Handle pagination
   usePagination(chart, series, isLoading, data, setPage);
 
-  // Reset page on symbol/timeframe change
+  // Reset page on symbol/timeframe/backtestId change
   useEffect(() => {
     setPage(1);
     prevDataLengthRef.current = 0;
     isLoadingMoreRef.current = false;
-  }, [symbol, timeframe]);
+    // Clear any pending loadMore promise
+    if (loadMorePromiseRef.current) {
+      loadMorePromiseRef.current.resolve();
+      loadMorePromiseRef.current = null;
+    }
+  }, [symbol, timeframe, backtestId]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      isLoadingMoreRef.current = false;
+      if (loadMorePromiseRef.current) {
+        loadMorePromiseRef.current.resolve();
+        loadMorePromiseRef.current = null;
+      }
+    };
+  }, []);
 
   return [
     series,

@@ -1,17 +1,28 @@
 import { useState, useEffect, useRef } from "react";
 
-export const useDataAccumulation = (data, symbol, timeframe, page) => {
+export const useDataAccumulation = (
+  data,
+  symbol,
+  timeframe,
+  page,
+  backtestId,
+) => {
   const [accumulatedCandles, setAccumulatedCandles] = useState([]);
-  const lastAccumKeyRef = useRef({ symbol: null, timeframe: null });
+  const lastAccumKeyRef = useRef({
+    symbol: null,
+    timeframe: null,
+    backtestId: null,
+  });
 
   useEffect(() => {
-    // Reset on symbol/timeframe change
+    // Reset on symbol/timeframe/backtestId change
     if (
       lastAccumKeyRef.current.symbol !== symbol ||
-      lastAccumKeyRef.current.timeframe !== timeframe
+      lastAccumKeyRef.current.timeframe !== timeframe ||
+      lastAccumKeyRef.current.backtestId !== backtestId
     ) {
       setAccumulatedCandles([]);
-      lastAccumKeyRef.current = { symbol, timeframe };
+      lastAccumKeyRef.current = { symbol, timeframe, backtestId };
     }
 
     if (!data || !data.candles) return;
@@ -36,7 +47,7 @@ export const useDataAccumulation = (data, symbol, timeframe, page) => {
 
       return sorted;
     });
-  }, [data, symbol, timeframe, page]);
+  }, [data, symbol, timeframe, page, backtestId]);
 
   return [accumulatedCandles, setAccumulatedCandles];
 };
