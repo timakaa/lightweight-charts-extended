@@ -1,8 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 
 export const usePagination = (chart, series, isLoading, data, setPage) => {
   const [page, setPageState] = useState(1);
-  const loadingRef = useRef(false);
 
   // Pagination: subscribe to visible range and fetch more if needed
   useEffect(() => {
@@ -13,17 +12,8 @@ export const usePagination = (chart, series, isLoading, data, setPage) => {
       const range = timeScale.getVisibleLogicalRange();
       if (!range) return;
 
-      if (
-        range.from <= 2 &&
-        !isLoading &&
-        data?.pagination?.has_next &&
-        !loadingRef.current
-      ) {
-        loadingRef.current = true;
+      if (range.from <= 2 && !isLoading && data?.pagination?.has_next) {
         setPage((p) => p + 1);
-        setTimeout(() => {
-          loadingRef.current = false;
-        }, 500);
       }
     };
 

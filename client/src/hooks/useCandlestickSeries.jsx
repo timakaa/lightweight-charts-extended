@@ -16,7 +16,6 @@ export const useCandlestickSeries = (chart) => {
   const { backtestId } = useParams();
   const pageSize = 1000;
   const [page, setPage] = useState(1);
-  const loadingRef = useRef(false);
   const loadMorePromiseRef = useRef(null);
 
   const { data, isLoading, error } = useCandlestickData(symbol, {
@@ -43,7 +42,6 @@ export const useCandlestickSeries = (chart) => {
     if (!isLoading && loadMorePromiseRef.current) {
       loadMorePromiseRef.current.resolve();
       loadMorePromiseRef.current = null;
-      loadingRef.current = false;
     }
   }, [isLoading, accumulatedCandles]);
 
@@ -73,9 +71,7 @@ export const useCandlestickSeries = (chart) => {
       pagination: data?.pagination,
       loadMore: () => {
         return new Promise((resolve, reject) => {
-          if (!loadingRef.current && !isLoading && data?.pagination?.has_next) {
-            loadingRef.current = true;
-
+          if (!isLoading && data?.pagination?.has_next) {
             // Store the promise resolver to be called when data loads
             loadMorePromiseRef.current = { resolve, reject };
 
@@ -84,7 +80,6 @@ export const useCandlestickSeries = (chart) => {
               if (loadMorePromiseRef.current) {
                 loadMorePromiseRef.current.resolve();
                 loadMorePromiseRef.current = null;
-                loadingRef.current = false;
               }
             }, 10000); // 10 second fallback timeout
 
