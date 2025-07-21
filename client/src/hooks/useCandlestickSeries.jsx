@@ -59,14 +59,16 @@ export const useCandlestickSeries = (chart) => {
       series &&
       combinedData.length > prevDataLengthRef.current
     ) {
-      // Use requestAnimationFrame to ensure chart has been updated
+      // Use double requestAnimationFrame to ensure chart has been fully updated
       requestAnimationFrame(() => {
-        if (loadMorePromiseRef.current) {
-          loadMorePromiseRef.current.resolve();
-          loadMorePromiseRef.current = null;
-          isLoadingMoreRef.current = false;
-          prevDataLengthRef.current = combinedData.length;
-        }
+        requestAnimationFrame(() => {
+          if (loadMorePromiseRef.current) {
+            loadMorePromiseRef.current.resolve();
+            loadMorePromiseRef.current = null;
+            isLoadingMoreRef.current = false;
+            prevDataLengthRef.current = combinedData.length;
+          }
+        });
       });
     } else if (combinedData?.length > 0) {
       // Update the previous length even if we're not resolving a promise

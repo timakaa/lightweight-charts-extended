@@ -13,7 +13,7 @@ const fetchCandlestickData = async ({
   backtestId,
 }) => {
   if (!symbol) throw new Error("Symbol is required");
-  // Debug: Remove slash from symbol for backend request
+  // Remove slash from symbol for backend request
   const cleanSymbol = symbol.replace("/", "");
   const params = new URLSearchParams({
     timeframe,

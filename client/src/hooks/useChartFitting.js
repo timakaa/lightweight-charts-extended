@@ -15,9 +15,12 @@ export const useChartFitting = (
   useLayoutEffect(() => {
     if (!series || !combinedData.length || !chart) return;
 
+    // Only update series data if we have meaningful data (not just whitespace)
+    const realCandles = combinedData.filter((c) => c.open !== undefined);
+    if (realCandles.length === 0) return;
+
     series.setData(combinedData);
     const barsToShow = 200;
-    const realCandles = combinedData.filter((c) => c.open !== undefined);
 
     if (
       fitDoneRef.current.symbol !== symbol ||
