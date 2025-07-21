@@ -36,22 +36,13 @@ export const useDataAccumulation = (
         low: candle[3],
         close: candle[4],
       }))
-      .sort((a, b) => a.time - b.time);
+      .reverse();
 
     // Merge and deduplicate by time
     setAccumulatedCandles((prev) => {
-      const prevTimes = new Set(prev.map((c) => c.time));
-      const newUniqueCandles = newCandles.filter((c) => !prevTimes.has(c.time));
+      const merged = [...newCandles, ...prev];
 
-      // Only add new candles if we actually have new data
-      if (newUniqueCandles.length === 0) {
-        return prev;
-      }
-
-      const merged = [...prev, ...newUniqueCandles];
-      const sorted = merged.sort((a, b) => a.time - b.time);
-
-      return sorted;
+      return merged;
     });
   }, [data, symbol, timeframe, page, backtestId]);
 
