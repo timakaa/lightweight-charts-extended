@@ -17,6 +17,8 @@ export const useCandlestickSeries = (chart) => {
   const pageSize = 1000;
   const [page, setPage] = useState(1);
   const loadMorePromiseRef = useRef(null);
+  const prevDataLengthRef = useRef(0);
+  const isLoadingMoreRef = useRef(false);
 
   const { data, isLoading, error } = useCandlestickData(symbol, {
     timeframe,
@@ -37,14 +39,6 @@ export const useCandlestickSeries = (chart) => {
     page,
   );
 
-  // Resolve loadMore promise when data is loaded
-  useEffect(() => {
-    if (!isLoading && loadMorePromiseRef.current) {
-      loadMorePromiseRef.current.resolve();
-      loadMorePromiseRef.current = null;
-    }
-  }, [isLoading, accumulatedCandles]);
-
   // Handle real-time updates
   useRealtimeUpdates(symbol, timeframe, isLoading, setAccumulatedCandles);
 
@@ -54,12 +48,38 @@ export const useCandlestickSeries = (chart) => {
   // Handle chart fitting
   useChartFitting(series, combinedData, chart, symbol, timeframe);
 
+  // Resolve loadMore promise when data is loaded, processed, and chart is updated
+  useEffect(() => {
+    if (
+      !isLoading &&
+      loadMorePromiseRef.current &&
+      combinedData?.length > 0 &&
+      series &&
+      combinedData.length > prevDataLengthRef.current
+    ) {
+      // Use requestAnimationFrame to ensure chart has been updated
+      requestAnimationFrame(() => {
+        if (loadMorePromiseRef.current) {
+          loadMorePromiseRef.current.resolve();
+          loadMorePromiseRef.current = null;
+          isLoadingMoreRef.current = false;
+          prevDataLengthRef.current = combinedData.length;
+        }
+      });
+    } else if (combinedData?.length > 0) {
+      // Update the previous length even if we're not resolving a promise
+      prevDataLengthRef.current = combinedData.length;
+    }
+  }, [isLoading, combinedData, series]);
+
   // Handle pagination
   usePagination(chart, series, isLoading, data, setPage);
 
   // Reset page on symbol/timeframe change
   useEffect(() => {
     setPage(1);
+    prevDataLengthRef.current = 0;
+    isLoadingMoreRef.current = false;
   }, [symbol, timeframe]);
 
   return [
@@ -71,7 +91,15 @@ export const useCandlestickSeries = (chart) => {
       pagination: data?.pagination,
       loadMore: () => {
         return new Promise((resolve, reject) => {
-          if (!isLoading && data?.pagination?.has_next) {
+          // If there's already a pending request, resolve immediately
+          if (isLoadingMoreRef.current || isLoading) {
+            resolve();
+            return;
+          }
+
+          if (data?.pagination?.has_next) {
+            isLoadingMoreRef.current = true;
+
             // Store the promise resolver to be called when data loads
             loadMorePromiseRef.current = { resolve, reject };
 
@@ -80,6 +108,7 @@ export const useCandlestickSeries = (chart) => {
               if (loadMorePromiseRef.current) {
                 loadMorePromiseRef.current.resolve();
                 loadMorePromiseRef.current = null;
+                isLoadingMoreRef.current = false;
               }
             }, 10000); // 10 second fallback timeout
 
