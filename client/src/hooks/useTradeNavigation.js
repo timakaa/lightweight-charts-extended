@@ -108,11 +108,15 @@ export const useTradeNavigation = (chart, candleData, chartDataInfo) => {
 
         // Trigger loading more data
         console.log(`Loading more data (attempt ${attempts + 1})...`);
-        onLoadMore();
 
-        // Wait a bit for data to load, then check again
-        setTimeout(() => {
-          // Use ref to get the latest candleData
+        try {
+          // If onLoadMore returns a promise, wait for it
+          const result = onLoadMore();
+          if (result && typeof result.then === "function") {
+            await result;
+          }
+
+          // Use ref to get the latest candleData after loading
           const currentCandleData = candleDataRef.current;
           console.log(
             `Checking attempt ${attempts + 1} with ${
@@ -132,7 +136,16 @@ export const useTradeNavigation = (chart, candleData, chartDataInfo) => {
             console.log(`Attempt ${attempts + 1} failed, trying again...`);
             checkAndLoad(attempts + 1);
           }
-        }, 1500); // Wait 1.5 seconds between attempts
+        } catch (error) {
+          console.error(
+            `Error loading data on attempt ${attempts + 1}:`,
+            error,
+          );
+          // Continue trying or fallback to current data
+          navigateToTradeDate(chart, candleDataRef.current, trade.entry_time);
+          setIsLoadingForTrade(false);
+          setLoadingTradeId(null);
+        }
       };
 
       checkAndLoad();

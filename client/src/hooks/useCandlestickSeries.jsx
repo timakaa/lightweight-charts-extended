@@ -17,6 +17,7 @@ export const useCandlestickSeries = (chart) => {
   const pageSize = 1000;
   const [page, setPage] = useState(1);
   const loadingRef = useRef(false);
+  const loadMorePromiseRef = useRef(null);
 
   const { data, isLoading, error } = useCandlestickData(symbol, {
     timeframe,
@@ -36,6 +37,15 @@ export const useCandlestickSeries = (chart) => {
     timeframe,
     page,
   );
+
+  // Resolve loadMore promise when data is loaded
+  useEffect(() => {
+    if (!isLoading && loadMorePromiseRef.current) {
+      loadMorePromiseRef.current.resolve();
+      loadMorePromiseRef.current = null;
+      loadingRef.current = false;
+    }
+  }, [isLoading, accumulatedCandles]);
 
   // Handle real-time updates
   useRealtimeUpdates(symbol, timeframe, isLoading, setAccumulatedCandles);
@@ -62,13 +72,29 @@ export const useCandlestickSeries = (chart) => {
       error,
       pagination: data?.pagination,
       loadMore: () => {
-        if (!loadingRef.current && !isLoading && data?.pagination?.has_next) {
-          loadingRef.current = true;
-          setPage((p) => p + 1);
-          setTimeout(() => {
-            loadingRef.current = false;
-          }, 1000);
-        }
+        return new Promise((resolve, reject) => {
+          if (!loadingRef.current && !isLoading && data?.pagination?.has_next) {
+            loadingRef.current = true;
+
+            // Store the promise resolver to be called when data loads
+            loadMorePromiseRef.current = { resolve, reject };
+
+            // Set timeout as fallback in case something goes wrong
+            setTimeout(() => {
+              if (loadMorePromiseRef.current) {
+                loadMorePromiseRef.current.resolve();
+                loadMorePromiseRef.current = null;
+                loadingRef.current = false;
+              }
+            }, 10000); // 10 second fallback timeout
+
+            // Trigger the page increment
+            setPage((p) => p + 1);
+          } else {
+            // Can't load more data, resolve immediately
+            resolve();
+          }
+        });
       },
     },
   ];
