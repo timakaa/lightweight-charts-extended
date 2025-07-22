@@ -278,6 +278,8 @@ class BacktestRepository:
         self, backtest_id: int, page: int = 1, page_size: int = 10
     ) -> Dict[str, Any]:
         query = self.db.query(Trade).filter(Trade.backtest_id == backtest_id)
+        # Order by newest first
+        query = query.order_by(Trade.id.desc())
 
         total_count = query.count()
         total_pages = (total_count + page_size - 1) // page_size

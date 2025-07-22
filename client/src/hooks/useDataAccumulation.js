@@ -42,7 +42,13 @@ export const useDataAccumulation = (
     setAccumulatedCandles((prev) => {
       const merged = [...newCandles, ...prev];
 
-      return merged;
+      // Remove duplicates by time and sort by time ascending
+      const uniqueCandles = new Map();
+      merged.forEach((candle) => {
+        uniqueCandles.set(candle.time, candle);
+      });
+
+      return Array.from(uniqueCandles.values()).sort((a, b) => a.time - b.time);
     });
   }, [data, symbol, timeframe, page, backtestId]);
 

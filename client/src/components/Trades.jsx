@@ -125,7 +125,9 @@ const Trades = memo(
                     </span>
                     <h3 className='text-xs font-medium'>
                       {trade.symbol}{" "}
-                      <span className='text-gray-400'>#{index + 1}</span>
+                      <span className='text-gray-400'>
+                        #{data?.pagination?.total_count - index}
+                      </span>
                     </h3>
                   </div>
                   <span

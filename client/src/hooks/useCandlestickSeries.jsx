@@ -123,15 +123,6 @@ export const useCandlestickSeries = (chart) => {
             // Store the promise resolver to be called when data loads
             loadMorePromiseRef.current = { resolve, reject };
 
-            // Set timeout as fallback in case something goes wrong
-            setTimeout(() => {
-              if (loadMorePromiseRef.current) {
-                loadMorePromiseRef.current.resolve();
-                loadMorePromiseRef.current = null;
-                isLoadingMoreRef.current = false;
-              }
-            }, 10000); // 10 second fallback timeout
-
             // Trigger the page increment
             setPage((p) => p + 1);
           } else {

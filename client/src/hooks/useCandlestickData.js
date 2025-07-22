@@ -56,5 +56,6 @@ export const useCandlestickData = (
       fetchCandlestickData({ symbol, timeframe, page, pageSize, backtestId }),
     enabled: enabled && !!symbol,
     staleTime: false, // Never refetch unless key changes or manually triggered
+    gcTime: false, // Never garbage collect unless key changes or manually triggered
   });
 };

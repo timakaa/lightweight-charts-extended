@@ -45,7 +45,6 @@ export const useTradeNavigation = (chart, candleData, chartDataInfo) => {
 
       // If we don't have pagination info or can't load more, just try with current data
       if (!chartDataInfo?.pagination?.has_next || !onLoadMore) {
-        navigateToTradeDate(chart, currentCandleData, trade.entry_time);
         return;
       }
 
@@ -58,7 +57,7 @@ export const useTradeNavigation = (chart, candleData, chartDataInfo) => {
         const maxAttempts = 20; // Prevent infinite loading
 
         if (attempts >= maxAttempts) {
-          navigateToTradeDate(chart, candleDataRef.current, trade.entry_time);
+          // navigateToTradeDate(chart, candleDataRef.current, trade.entry_time);
           setIsLoadingForTrade(false);
           setLoadingTradeId(null);
           return;
@@ -74,10 +73,7 @@ export const useTradeNavigation = (chart, candleData, chartDataInfo) => {
 
         try {
           // If onLoadMore returns a promise, wait for it
-          const result = onLoadMore();
-          if (result && typeof result.then === "function") {
-            await result;
-          }
+          await onLoadMore();
 
           // Use ref to get the latest candleData after loading
           const currentCandleData = candleDataRef.current;
