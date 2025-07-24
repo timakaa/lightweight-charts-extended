@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useDrawingsStore } from "../store/drawings";
 import { getSymbol } from "../helpers/symbol";
+import { API_BASE_URL } from "../config/api";
 
 export const useUndeliveredDrawings = () => {
   const { addDrawing, updateDrawing, removeDrawing } = useDrawingsStore();
@@ -8,9 +9,7 @@ export const useUndeliveredDrawings = () => {
   useEffect(() => {
     const fetchUndeliveredDrawings = async () => {
       try {
-        const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/v1/drawings/undelivered`,
-        );
+        const response = await fetch(`${API_BASE_URL}/drawings/undelivered`);
         const drawings = await response.json();
 
         drawings.forEach((drawing) => {

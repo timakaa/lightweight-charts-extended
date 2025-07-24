@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { API_BASE_URL } from "../../config/api";
 
 const fetchBacktestsSummarized = async (
   page = 1,
@@ -15,9 +16,7 @@ const fetchBacktestsSummarized = async (
   }
 
   const response = await fetch(
-    `${
-      import.meta.env.VITE_API_URL
-    }/api/v1/backtest/summarized?${searchParams.toString()}`,
+    `${API_BASE_URL}/backtest/summarized?${searchParams.toString()}`,
   );
   if (!response.ok) {
     throw new Error("Network response was not ok");
@@ -33,9 +32,7 @@ export const useBacktestsSummarized = (page, pageSize, search) => {
 };
 
 const fetchBacktestById = async (backtestId) => {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_URL}/api/v1/backtest/${backtestId}`,
-  );
+  const response = await fetch(`${API_BASE_URL}/backtest/${backtestId}`);
   if (!response.ok) {
     throw new Error("Network response was not ok");
   }
@@ -51,16 +48,13 @@ export const useBacktest = (backtestId) => {
 };
 
 const createBacktest = async (backtestData) => {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_URL}/api/v1/backtest`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(backtestData),
+  const response = await fetch(`${API_BASE_URL}/backtest`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
     },
-  );
+    body: JSON.stringify(backtestData),
+  });
   if (!response.ok) {
     throw new Error("Network response was not ok");
   }
@@ -78,12 +72,9 @@ export const useCreateBacktest = () => {
 };
 
 const deleteBacktest = async (backtestId) => {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_URL}/api/v1/backtest/${backtestId}`,
-    {
-      method: "DELETE",
-    },
-  );
+  const response = await fetch(`${API_BASE_URL}/backtest/${backtestId}`, {
+    method: "DELETE",
+  });
   if (!response.ok) {
     throw new Error("Network response was not ok");
   }
@@ -101,16 +92,13 @@ export const useDeleteBacktest = () => {
 };
 
 const updateBacktest = async (data) => {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_URL}/api/v1/backtest/${data.id}`,
-    {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ title: data.title }),
+  const response = await fetch(`${API_BASE_URL}/backtest/${data.id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
     },
-  );
+    body: JSON.stringify({ title: data.title }),
+  });
   if (!response.ok) {
     throw new Error("Network response was not ok");
   }
@@ -134,9 +122,7 @@ const fetchTradesByBacktestId = async (backtestId, page = 1, pageSize = 10) => {
   });
 
   const response = await fetch(
-    `${
-      import.meta.env.VITE_API_URL
-    }/api/v1/backtest/${backtestId}/trades?${searchParams.toString()}`,
+    `${API_BASE_URL}/backtest/${backtestId}/trades?${searchParams.toString()}`,
   );
   if (!response.ok) {
     throw new Error("Network response was not ok");
@@ -153,9 +139,7 @@ export const useTradesByBacktestId = (backtestId, page = 1, pageSize = 10) => {
 };
 
 const fetchBacktestStats = async (backtestId) => {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_URL}/api/v1/backtest/${backtestId}/stats`,
-  );
+  const response = await fetch(`${API_BASE_URL}/backtest/${backtestId}/stats`);
   if (!response.ok) {
     throw new Error("Network response was not ok");
   }
@@ -172,7 +156,7 @@ export const useBacktestStats = (backtestId) => {
 
 const fetchBacktestSymbols = async (backtestId) => {
   const response = await fetch(
-    `${import.meta.env.VITE_API_URL}/api/v1/backtest/${backtestId}/symbols`,
+    `${API_BASE_URL}/backtest/${backtestId}/symbols`,
   );
   if (!response.ok) {
     throw new Error("Network response was not ok");
@@ -190,7 +174,7 @@ export const useBacktestSymbols = (backtestId) => {
 
 const fetchBacktestDrawings = async (backtestId) => {
   const response = await fetch(
-    `${import.meta.env.VITE_API_URL}/api/v1/backtest/${backtestId}/drawings`,
+    `${API_BASE_URL}/backtest/${backtestId}/drawings`,
   );
   if (!response.ok) {
     throw new Error("Network response was not ok");

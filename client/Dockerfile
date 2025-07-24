@@ -4,6 +4,10 @@ FROM node:20-slim as build
 # Set working directory
 WORKDIR /app
 
+# Accept build argument
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+
 # Install pnpm
 RUN npm install -g pnpm
 

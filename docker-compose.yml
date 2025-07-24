@@ -15,8 +15,6 @@ services:
       - PORT=8000
       - DEBUG=False
       - SOCKET_CORS_ORIGINS=http://localhost:3000
-    volumes:
-      - ./backend:/app
     restart: unless-stopped
 
   frontend:
@@ -24,12 +22,12 @@ services:
     build:
       context: ./client
       dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:8000
     ports:
       - "3000:80"
     depends_on:
       - backend
     env_file:
       - ./client/.env
-    environment:
-      - VITE_API_URL=http://localhost:8000
     restart: unless-stopped
