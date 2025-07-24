@@ -14,6 +14,11 @@ import { useShortPositionDrawingTool } from "./short-position/useShortPositionDr
 import usePositionKeyboardShortcuts from "./position/usePositionKeyboardShortcuts";
 import useShortPositionCursor from "./short-position/useShortPositionCursor";
 import { useChartStore } from "../store/chart";
+import {
+  useViewportDrawings,
+  getPositionTimeRange,
+} from "./useViewportDrawings";
+import { useOptimizedPositionSelection } from "./useOptimizedSelection";
 
 // Integrates all hooks and logic for short position drawing, selection, drag, resize, and keyboard shortcuts
 export const useShortPositionDrawing = (
@@ -95,7 +100,18 @@ export const useShortPositionDrawing = (
     }
   }, [timeframe, ticker]);
 
-  // Ensure short positions are aware of selection/hover for label/handle visibility
+  // Use viewport-based drawing management for performance
+  const { visibleDrawings: visibleShortPositions } = useViewportDrawings(
+    chart,
+    shortPositionsData,
+    getPositionTimeRange,
+  );
+
+  // Use optimized selection management
+  const { updateSelection, updateEntryTappedLogic, resetSelection } =
+    useOptimizedPositionSelection(shortPositionsData);
+
+  // Optimized selection management - only update affected drawings
   React.useEffect(() => {
     if (shortPositionDrawingTool.current) {
       shortPositionDrawingTool.current.setSelectedPositionId(
@@ -105,47 +121,30 @@ export const useShortPositionDrawing = (
         hoveredShortPositionId,
       );
     }
-    // Toggle showHandles for hovered/selected positions (crucial for cursor logic)
-    shortPositionsDataRef.current.forEach((pos) => {
-      const shouldShow =
-        pos.id === selectedShortPositionId || pos.id === hoveredShortPositionId;
-      pos.applyOptions({ showHandles: shouldShow });
-    });
 
-    // ENTRY TAPPED LOGIC
-    shortPositionsDataRef.current.forEach((pos) => {
-      if (!pos._entryPrice || !candleData || !Array.isArray(candleData)) {
-        pos.setEntryTapped(false);
-        return;
-      }
-      const entryTime = pos._entryPrice.time;
-      const entryPrice = pos._entryPrice.price;
-      // Find the index of the entry candle
-      const entryIdx = candleData.findIndex((c) => c.time === entryTime);
-      if (entryIdx === -1) {
-        pos.setEntryTapped(false);
-        return;
-      }
-      // Check all candles after entry (including entry candle)
-      let tapped = false;
-      for (let i = entryIdx; i < candleData.length; ++i) {
-        const c = candleData[i];
-        if (c.low <= entryPrice && entryPrice <= c.high) {
-          tapped = true;
-          break;
-        }
-      }
-      pos.setEntryTapped(tapped);
-    });
+    // Use optimized selection update (only affects changed drawings)
+    updateSelection(selectedShortPositionId, hoveredShortPositionId);
   }, [
     selectedShortPositionId,
     hoveredShortPositionId,
     shortPositionDrawingTool,
-    shortPositionsDataRef,
-    candleData,
+    updateSelection,
   ]);
 
-  // Re-attach all short positions to the chart/series when chart or series changes
+  // Optimized entry tapped logic - only process visible drawings
+  React.useEffect(() => {
+    updateEntryTappedLogic(visibleShortPositions, candleData);
+  }, [visibleShortPositions, candleData, updateEntryTappedLogic]);
+
+  // Reset selection tracking on timeframe/ticker changes
+  React.useEffect(() => {
+    resetSelection();
+  }, [timeframe, ticker, resetSelection]);
+
+  // Track previously attached positions to handle deletions properly
+  const previouslyAttachedRef = useRef(new Set());
+
+  // Re-attach only visible short positions to the chart/series when chart or series changes
   // This is needed for real-time animation during resize operations
   useEffect(() => {
     // Skip re-attachment during timeframe/ticker transitions to prevent race conditions
@@ -153,21 +152,44 @@ export const useShortPositionDrawing = (
       return;
     }
 
-    // Skip re-attachment when no positions exist
-    if (!chart || !candlestickSeries || shortPositionsData.length === 0) return;
+    // Skip re-attachment when no chart/series available
+    if (!chart || !candlestickSeries) return;
 
+    // Get current position IDs for comparison
+    const currentPositionIds = new Set(shortPositionsData.map((pos) => pos.id));
+    const visiblePositionIds = new Set(
+      visibleShortPositions.map((pos) => pos.id),
+    );
+
+    // Detach positions that are no longer in the data (deleted positions)
+    previouslyAttachedRef.current.forEach((attachedPos) => {
+      if (!currentPositionIds.has(attachedPos.id)) {
+        // Position was deleted - force detach it
+        if (attachedPos._series && attachedPos._series.detachPrimitive) {
+          attachedPos._series.detachPrimitive(attachedPos);
+        }
+      }
+    });
+
+    // Detach all current positions first (clean slate)
     shortPositionsData.forEach((pos) => {
-      // Detach from any previous series
       if (pos._series && pos._series.detachPrimitive) {
         pos._series.detachPrimitive(pos);
       }
+    });
+
+    // Attach only visible positions
+    visibleShortPositions.forEach((pos) => {
       // Attach to the new series
       candlestickSeries.attachPrimitive(pos);
       // Update references
       pos._series = candlestickSeries;
       pos._chart = chart;
     });
-  }, [chart, candlestickSeries, shortPositionsData]);
+
+    // Update tracking of attached positions
+    previouslyAttachedRef.current = new Set(visibleShortPositions);
+  }, [chart, candlestickSeries, shortPositionsData, visibleShortPositions]);
 
   // Enable resizing of short position handles
   useShortPositionResize(

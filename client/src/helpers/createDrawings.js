@@ -55,16 +55,20 @@ export const exampleDrawingsData = [
   {
     type: "long_position",
     ticker: "SOLUSDT",
-    entry: { time: "2025-05-21T23:00:00Z", price: 171.31 }, // Actual time
-    target: { time: "2025-05-23T02:00:00Z", price: 184.93 }, // Actual time
-    stop: { time: "2025-05-21T23:00:00Z", price: 168.0 }, // Actual time
+    startTime: "2025-05-21T23:00:00Z",
+    endTime: "2025-05-23T02:00:00Z",
+    entry: { price: 171.31 },
+    target: { price: 184.93 },
+    stop: { price: 168.0 },
   },
   {
     type: "short_position",
     ticker: "SOLUSDT",
-    entry: { time: "2025-05-23T14:00:00Z", price: 182.04 }, // Actual time
-    target: { time: "2025-05-24T00:00:00Z", price: 173.19 }, // Actual time
-    stop: { time: "2025-05-28T10:00:00Z", price: 187.14 }, // Actual time
+    startTime: "2025-05-23T14:00:00Z",
+    endTime: "2025-05-28T10:00:00Z",
+    entry: { price: 182.04 },
+    target: { price: 173.19 },
+    stop: { price: 187.14 },
   },
   {
     type: "fib_retracement",

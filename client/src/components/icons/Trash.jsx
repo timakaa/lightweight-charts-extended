@@ -1,12 +1,12 @@
 import React from "react";
 
-const Trash = () => {
+const Trash = ({ width = 28, height = 28 }) => {
   return (
     <svg
       xmlns='http://www.w3.org/2000/svg'
       viewBox='0 0 28 28'
-      width='28'
-      height='28'
+      width={width}
+      height={height}
     >
       <path
         fill='currentColor'

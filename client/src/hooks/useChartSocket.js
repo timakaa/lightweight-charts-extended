@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { io } from "socket.io-client";
+import { useParams } from "react-router-dom";
 
 const SOCKET_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -29,6 +30,7 @@ export function useChartSocket({
 }) {
   const socketRef = useRef(null);
   const currentRoomRef = useRef(null);
+  const { backtestId } = useParams();
 
   const latestProps = useRef({
     symbol,
@@ -60,38 +62,40 @@ export function useChartSocket({
 
     socket.on("disconnect", () => {});
 
-    socket.on("chart_data_updated", (msg) => {
-      const { symbol, interval, onCandle } = latestProps.current;
-      const backendInterval = INTERVAL_MAP[interval] || interval;
-      if (
-        onCandle &&
-        msg.symbol === symbol.replace("/", "") &&
-        msg.timeframe === backendInterval
-      ) {
-        onCandle(msg.data);
-      }
-    });
+    if (!backtestId) {
+      socket.on("chart_data_updated", (msg) => {
+        const { symbol, interval, onCandle } = latestProps.current;
+        const backendInterval = INTERVAL_MAP[interval] || interval;
+        if (
+          onCandle &&
+          msg.symbol === symbol.replace("/", "") &&
+          msg.timeframe === backendInterval
+        ) {
+          onCandle(msg.data);
+        }
+      });
 
-    socket.on("chart_drawing_received", (msg) => {
-      const { onDrawing } = latestProps.current;
-      if (onDrawing) {
-        onDrawing(msg, socket);
-      }
-    });
+      socket.on("chart_drawing_received", (msg) => {
+        const { onDrawing } = latestProps.current;
+        if (onDrawing) {
+          onDrawing(msg, socket);
+        }
+      });
 
-    socket.on("chart_drawing_updated", (msg) => {
-      const { onDrawingUpdated } = latestProps.current;
-      if (onDrawingUpdated) {
-        onDrawingUpdated(msg, socket);
-      }
-    });
+      socket.on("chart_drawing_updated", (msg) => {
+        const { onDrawingUpdated } = latestProps.current;
+        if (onDrawingUpdated) {
+          onDrawingUpdated(msg, socket);
+        }
+      });
 
-    socket.on("chart_drawing_deleted", (msg) => {
-      const { onDrawingDeleted } = latestProps.current;
-      if (onDrawingDeleted) {
-        onDrawingDeleted(msg, socket);
-      }
-    });
+      socket.on("chart_drawing_deleted", (msg) => {
+        const { onDrawingDeleted } = latestProps.current;
+        if (onDrawingDeleted) {
+          onDrawingDeleted(msg, socket);
+        }
+      });
+    }
 
     const handleVisibilityChange = () => {
       if (!document.hidden && socket.disconnected) {

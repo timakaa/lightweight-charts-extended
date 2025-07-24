@@ -215,6 +215,8 @@ function useLongPositionResize(
             },
             candleData,
           );
+          // Update _endTime since target/stop time changed
+          position._endTime = newTime;
           break;
         case "profit-top-left":
           // Only change the target price, and don't allow it to go below the entry price.
@@ -270,6 +272,8 @@ function useLongPositionResize(
             },
             candleData,
           );
+          // Update _startTime since entry time changed
+          position._startTime = newTime;
           break;
         }
       }

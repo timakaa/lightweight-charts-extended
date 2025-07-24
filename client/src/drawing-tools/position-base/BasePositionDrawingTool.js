@@ -152,16 +152,14 @@ export class BasePositionDrawingTool extends PluginBase {
       // Third click: stop, finalize
       this._stop = this._getPoint(param);
 
-      const newPosition = new this._PositionClass(
-        this._entry,
-        this._target,
-        this._stop,
-        this._series,
-        this._chart,
-        this._selectedPositionId,
-        this._activeResizeHandleRef,
-        this._candleData,
+      const newPosition = this._createPosition(
+        this._entry.price,
+        this._target.price,
+        this._stop.price,
+        this._entry.time,
+        this._target.time,
       );
+
       this._series.attachPrimitive(newPosition);
       if (typeof newPosition.attached === "function") {
         newPosition.attached({
@@ -249,24 +247,13 @@ export class BasePositionDrawingTool extends PluginBase {
   }
 
   // Create a position with enhanced points
-  _createPosition(entryPrice, targetPrice, stopPrice) {
-    const enhancedEntry = enhancePointWithLogicalIndex(
-      entryPrice,
-      this._candleData,
-    );
-    const enhancedTarget = enhancePointWithLogicalIndex(
-      targetPrice,
-      this._candleData,
-    );
-    const enhancedStop = enhancePointWithLogicalIndex(
-      stopPrice,
-      this._candleData,
-    );
-
+  _createPosition(entryPrice, targetPrice, stopPrice, startTime, endTime) {
     return new this._PositionClass(
-      enhancedEntry,
-      enhancedTarget,
-      enhancedStop,
+      entryPrice,
+      targetPrice,
+      stopPrice,
+      startTime,
+      endTime,
       this._series,
       this._chart,
       this._selectedPositionId,

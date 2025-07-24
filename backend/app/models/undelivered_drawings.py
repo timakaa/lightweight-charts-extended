@@ -1,8 +1,6 @@
 from sqlalchemy import Column, Integer, String, JSON, DateTime
-from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
-
-Base = declarative_base()
+from app.db.database import Base
 
 
 class UndeliveredDrawing(Base):

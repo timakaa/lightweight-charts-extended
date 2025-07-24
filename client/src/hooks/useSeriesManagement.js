@@ -19,16 +19,6 @@ export const useSeriesManagement = (chart, symbol, timeframe) => {
       setSeries(null);
     }
 
-    // Reset chart view
-    if (chart.timeScale) {
-      try {
-        chart.timeScale().setVisibleRange(null);
-        chart.timeScale().fitContent();
-      } catch {
-        // Ignore errors
-      }
-    }
-
     // Create new series
     const candlestickSeries = chart.addSeries(CandlestickSeries, {
       upColor: "#fff",

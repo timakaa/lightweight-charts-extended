@@ -37,18 +37,11 @@ Each drawing tool has its own set of options and properties. Below are the speci
   type: "long_position";
   id?: string; // Optional unique identifier
   ticker: string;
-  entry: {
-    time: string | "relative"; // ISO timestamp or "relative"
-    price: number;
-  }
-  target: {
-    time: string | "relative"; // ISO timestamp or "relative"
-    price: number;
-  }
-  stop: {
-    time: string | "relative"; // ISO timestamp or "relative"
-    price: number;
-  }
+  startTime: string | "relative"; // ISO timestamp or "relative"
+  endTime: string | "relative"; // ISO timestamp or "relative"
+  entryPrice: number;
+  targetPrice: number;
+  stopPrice: number;
 }
 ```
 
@@ -59,18 +52,11 @@ Each drawing tool has its own set of options and properties. Below are the speci
   type: "short_position";
   id?: string; // Optional unique identifier
   ticker: string;
-  entry: {
-    time: string | "relative"; // ISO timestamp or "relative"
-    price: number;
-  }
-  target: {
-    time: string | "relative"; // ISO timestamp or "relative"
-    price: number;
-  }
-  stop: {
-    time: string | "relative"; // ISO timestamp or "relative"
-    price: number;
-  }
+  startTime: string | "relative"; // ISO timestamp or "relative"
+  endTime: string | "relative"; // ISO timestamp or "relative"
+  entryPrice: number;
+  targetPrice: number;
+  stopPrice: number;
 }
 ```
 

@@ -24,7 +24,6 @@ function useRulerDrawingTool(
       setRulersData,
     );
     return () => {
-      rulerDrawingTool.current?.remove();
       rulerDrawingTool.current = null;
     };
   }, [chart, candlestickSeries, setCurrentTool, setRulersData]);

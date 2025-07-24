@@ -17,9 +17,13 @@ async def get_candlestick_data(
     page_size: int = Query(
         100, ge=1, le=1000, description="Number of candles per page"
     ),
+    backtest_id: int = Query(
+        None, description="Optional backtest ID to filter candles"
+    ),
 ):
     """
     Get paginated candlestick (OHLCV) data for a symbol from Bybit.
+    Optionally filter by backtest_id if provided.
     Debug: start_time and end_time removed, always paginates by count.
     """
     try:
@@ -28,6 +32,7 @@ async def get_candlestick_data(
             timeframe=timeframe,
             page=page,
             page_size=page_size,
+            backtest_id=backtest_id,
         )
         return result
     except Exception as e:
@@ -76,6 +81,26 @@ async def test_multiple_drawings():
             "endTime": "relative",
             "startPrice": 151.68,
             "endPrice": 152.79,
+        },
+        {
+            "id": "long_position-1752069870768-7623d884-f9c1-44bc-b35b-a62074510b72",
+            "type": "long_position",
+            "ticker": "SOLUSDT",
+            "startTime": "2025-07-13T23:00:00Z",
+            "endTime": "2025-07-13T02:00:00Z",
+            "entryPrice": 171.31,
+            "targetPrice": 184.93,
+            "stopPrice": 168.0,
+        },
+        {
+            "id": "short_position-1752069870768-7623d884-f9c1-44bc-b35b-a62074510b72",
+            "type": "short_position",
+            "ticker": "SOLUSDT",
+            "startTime": "2025-07-13T14:00:00Z",
+            "endTime": "2025-07-13T10:00:00Z",
+            "entryPrice": 182.04,
+            "targetPrice": 173.19,
+            "stopPrice": 187.14,
         },
     ]
 

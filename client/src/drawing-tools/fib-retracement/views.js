@@ -26,6 +26,9 @@ export class FibRetracementPaneView {
    */
   update() {
     const series = this._source._series;
+    if (!series || !this._source._chart) {
+      return; // Skip update if not properly attached yet
+    }
     const timeScale = this._source._chart.timeScale();
 
     // Use hybrid coordinate system for X coordinates
@@ -82,6 +85,9 @@ export class FibRetracementHandlesPaneView {
    */
   update() {
     const series = this._source._series;
+    if (!series || !this._source._chart) {
+      return; // Skip update if not properly attached yet
+    }
     const timeScale = this._source._chart.timeScale();
 
     // Use hybrid coordinate system for X coordinates
@@ -203,6 +209,9 @@ export class FibRetracementPriceAxisPaneView extends FibRetracementAxisPaneView 
    */
   getPoints() {
     const series = this._source._series;
+    if (!series) {
+      return [null, null]; // Skip if not properly attached yet
+    }
     const y1 = series.priceToCoordinate(this._source._p1.price);
     const y2 = series.priceToCoordinate(this._source._p2.price);
     return [y1, y2];
@@ -252,6 +261,9 @@ export class FibRetracementTimeAxisPaneView extends FibRetracementAxisPaneView {
    * @returns {Array} Array of [x1, x2] coordinates
    */
   getPoints() {
+    if (!this._source._chart) {
+      return [null, null]; // Skip if not properly attached yet
+    }
     const timeScale = this._source._chart.timeScale();
 
     // Use hybrid coordinate system for X coordinates
@@ -358,6 +370,10 @@ export class FibRetracementPriceAxisView extends FibRetracementAxisView {
    * Updates the price coordinate position
    */
   update() {
+    if (!this._source._series) {
+      this._pos = -1; // Skip if not properly attached yet
+      return;
+    }
     // Use the string key to always access the latest _p1/_p2 from the source
     this._pos = this._source._series.priceToCoordinate(
       this._source[`_${this._point}`].price,
@@ -399,6 +415,9 @@ export class FibRetracementTimeAxisView extends FibRetracementAxisView {
    * @returns {number|null} X coordinate or null if conversion fails
    */
   coordinate() {
+    if (!this._source._chart) {
+      return -1; // Skip if not properly attached yet
+    }
     const point = this._point === "p1" ? this._source._p1 : this._source._p2;
     const timeScale = this._source._chart.timeScale();
 

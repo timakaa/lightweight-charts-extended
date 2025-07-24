@@ -17,6 +17,9 @@ export class LinePaneView {
   // Updates the pixel coordinates for the line endpoints
   update() {
     const series = this._source._series;
+    if (!series || !this._source._chart) {
+      return; // Skip update if not properly attached yet
+    }
     const y1 = series.priceToCoordinate(this._source._p1.price);
     const y2 = series.priceToCoordinate(this._source._p2.price);
     const timeScale = this._source._chart.timeScale();
@@ -52,6 +55,9 @@ export class HandlesPaneView {
   // Updates the pixel coordinates for the handles
   update() {
     const series = this._source._series;
+    if (!series || !this._source._chart) {
+      return; // Skip update if not properly attached yet
+    }
     const y1 = series.priceToCoordinate(this._source._p1.price);
     const y2 = series.priceToCoordinate(this._source._p2.price);
     const timeScale = this._source._chart.timeScale();
@@ -129,6 +135,9 @@ export class LinePriceAxisPaneView extends LineAxisPaneView {
 
   getPoints() {
     const series = this._source._series;
+    if (!series) {
+      return [null, null]; // Skip if not properly attached yet
+    }
     const y1 = series.priceToCoordinate(this._source._p1.price);
     const y2 = series.priceToCoordinate(this._source._p2.price);
     return [y1, y2];
@@ -142,6 +151,9 @@ export class LineTimeAxisPaneView extends LineAxisPaneView {
   }
 
   getPoints() {
+    if (!this._source._chart) {
+      return [null, null]; // Skip if not properly attached yet
+    }
     const timeScale = this._source._chart.timeScale();
 
     // Use enhanced coordinate conversion with logical fallback
@@ -190,6 +202,10 @@ class LineAxisView {
 // LinePriceAxisView provides the price axis label for the line
 export class LinePriceAxisView extends LineAxisView {
   update() {
+    if (!this._source._series) {
+      this._pos = -1; // Skip if not properly attached yet
+      return;
+    }
     const price = this._source[`_${this._point}`]?.price;
     this._pos = this._source._series.priceToCoordinate(price);
   }
@@ -203,6 +219,10 @@ export class LinePriceAxisView extends LineAxisView {
 // LineTimeAxisView provides the time axis label for the line
 export class LineTimeAxisView extends LineAxisView {
   update() {
+    if (!this._source._chart) {
+      this._pos = -1; // Skip if not properly attached yet
+      return;
+    }
     const timeScale = this._source._chart.timeScale();
 
     // Use enhanced coordinate conversion with logical fallback

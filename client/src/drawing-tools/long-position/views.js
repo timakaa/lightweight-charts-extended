@@ -333,7 +333,7 @@ export class LongPositionPriceAxisView extends LongPositionAxisView {
       price = this._source[`_${this._point}`]?.price;
     }
 
-    if (price !== undefined && price !== null) {
+    if (price !== undefined && price !== null && this._source._series) {
       this._pos = this._source._series.priceToCoordinate(price);
     } else {
       this._pos = -1;
@@ -360,6 +360,10 @@ export class LongPositionPriceAxisView extends LongPositionAxisView {
 // LongPositionTimeAxisView provides the time axis label for the long position
 export class LongPositionTimeAxisView extends LongPositionAxisView {
   update() {
+    if (!this._source._chart) {
+      this._pos = -1; // Skip if not properly attached yet
+      return;
+    }
     // Use hybrid coordinate conversion for time axis labels
     const timeScale = this._source._chart.timeScale();
     const candleData = this._source._candleData;

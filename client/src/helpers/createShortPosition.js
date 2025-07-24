@@ -9,9 +9,11 @@ import { useDrawingsStore } from "../store/drawings.js";
  * @param {Object} candlestickSeries - The candlestick series instance
  * @param {Array} candleData - Array of candle data for calculations
  * @param {Object} shortPositionData - The short position data from backend
- * @param {Object} shortPositionData.entry - Entry point { time: string|number, price: number }
- * @param {Object} shortPositionData.target - Target point { time: string|number, price: number }
- * @param {Object} shortPositionData.stop - Stop point { time: string|number, price: number }
+ * @param {string|number} shortPositionData.startTime - Start time of the position
+ * @param {string|number} shortPositionData.endTime - End time of the position
+ * @param {number} shortPositionData.entryPrice - Entry price
+ * @param {number} shortPositionData.targetPrice - Target price
+ * @param {number} shortPositionData.stopPrice - Stop price
  * @param {Function} setShortPositionsData - Function to update short positions state
  * @param {Object} shortPositionDrawingTool - The short position drawing tool instance
  * @param {Object} activeResizeHandleRef - Reference to the active resize handle
@@ -29,28 +31,20 @@ export function createShortPosition(
   if (!chart || !candlestickSeries || !candleData || candleData.length === 0)
     return;
 
-  // Parse entry data
-  const entryTime = toUnixSeconds(shortPositionData.entry.time);
-  const entryPrice = shortPositionData.entry.price;
-
-  // Parse target data
-  const targetTime = toUnixSeconds(shortPositionData.target.time);
-  const targetPrice = shortPositionData.target.price;
-
-  // Parse stop data
-  const stopTime = toUnixSeconds(shortPositionData.stop.time);
-  const stopPrice = shortPositionData.stop.price;
-
-  // Create position objects
-  const entryPoint = { time: entryTime, price: entryPrice };
-  const targetPoint = { time: targetTime, price: targetPrice };
-  const stopPoint = { time: stopTime, price: stopPrice };
+  // Parse data
+  const startTime = toUnixSeconds(shortPositionData.startTime);
+  const endTime = toUnixSeconds(shortPositionData.endTime);
+  const entryPrice = shortPositionData.entryPrice;
+  const targetPrice = shortPositionData.targetPrice;
+  const stopPrice = shortPositionData.stopPrice;
 
   // Create short position instance with activeResizeHandleRef for handle hiding
   const shortPosition = new ShortPosition(
-    entryPoint,
-    targetPoint,
-    stopPoint,
+    entryPrice,
+    targetPrice,
+    stopPrice,
+    startTime,
+    endTime,
     candlestickSeries,
     chart,
     null, // selectedPositionId

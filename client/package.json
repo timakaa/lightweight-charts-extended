@@ -10,11 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.4",
     "@tanstack/react-query": "^5.81.5",
     "lightweight-charts": "^5.0.7",
     "papaparse": "^5.5.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-router-dom": "^7.6.3",
     "socket.io-client": "^4.8.1",
     "uuid": "^11.1.0",
     "zustand": "^5.0.5"

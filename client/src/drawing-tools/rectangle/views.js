@@ -18,6 +18,9 @@ export class HandlesPaneView {
   // Updates the pixel coordinates for the handles
   update() {
     const series = this._source._series;
+    if (!series || !this._source._chart) {
+      return; // Skip update if not properly attached yet
+    }
     const y1 = series.priceToCoordinate(this._source._p1.price);
     const y2 = series.priceToCoordinate(this._source._p2.price);
     const timeScale = this._source._chart.timeScale();
@@ -53,6 +56,9 @@ export class RectanglePaneView {
   // Updates the pixel coordinates for the rectangle
   update() {
     const series = this._source._series;
+    if (!series || !this._source._chart) {
+      return; // Skip update if not properly attached yet
+    }
     const y1 = series.priceToCoordinate(this._source._p1.price);
     const y2 = series.priceToCoordinate(this._source._p2.price);
     const timeScale = this._source._chart.timeScale();
@@ -191,6 +197,10 @@ class RectangleAxisView {
 // RectanglePriceAxisView provides the price axis label for the rectangle
 export class RectanglePriceAxisView extends RectangleAxisView {
   update() {
+    if (!this._source._series) {
+      this._pos = -1; // Skip if not properly attached yet
+      return;
+    }
     // Use the string key to always access the latest _p1/_p2 from the source
     this._pos = this._source._series.priceToCoordinate(
       this._source[`_${this._point}`].price,

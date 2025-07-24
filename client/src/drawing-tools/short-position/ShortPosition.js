@@ -18,6 +18,8 @@ export class ShortPosition extends BasePosition {
     entryPrice,
     targetPrice,
     stopPrice,
+    startTime,
+    endTime,
     series,
     chart,
     selectedPositionId = null,
@@ -31,6 +33,8 @@ export class ShortPosition extends BasePosition {
       entryPrice,
       targetPrice,
       stopPrice,
+      startTime,
+      endTime,
       series,
       chart,
       selectedPositionId,
@@ -51,9 +55,18 @@ export class ShortPosition extends BasePosition {
     this._candleData = candleData;
 
     // Enhance entry, target, and stop points with logical coordinates
-    this._entryPrice = enhancePointWithLogicalIndex(entryPrice, candleData);
-    this._targetPrice = enhancePointWithLogicalIndex(targetPrice, candleData);
-    this._stopPrice = enhancePointWithLogicalIndex(stopPrice, candleData);
+    this._entryPrice = enhancePointWithLogicalIndex(
+      { time: startTime, price: entryPrice },
+      candleData,
+    );
+    this._targetPrice = enhancePointWithLogicalIndex(
+      { time: endTime, price: targetPrice },
+      candleData,
+    );
+    this._stopPrice = enhancePointWithLogicalIndex(
+      { time: endTime, price: stopPrice },
+      candleData,
+    );
   }
 
   // Update candle data for coordinate calculations

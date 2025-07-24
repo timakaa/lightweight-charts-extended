@@ -1,4 +1,4 @@
-import { useRef, useMemo } from "react";
+import { useRef, useMemo, useEffect } from "react";
 import chartDataUrl from "../charts/SOLUSDT-1h-bybit.csv?url";
 import { useChart } from "../hooks/useChart";
 import { useCandlestickSeries } from "../hooks/useCandlestickSeries";
@@ -27,12 +27,23 @@ import { useChartStore } from "../store/chart";
 import { useUndeliveredDrawings } from "../hooks/useUndeliveredDrawings";
 import { getSymbol } from "../helpers/symbol";
 import TickerModal from "./TickerModal";
+import Trades from "./Trades";
+import { useLocation, useParams } from "react-router-dom";
+import { fitChartToRecentBars } from "../helpers/fitChartToRecentBars";
 
-const TradingChart = () => {
+const TradingChart = ({ drawings }) => {
   const chartContainerRef = useRef();
+  const { pathname } = useLocation();
+  const { backtestId } = useParams();
+
+  useEffect(() => {
+    if (backtestId) {
+      fitChartToRecentBars(chart, candlestickSeries, candleData);
+    }
+  }, [backtestId]);
 
   const chart = useChart(chartContainerRef);
-  const [candlestickSeries, candleData] = useCandlestickSeries(
+  const [candlestickSeries, candleData, chartDataInfo] = useCandlestickSeries(
     chart,
     chartDataUrl,
   );
@@ -131,6 +142,7 @@ const TradingChart = () => {
     chart,
     candlestickSeries,
     candleData,
+    drawingsData: drawings,
     setBoxesData,
     setLinesData,
     setLongPositionsData,
@@ -211,46 +223,64 @@ const TradingChart = () => {
   };
 
   return (
-    <div className='h-screen flex flex-col'>
-      <TopBar onOpenTickerModal={openTickerModal} />
-      <div className='relative flex h-full'>
-        <Sidebar
-          deleteAllLines={deleteAllLines}
-          deleteAllBoxes={deleteAllBoxes}
-          deleteAllLongPositions={deleteAllLongPositions}
-          deleteAllShortPositions={deleteAllShortPositions}
-          deleteAllFibRetracements={deleteAllFibRetracements}
-        />
-        <div ref={chartContainerRef} className='w-full h-full' />
-        {(selectedLineId ||
-          selectedBoxId ||
-          selectedLongPositionId ||
-          selectedShortPositionId ||
-          selectedFibRetracementId) && (
-          <button
-            onClick={handleDeleteSelected}
-            className='fixed top-16 right-20 bg-red-500 text-white border-none px-2 py-2 rounded z-40 shadow hover:bg-red-600 transition-colors'
-          >
-            <Trash />
-          </button>
-        )}
-        <TimeframeModal
-          isOpen={isModalOpen}
-          inputValue={inputValue}
-          isValid={isValid}
-          onClose={closeModal}
-          onApply={applyTimeframe}
-          onInputChange={handleInputChange}
-          getPreviewTimeframe={getPreviewTimeframe}
-        />
-        <TickerModal
-          isOpen={isTickerModalOpen}
-          initialLetter={initialLetter}
-          onClose={closeTickerModal}
-          onSelectTicker={handleTickerSelect}
-        />
+    <>
+      <div className='h-screen flex flex-col'>
+        <TopBar onOpenTickerModal={openTickerModal} />
+        <div className='flex h-full'>
+          <Sidebar
+            deleteAllLines={deleteAllLines}
+            deleteAllBoxes={deleteAllBoxes}
+            deleteAllLongPositions={deleteAllLongPositions}
+            deleteAllShortPositions={deleteAllShortPositions}
+            deleteAllFibRetracements={deleteAllFibRetracements}
+          />
+          <div className='flex flex-col relative w-full h-full'>
+            <div
+              ref={chartContainerRef}
+              className={`w-full -mb-1 h-full ${
+                pathname.startsWith("/backtest") ? "mb-[350px]" : ""
+              }`}
+            />
+            {pathname.startsWith("/backtest") ? (
+              <Trades
+                chart={chart}
+                candleData={candleData}
+                chartDataInfo={chartDataInfo}
+              />
+            ) : (
+              ""
+            )}
+            {(selectedLineId ||
+              selectedBoxId ||
+              selectedLongPositionId ||
+              selectedShortPositionId ||
+              selectedFibRetracementId) && (
+              <button
+                onClick={handleDeleteSelected}
+                className='absolute top-4 right-20 bg-red-500 text-white border-none px-2 py-2 rounded z-40 shadow hover:bg-red-600 transition-colors'
+              >
+                <Trash />
+              </button>
+            )}
+          </div>
+        </div>
       </div>
-    </div>
+      <TimeframeModal
+        isOpen={isModalOpen}
+        inputValue={inputValue}
+        isValid={isValid}
+        onClose={closeModal}
+        onApply={applyTimeframe}
+        onInputChange={handleInputChange}
+        getPreviewTimeframe={getPreviewTimeframe}
+      />
+      <TickerModal
+        isOpen={isTickerModalOpen}
+        initialLetter={initialLetter}
+        onClose={closeTickerModal}
+        onSelectTicker={handleTickerSelect}
+      />
+    </>
   );
 };
 

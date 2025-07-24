@@ -76,7 +76,7 @@ export const onDrawingUpdate = ({
         candlestickSeries.setData(candlestickSeries.data());
       }
     } else if (
-      drawing.type === "long-position" &&
+      drawing.type === "long_position" &&
       longPositionDrawingTool.current
     ) {
       const pos = Array.from(longPositionDrawingTool.current._positions).find(
@@ -84,15 +84,15 @@ export const onDrawingUpdate = ({
       );
       if (pos) {
         const { entry, target, stop, options } = drawingData;
-        pos._entry = {
+        pos._entryPrice = {
           time: resolveTime(entry.time),
           price: entry.price,
         };
-        pos._target = {
+        pos._targetPrice = {
           time: resolveTime(target.time),
           price: target.price,
         };
-        pos._stop = {
+        pos._stopPrice = {
           time: resolveTime(stop.time),
           price: stop.price,
         };
@@ -101,7 +101,7 @@ export const onDrawingUpdate = ({
         candlestickSeries.setData(candlestickSeries.data());
       }
     } else if (
-      drawing.type === "short-position" &&
+      drawing.type === "short_position" &&
       shortPositionDrawingTool.current
     ) {
       const pos = Array.from(shortPositionDrawingTool.current._positions).find(
@@ -109,15 +109,15 @@ export const onDrawingUpdate = ({
       );
       if (pos) {
         const { entry, target, stop, options } = drawingData;
-        pos._entry = {
+        pos._entryPrice = {
           time: resolveTime(entry.time),
           price: entry.price,
         };
-        pos._target = {
+        pos._targetPrice = {
           time: resolveTime(target.time),
           price: target.price,
         };
-        pos._stop = {
+        pos._stopPrice = {
           time: resolveTime(stop.time),
           price: stop.price,
         };
@@ -126,7 +126,7 @@ export const onDrawingUpdate = ({
         candlestickSeries.setData(candlestickSeries.data());
       }
     } else if (
-      drawing.type === "fib-retracement" &&
+      drawing.type === "fib_retracement" &&
       fibRetracementDrawingTool.current
     ) {
       const fib = Array.from(

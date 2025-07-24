@@ -2,7 +2,14 @@
 export default {
   content: ["./index.html", "./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        modal: {
+          DEFAULT: "#0F0F0F",
+          border: "#2a2e39",
+        },
+      },
+    },
   },
   plugins: [],
 };

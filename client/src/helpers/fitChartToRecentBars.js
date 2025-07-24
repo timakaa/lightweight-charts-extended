@@ -34,7 +34,5 @@ export function fitChartToRecentBars(
         { from: firstReal.time, to: lastReal.time + rightOffset * interval },
         { animation: false },
       );
-    // Optionally, force a chart resize to trigger autoscale
-    // chart.resize(chart.width(), chart.height());
   }
 }

@@ -33,7 +33,6 @@ function useLineDrawingTool(
     );
     // Cleanup: remove tool on unmount or dependency change
     return () => {
-      lineDrawingTool.current?.remove();
       lineDrawingTool.current = null;
     };
   }, [
