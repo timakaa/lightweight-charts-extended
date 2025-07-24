@@ -56,6 +56,28 @@ export function navigateToTradeDate(
 
   console.log("Setting visible range:", { from: fromTime, to: toTime });
 
+  // Calculate price range for visible candles
+  const visibleCandles = sortedCandles.slice(startIndex, endIndex + 1);
+  let minPrice = Infinity;
+  let maxPrice = -Infinity;
+
+  visibleCandles.forEach((candle) => {
+    if (candle.low < minPrice) minPrice = candle.low;
+    if (candle.high > maxPrice) maxPrice = candle.high;
+  });
+
+  // Add some padding to the price range (5%)
+  const priceRange = maxPrice - minPrice;
+  const padding = priceRange * 0.05;
+  const adjustedMinPrice = minPrice - padding;
+  const adjustedMaxPrice = maxPrice + padding;
+
+  console.log("Setting price range:", {
+    min: adjustedMinPrice,
+    max: adjustedMaxPrice,
+  });
+
+  // Set time range first
   chart.timeScale().setVisibleRange(
     {
       from: fromTime,
@@ -63,4 +85,10 @@ export function navigateToTradeDate(
     },
     { animation: true },
   );
+
+  // Then set price range
+  chart.priceScale("right").setVisibleRange({
+    from: adjustedMinPrice,
+    to: adjustedMaxPrice,
+  });
 }
