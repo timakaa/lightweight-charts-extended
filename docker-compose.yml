@@ -8,6 +8,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
+    env_file:
+      - ./backend/.env
     environment:
       - HOST=0.0.0.0
       - PORT=8000
@@ -26,6 +28,8 @@ services:
       - "3000:80"
     depends_on:
       - backend
+    env_file:
+      - ./client/.env
     environment:
       - VITE_API_URL=http://localhost:8000
     restart: unless-stopped
