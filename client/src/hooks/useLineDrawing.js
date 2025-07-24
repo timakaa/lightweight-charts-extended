@@ -13,6 +13,8 @@ import useLineChartEvents from "./line/useLineChartEvents";
 import useLineDrag from "./line/useLineDrag";
 import useLineResize from "./line/useLineResize";
 import useLineCursor from "./line/useLineCursor";
+import { useOptimizedLineSelection } from "./useOptimizedSelection";
+import { useViewportDrawings, getLineTimeRange } from "./useViewportDrawings";
 
 // useLineDrawing integrates all hooks and logic for line drawing, selection, drag, resize, and keyboard shortcuts
 export const useLineDrawing = (chart, candlestickSeries, candleData) => {
@@ -80,27 +82,62 @@ export const useLineDrawing = (chart, candlestickSeries, candleData) => {
     candleData,
   );
 
-  // Show/hide handles on hover/selection
-  const prevLineState = useRef({ selectedLineId: null, hoveredLineId: null });
+  // Use viewport-based drawing management for performance
+  const { visibleDrawings: visibleLines } = useViewportDrawings(
+    chart,
+    linesData,
+    getLineTimeRange,
+  );
+
+  // Track previously attached lines to handle deletions properly
+  const previouslyAttachedRef = useRef(new Set());
+
+  // Use optimized selection management for lines
+  const { updateSelection, resetSelection } =
+    useOptimizedLineSelection(linesData);
+
+  // Optimized selection management - only update affected drawings
   useEffect(() => {
-    const prev = prevLineState.current;
-    const curr = { selectedLineId, hoveredLineId };
+    updateSelection(selectedLineId, hoveredLineId);
+  }, [selectedLineId, hoveredLineId, updateSelection]);
 
-    linesDataRef.current.forEach((line) => {
-      const isSelected = line.id === curr.selectedLineId;
-      const isHovered = line.id === curr.hoveredLineId;
-      const wasSelected = line.id === prev.selectedLineId;
-      const wasHovered = line.id === prev.hoveredLineId;
+  // Re-attach only visible lines to the chart/series when chart or series changes
+  useEffect(() => {
+    // Skip re-attachment when no chart/series available
+    if (!chart || !candlestickSeries) return;
 
-      const shouldShowHandles = isSelected || isHovered;
-      const wasShowingHandles = wasSelected || wasHovered;
-      if (shouldShowHandles !== wasShowingHandles) {
-        line.applyOptions({ showHandles: shouldShowHandles });
+    // Get current line IDs for comparison
+    const currentLineIds = new Set(linesData.map((line) => line.id));
+
+    // Detach lines that are no longer in the data (deleted lines)
+    previouslyAttachedRef.current.forEach((attachedLine) => {
+      if (!currentLineIds.has(attachedLine.id)) {
+        // Line was deleted - force detach it
+        if (attachedLine._series && attachedLine._series.detachPrimitive) {
+          attachedLine._series.detachPrimitive(attachedLine);
+        }
       }
     });
 
-    prevLineState.current = curr;
-  }, [selectedLineId, hoveredLineId]);
+    // Detach all current lines first (clean slate)
+    linesData.forEach((line) => {
+      if (line._series && line._series.detachPrimitive) {
+        line._series.detachPrimitive(line);
+      }
+    });
+
+    // Attach only visible lines
+    visibleLines.forEach((line) => {
+      // Attach to the new series
+      candlestickSeries.attachPrimitive(line);
+      // Update references
+      line._series = candlestickSeries;
+      line._chart = chart;
+    });
+
+    // Update tracking of attached lines
+    previouslyAttachedRef.current = new Set(visibleLines);
+  }, [chart, candlestickSeries, linesData, visibleLines]);
 
   // Subscribe to chart click and crosshair move events for selection/hover
   useLineChartEvents(

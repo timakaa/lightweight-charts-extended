@@ -49,6 +49,9 @@ export class PositionTimeAxisPaneView extends PositionAxisPaneView {
   }
 
   getPoints() {
+    if (!this._source._chart) {
+      return [null, null]; // Skip if not properly attached yet
+    }
     const timeScale = this._source._chart.timeScale();
     const p1 = this._source._p1;
     const p2 = this._source._p2;
@@ -67,6 +70,9 @@ export class PositionPriceAxisPaneView extends PositionAxisPaneView {
 
   getPoints() {
     const series = this._source._series;
+    if (!series) {
+      return [null, null]; // Skip if not properly attached yet
+    }
     const p1 = this._source._p1;
     const p2 = this._source._p2;
     if (!p1 || !p2) return [null, null];
@@ -122,6 +128,10 @@ export class PositionPriceAxisView extends PositionAxisView {
     } else {
       price = this._source[`_${this._point}`]?.price;
     }
+    if (!this._source._series) {
+      this._pos = -1; // Skip if not properly attached yet
+      return;
+    }
     this._pos = this._source._series.priceToCoordinate(price);
   }
   text() {
@@ -139,7 +149,12 @@ export class PositionPriceAxisView extends PositionAxisView {
 // PositionTimeAxisView provides the time axis label for the position
 export class PositionTimeAxisView extends PositionAxisView {
   update() {
-    if (!this._source._p1 || !this._source._p2 || !this._point) {
+    if (
+      !this._source._chart ||
+      !this._source._p1 ||
+      !this._source._p2 ||
+      !this._point
+    ) {
       this._pos = -1;
       return;
     }

@@ -14,6 +14,11 @@ import {
   deleteAllPositions,
 } from "./position/tools/positionDeleteTools";
 import useLongPositionCursor from "./long-position/useLongPositionCursor";
+import {
+  useViewportDrawings,
+  getPositionTimeRange,
+} from "./useViewportDrawings";
+import { useOptimizedPositionSelection } from "./useOptimizedSelection";
 
 // Integrates all hooks and logic for long position drawing, selection, drag, resize, and keyboard shortcuts
 export const useLongPositionDrawing = (
@@ -95,8 +100,18 @@ export const useLongPositionDrawing = (
     }
   }, [timeframe, ticker]);
 
-  // Ensure long positions are aware of selection/hover for label/handle visibility
-  // (mirrors useBoxDrawing logic)
+  // Use viewport-based drawing management for performance
+  const { visibleDrawings: visibleLongPositions } = useViewportDrawings(
+    chart,
+    longPositionsData,
+    getPositionTimeRange,
+  );
+
+  // Use optimized selection management
+  const { updateSelection, updateEntryTappedLogic, resetSelection } =
+    useOptimizedPositionSelection(longPositionsData);
+
+  // Optimized selection management - only update affected drawings
   React.useEffect(() => {
     if (longPositionDrawingTool.current) {
       longPositionDrawingTool.current.setSelectedPositionId(
@@ -106,47 +121,30 @@ export const useLongPositionDrawing = (
         hoveredLongPositionId,
       );
     }
-    // Toggle showHandles for hovered/selected positions (crucial for cursor logic)
-    longPositionsDataRef.current.forEach((pos) => {
-      const shouldShow =
-        pos.id === selectedLongPositionId || pos.id === hoveredLongPositionId;
-      pos.applyOptions({ showHandles: shouldShow });
-    });
 
-    // ENTRY TAPPED LOGIC
-    longPositionsDataRef.current.forEach((pos) => {
-      if (!pos._entryPrice || !candleData || !Array.isArray(candleData)) {
-        pos.setEntryTapped(false);
-        return;
-      }
-      const entryTime = pos._entryPrice.time;
-      const entryPrice = pos._entryPrice.price;
-      // Find the index of the entry candle
-      const entryIdx = candleData.findIndex((c) => c.time === entryTime);
-      if (entryIdx === -1) {
-        pos.setEntryTapped(false);
-        return;
-      }
-      // Check all candles after entry (including entry candle)
-      let tapped = false;
-      for (let i = entryIdx; i < candleData.length; ++i) {
-        const c = candleData[i];
-        if (c.low <= entryPrice && entryPrice <= c.high) {
-          tapped = true;
-          break;
-        }
-      }
-      pos.setEntryTapped(tapped);
-    });
+    // Use optimized selection update (only affects changed drawings)
+    updateSelection(selectedLongPositionId, hoveredLongPositionId);
   }, [
     selectedLongPositionId,
     hoveredLongPositionId,
     longPositionDrawingTool,
-    longPositionsDataRef,
-    candleData,
+    updateSelection,
   ]);
 
-  // Re-attach all long positions to the chart/series when chart or series changes
+  // Optimized entry tapped logic - only process visible drawings
+  React.useEffect(() => {
+    updateEntryTappedLogic(visibleLongPositions, candleData);
+  }, [visibleLongPositions, candleData, updateEntryTappedLogic]);
+
+  // Reset selection tracking on timeframe/ticker changes
+  React.useEffect(() => {
+    resetSelection();
+  }, [timeframe, ticker, resetSelection]);
+
+  // Track previously attached positions to handle deletions properly
+  const previouslyAttachedRef = useRef(new Set());
+
+  // Re-attach only visible long positions to the chart/series when chart or series changes
   // This is needed for real-time animation during resize operations
   useEffect(() => {
     // Skip re-attachment during timeframe/ticker transitions to prevent race conditions
@@ -154,21 +152,44 @@ export const useLongPositionDrawing = (
       return;
     }
 
-    // Skip re-attachment when no positions exist
-    if (!chart || !candlestickSeries || longPositionsData.length === 0) return;
+    // Skip re-attachment when no chart/series available
+    if (!chart || !candlestickSeries) return;
 
+    // Get current position IDs for comparison
+    const currentPositionIds = new Set(longPositionsData.map((pos) => pos.id));
+    const visiblePositionIds = new Set(
+      visibleLongPositions.map((pos) => pos.id),
+    );
+
+    // Detach positions that are no longer in the data (deleted positions)
+    previouslyAttachedRef.current.forEach((attachedPos) => {
+      if (!currentPositionIds.has(attachedPos.id)) {
+        // Position was deleted - force detach it
+        if (attachedPos._series && attachedPos._series.detachPrimitive) {
+          attachedPos._series.detachPrimitive(attachedPos);
+        }
+      }
+    });
+
+    // Detach all current positions first (clean slate)
     longPositionsData.forEach((pos) => {
-      // Detach from any previous series
       if (pos._series && pos._series.detachPrimitive) {
         pos._series.detachPrimitive(pos);
       }
+    });
+
+    // Attach only visible positions
+    visibleLongPositions.forEach((pos) => {
       // Attach to the new series
       candlestickSeries.attachPrimitive(pos);
       // Update references
       pos._series = candlestickSeries;
       pos._chart = chart;
     });
-  }, [chart, candlestickSeries, longPositionsData]);
+
+    // Update tracking of attached positions
+    previouslyAttachedRef.current = new Set(visibleLongPositions);
+  }, [chart, candlestickSeries, longPositionsData, visibleLongPositions]);
 
   // Enable resizing of long position handles
   useLongPositionResize(

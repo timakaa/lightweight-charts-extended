@@ -15,7 +15,7 @@ export class RulerPaneView {
   update() {
     const series = this._source._series;
     const chart = this._source._chart;
-    if (!this._source._p1 || !this._source._p2) {
+    if (!series || !chart || !this._source._p1 || !this._source._p2) {
       this._p1 = { x: null, y: null };
       this._p2 = { x: null, y: null };
       return;
@@ -71,6 +71,10 @@ class RulerAxisView {
 // RulerPriceAxisView provides the price axis label for the ruler
 export class RulerPriceAxisView extends RulerAxisView {
   update() {
+    if (!this._source._series) {
+      this._pos = -1; // Skip if not properly attached yet
+      return;
+    }
     this._pos = this._source._series.priceToCoordinate(this._point.price);
   }
   text() {
@@ -81,6 +85,10 @@ export class RulerPriceAxisView extends RulerAxisView {
 // RulerTimeAxisView provides the time axis label for the ruler
 export class RulerTimeAxisView extends RulerAxisView {
   update() {
+    if (!this._source._chart) {
+      this._pos = -1; // Skip if not properly attached yet
+      return;
+    }
     const timeScale = this._source._chart.timeScale();
     const candleData = this._source._candleData;
     this._pos = getXCoordinate(this._point, timeScale, candleData);
@@ -163,6 +171,9 @@ class RulerPriceAxisPaneView extends RulerAxisPaneView {
 
   getPoints() {
     const series = this._source._series;
+    if (!series) {
+      return [null, null]; // Skip if not properly attached yet
+    }
     const y1 = series.priceToCoordinate(this._source._p1.price);
     const y2 = series.priceToCoordinate(this._source._p2.price);
     return [y1, y2];
@@ -176,6 +187,9 @@ class RulerTimeAxisPaneView extends RulerAxisPaneView {
   }
 
   getPoints() {
+    if (!this._source._chart) {
+      return [null, null]; // Skip if not properly attached yet
+    }
     const timeScale = this._source._chart.timeScale();
     const candleData = this._source._candleData;
     const x1 = getXCoordinate(this._source._p1, timeScale, candleData);

@@ -3,17 +3,17 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 import os
 
-# Get the directory where the database file should be stored
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-DATABASE_URL = f"sqlite:///{os.path.join(BASE_DIR, 'drawings.db')}"
+# Get the backend directory path
+backend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+db_path = os.path.join(backend_dir, "main.db")
 
-# Create SQLite engine
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+SQLALCHEMY_DATABASE_URL = f"sqlite:///{db_path}"
 
-# Create sessionmaker
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Create Base class
 Base = declarative_base()
 
 

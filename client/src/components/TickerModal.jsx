@@ -154,7 +154,7 @@ const TickerModal = ({ isOpen, onClose, onSelectTicker, initialLetter }) => {
       className='fixed cursor-default inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[999]'
       onClick={handleBackdropClick}
     >
-      <div className='bg-[#1E1E1E] rounded-lg w-[600px] max-h-[80vh] flex flex-col'>
+      <div className='bg-modal rounded-lg w-[600px] max-h-[80vh] flex flex-col'>
         <TickerModalContent
           onClose={onClose}
           onSelectTicker={onSelectTicker}

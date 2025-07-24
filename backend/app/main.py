@@ -9,6 +9,7 @@ from app.core.socket_manager import bybit_ws_manager
 from app.db.database import engine
 from app.models.undelivered_drawings import Base
 
+
 # Create FastAPI app
 fastapi_app = FastAPI(
     title=settings.PROJECT_NAME,

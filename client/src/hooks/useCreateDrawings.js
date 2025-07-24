@@ -47,16 +47,12 @@ export function useCreateDrawings({
     symbol: null,
     timeframe: null,
     drawingsCreated: false,
+    previousDrawingsData: null,
   });
 
-  // Effect that only runs on context changes (ticker or timeframe)
-  useEffect(() => {
-    // Reset flags for new context
-    lastStateRef.current.drawingsCreated = false;
-
-    // Clear existing drawings from chart only (don't remove from store for ticker/timeframe changes)
+  // Function to clear all drawings from the chart
+  const clearAllDrawings = () => {
     if (rectangleDrawingTool?.current) {
-      // Use removeFromChartOnly if available, fallback to remove
       if (rectangleDrawingTool.current.removeFromChartOnly) {
         rectangleDrawingTool.current.removeFromChartOnly();
       } else {
@@ -64,7 +60,6 @@ export function useCreateDrawings({
       }
     }
     if (lineDrawingTool?.current) {
-      // Use removeFromChartOnly if available, fallback to remove
       if (lineDrawingTool.current.removeFromChartOnly) {
         lineDrawingTool.current.removeFromChartOnly();
       } else {
@@ -72,7 +67,6 @@ export function useCreateDrawings({
       }
     }
     if (longPositionDrawingTool?.current) {
-      // Use removeFromChartOnly if available, fallback to remove
       if (longPositionDrawingTool.current.removeFromChartOnly) {
         longPositionDrawingTool.current.removeFromChartOnly();
       } else {
@@ -80,7 +74,6 @@ export function useCreateDrawings({
       }
     }
     if (shortPositionDrawingTool?.current) {
-      // Use removeFromChartOnly if available, fallback to remove
       if (shortPositionDrawingTool.current.removeFromChartOnly) {
         shortPositionDrawingTool.current.removeFromChartOnly();
       } else {
@@ -88,7 +81,6 @@ export function useCreateDrawings({
       }
     }
     if (fibRetracementDrawingTool?.current) {
-      // Use removeFromChartOnly if available, fallback to remove
       if (fibRetracementDrawingTool.current.removeFromChartOnly) {
         fibRetracementDrawingTool.current.removeFromChartOnly();
       } else {
@@ -102,12 +94,23 @@ export function useCreateDrawings({
     setLongPositionsData([]);
     setShortPositionsData([]);
     setFibRetracementsData([]);
+  };
+
+  // Effect that only runs on context changes (ticker or timeframe)
+  useEffect(() => {
+    // Reset flags for new context
+    lastStateRef.current.drawingsCreated = false;
+    clearAllDrawings();
   }, [symbol, timeframe]);
 
   // Effect that runs when candle data changes and creates drawings if needed
   useEffect(() => {
-    if (lastStateRef.current.drawingsCreated) {
-      return; // Already created for this context
+    // Check if drawings data has changed
+    const drawingsChanged =
+      drawingsData !== lastStateRef.current.previousDrawingsData;
+
+    if (lastStateRef.current.drawingsCreated && !drawingsChanged) {
+      return; // Already created for this context and no changes
     }
 
     if (
@@ -130,6 +133,11 @@ export function useCreateDrawings({
     // Get current ticker for filtering
     const currentTicker = useChartStore.getState().ticker;
     if (!currentTicker) return;
+
+    // If drawings changed, clear existing drawings before creating new ones
+    if (drawingsChanged) {
+      clearAllDrawings();
+    }
 
     // Use store data if no data provided
     const dataToUse = drawingsData || storeDrawings;
@@ -158,6 +166,7 @@ export function useCreateDrawings({
       symbol,
       timeframe,
       drawingsCreated: true,
+      previousDrawingsData: drawingsData,
     };
-  }, [chart, candlestickSeries, candleData, storeDrawings]);
+  }, [chart, candlestickSeries, candleData, storeDrawings, drawingsData]);
 }

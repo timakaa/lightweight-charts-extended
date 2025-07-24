@@ -33,18 +33,11 @@ export const updateDrawingPosition = (primitiveId, drawing, type = "line") => {
     case "long_position":
     case "short_position":
       updates = {
-        entry: {
-          time: new Date(drawing._entryPrice.time * 1000).toISOString(),
-          price: drawing._entryPrice.price,
-        },
-        target: {
-          time: new Date(drawing._targetPrice.time * 1000).toISOString(),
-          price: drawing._targetPrice.price,
-        },
-        stop: {
-          time: new Date(drawing._stopPrice.time * 1000).toISOString(),
-          price: drawing._stopPrice.price,
-        },
+        startTime: new Date(drawing._startTime * 1000).toISOString(),
+        endTime: new Date(drawing._endTime * 1000).toISOString(),
+        entryPrice: drawing._entryPrice.price,
+        targetPrice: drawing._targetPrice.price,
+        stopPrice: drawing._stopPrice.price,
       };
       break;
 

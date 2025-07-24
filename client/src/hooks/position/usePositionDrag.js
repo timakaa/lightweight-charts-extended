@@ -206,6 +206,10 @@ function usePositionDrag(
         candleData,
       );
 
+      // Update the _startTime and _endTime properties that updateDrawingPosition relies on
+      dragPosition._startTime = dragPosition._entryPrice.time;
+      dragPosition._endTime = dragPosition._targetPrice.time;
+
       dragPosition.updateAllViews && dragPosition.updateAllViews();
       if (dragPosition.requestUpdate) dragPosition.requestUpdate();
     };

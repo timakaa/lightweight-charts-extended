@@ -214,6 +214,8 @@ function useShortPositionResize(
             },
             candleData,
           );
+          // Update _endTime since target/stop time changed
+          position._endTime = newTime;
           break;
         }
         case "profit-top-left":
@@ -263,6 +265,8 @@ function useShortPositionResize(
             },
             candleData,
           );
+          // Update _startTime since entry time changed
+          position._startTime = newTime;
           break;
         }
       }

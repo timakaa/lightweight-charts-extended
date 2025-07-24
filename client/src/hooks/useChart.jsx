@@ -24,7 +24,6 @@ export const useChart = (chartContainerRef) => {
       timeScale: {
         timeVisible: true,
         secondsVisible: false,
-        rightOffset: 100,
       },
     });
 

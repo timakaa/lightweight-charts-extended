@@ -9,6 +9,8 @@ export default class BasePosition extends PluginBase {
     entryPrice,
     targetPrice,
     stopPrice,
+    startTime,
+    endTime,
     series,
     chart,
     selectedPositionId = null,
@@ -29,10 +31,20 @@ export default class BasePosition extends PluginBase {
     this.id = id || generateId("position");
     // Store candle data for coordinate calculations
     this._candleData = candleData;
+
+    // Create position points with prices and time range
+    const entryPoint = { time: startTime, price: entryPrice };
+    const targetPoint = { time: endTime, price: targetPrice };
+    const stopPoint = { time: endTime, price: stopPrice };
+
+    this._startTime = startTime;
+    this._endTime = endTime;
+
     // Logical coordinates for entry, target, and stop enhanced with logical indices
-    this._entryPrice = enhancePointWithLogicalIndex(entryPrice, candleData);
-    this._targetPrice = enhancePointWithLogicalIndex(targetPrice, candleData);
-    this._stopPrice = enhancePointWithLogicalIndex(stopPrice, candleData);
+    this._entryPrice = enhancePointWithLogicalIndex(entryPoint, candleData);
+    this._targetPrice = enhancePointWithLogicalIndex(targetPoint, candleData);
+    this._stopPrice = enhancePointWithLogicalIndex(stopPoint, candleData);
+
     // Series and chart references
     this._series = series;
     this._chart = chart;

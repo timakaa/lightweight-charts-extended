@@ -30,7 +30,6 @@ function useLongPositionDrawingTool(
       activeResizeHandleRef,
     );
     return () => {
-      longPositionDrawingTool.current?.remove();
       longPositionDrawingTool.current = null;
     };
   }, [
@@ -163,27 +162,12 @@ function useLongPositionDrawingTool(
         const stopPrice = entryPrice - risk;
         const targetPrice = entryPrice + risk;
 
-        // Create enhanced points with both time and logical coordinates
-        const entry = {
-          time: entryPoint.time,
-          price: entryPrice,
-          logicalIndex: entryPoint.logicalIndex,
-        };
-        const target = {
-          time: targetTime,
-          price: targetPrice,
-          logicalIndex: targetLogicalIndex,
-        };
-        const stop = {
-          time: targetTime,
-          price: stopPrice,
-          logicalIndex: targetLogicalIndex,
-        };
-
         const newPosition = longPositionDrawingTool.current._createPosition(
-          entry,
-          target,
-          stop,
+          entryPrice,
+          targetPrice,
+          stopPrice,
+          entryPoint.time,
+          targetTime,
         );
 
         // Attach the position to the series

@@ -46,7 +46,6 @@ function useFibRetracementDrawingTool(
     );
     // Cleanup on unmount or dependency change
     return () => {
-      fibRetracementDrawingTool.current?.remove();
       fibRetracementDrawingTool.current = null;
     };
   }, [
