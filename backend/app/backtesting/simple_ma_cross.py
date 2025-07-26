@@ -1,5 +1,6 @@
 import os
 import sys
+import argparse
 
 # Add project root to Python path
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -13,9 +14,9 @@ from app.db.database import get_db, engine, Base
 from app.repositories.backtest_repository import BacktestRepository
 from datetime import datetime
 
-# Configuration
-SYMBOL = "BTCUSDT"  # Trading symbol
-SAVE_TO_DB = False
+# Default configuration
+DEFAULT_SYMBOL = "BTCUSDT"  # Trading symbol
+DEFAULT_SAVE_TO_DB = False
 
 
 class MACrossStrategy(Strategy):
@@ -54,7 +55,7 @@ class MACrossStrategy(Strategy):
             self.sell(sl=stop_loss, tp=take_profit)
 
 
-def run_backtest(data: pd.DataFrame, cash: float = 10000, symbol: str = SYMBOL) -> dict:
+def run_backtest(data: pd.DataFrame, cash: float = 10000, symbol: str = DEFAULT_SYMBOL, save_to_db: bool = False) -> dict:
     """
     Run backtest on the provided data and save results to database
 
@@ -258,37 +259,80 @@ def run_backtest(data: pd.DataFrame, cash: float = 10000, symbol: str = SYMBOL) 
         ],
     }
 
-    # Save results to database
-    db = next(get_db())
-    repository = BacktestRepository(db)
-    try:
-        if SAVE_TO_DB:
-            saved_backtest = repository.create(results, numerate_title=True)
-            results["id"] = saved_backtest.id
-        else:
-            pass
-    finally:
-        db.close()
-
-    print("\nBacktest Results:")
-    for key, value in results.items():
-        print(f"{key}: {value}")
+    # Save results to database if requested
+    if save_to_db:
+        print("💾 Attempting to save results to database...")
+        try:
+            db = next(get_db())
+            repository = BacktestRepository(db)
+            try:
+                saved_backtest = repository.create(results, numerate_title=True)
+                results["id"] = saved_backtest.id
+                print(f"✅ Successfully saved to database with ID: {saved_backtest.id}")
+            finally:
+                db.close()
+        except Exception as e:
+            print(f"❌ Error saving to database: {e}")
+            import traceback
+            traceback.print_exc()
 
     return results
 
 
 if __name__ == "__main__":
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description="Run Simple MA Cross Strategy Backtest")
+    parser.add_argument(
+        "--symbol", 
+        type=str, 
+        default=DEFAULT_SYMBOL,
+        help=f"Trading symbol (default: {DEFAULT_SYMBOL})"
+    )
+    parser.add_argument(
+        "--save-to-db", 
+        action="store_true",
+        default=DEFAULT_SAVE_TO_DB,
+        help=f"Save results to database (default: {DEFAULT_SAVE_TO_DB})"
+    )
+    parser.add_argument(
+        "--cash",
+        type=float,
+        default=1_000_000,
+        help="Initial cash amount (default: 1,000,000)"
+    )
+    
+    args = parser.parse_args()
+    
+    # Use parsed arguments
+    SYMBOL = args.symbol
+    SAVE_TO_DB = args.save_to_db
+    CASH = args.cash
+    
+    print(f"Running backtest with:")
+    print(f"  Symbol: {SYMBOL}")
+    print(f"  Save to DB: {SAVE_TO_DB}")
+    print(f"  Initial Cash: ${CASH:,.2f}")
+    print("-" * 50)
+
     # Create database tables if they don't exist
     Base.metadata.create_all(bind=engine)
 
-    # Example usage
     # Load sample data
-    import os
-
     current_dir = os.path.dirname(os.path.abspath(__file__))
     data_path = os.path.join(
         current_dir, f"../../../backend/charts/{SYMBOL}-1h-bybit.csv"
     )
+    
+    if not os.path.exists(data_path):
+        print(f"Error: Data file not found at {data_path}")
+        print("Available chart files:")
+        charts_dir = os.path.join(current_dir, "../../../backend/charts/")
+        if os.path.exists(charts_dir):
+            for file in os.listdir(charts_dir):
+                if file.endswith(".csv"):
+                    print(f"  - {file}")
+        sys.exit(1)
+    
     data = pd.read_csv(data_path)
     data.set_index("Date", inplace=True)
     data.index = pd.to_datetime(data.index)
@@ -297,7 +341,15 @@ if __name__ == "__main__":
     data = data.sort_index().drop_duplicates()
 
     # Run backtest
-    results = run_backtest(data, 1_000_000, symbol=SYMBOL)
-    print("\nBacktest Results:")
-    for key, value in results.items():
-        print(f"{key}: {value}")
+    results = run_backtest(data, CASH, symbol=SYMBOL, save_to_db=SAVE_TO_DB)
+    print("\nBacktest completed successfully!")
+    if SAVE_TO_DB and "id" in results:
+        print(f"Results saved to database with ID: {results['id']}")
+    
+    print("\nBacktest Results Summary:")
+    print(f"Total Trades: {results.get('total_trades', 0)}")
+    print(f"Win Rate: {results.get('win_rate', 0):.2%}")
+    print(f"Total P&L: ${results.get('total_pnl', 0):,.2f}")
+    print(f"Final Balance: ${results.get('final_balance', 0):,.2f}")
+    print(f"Max Drawdown: {results.get('max_drawdown', 0):.2%}")
+    print(f"Sharpe Ratio: {results.get('sharpe_ratio', 0):.2f}")
