@@ -1,8 +1,8 @@
 # Trading System Makefile
 # Easy commands for data scraping, backtesting, and system management
 
-.PHONY: help build up up-build down logs clean
-.PHONY: scrape-data
+.PHONY: help build up up-build start stop down logs clean
+.PHONY: scrape
 .PHONY: backtest
 .PHONY: list-strategies strategy-info
 .PHONY: test-system status docs
@@ -26,8 +26,8 @@ strategy ?= simple_ma_cross
 STRATEGY = $(strategy)
 params ?= {}
 PARAMS = $(params)
-save-to-db ?= false
-SAVE_TO_DB = $(save-to-db)
+save ?= false
+SAVE = $(save)
 
 # Colors for output
 CYAN = \033[36m
@@ -59,9 +59,9 @@ help: ## Show this help message
 	@echo "  cash=$(cash)       strategy=$(strategy)     start_date=$(start_date)"
 	@echo ""
 	@echo "$(CYAN)Examples:$(RESET)"
-	@echo "  make scrape-data symbol=ethusdt timeframe=4h"
+	@echo "  make scrape symbol=ethusdt timeframe=4h"
 	@echo "  make backtest symbol=solusdt"
-	@echo "  make backtest symbol=btcusdt save-to-db=true"
+	@echo "  make backtest symbol=btcusdt save=true"
 	@echo "  make backtest symbol=ethusdt params='{\"fast_ma\": 5, \"slow_ma\": 20}'"
 
 # =============================================================================
@@ -86,10 +86,20 @@ up-build: ## 🔧 Build and start the application
 	@echo "Frontend: http://localhost:3000"
 	@echo "Backend: http://localhost:8000"
 
-down: ## 🔧 Stop the application
-	@echo "$(CYAN)🛑 Stopping application...$(RESET)"
+start: ## 🔧 Start existing containers
+	@echo "$(CYAN)▶️  Starting containers...$(RESET)"
+	@docker-compose start
+	@echo "$(GREEN)✅ Containers started!$(RESET)"
+
+stop: ## 🔧 Stop containers (without removing them)
+	@echo "$(CYAN)⏸️  Stopping containers...$(RESET)"
+	@docker-compose stop
+	@echo "$(GREEN)✅ Containers stopped!$(RESET)"
+
+down: ## 🔧 Stop and remove containers
+	@echo "$(CYAN)🛑 Stopping and removing containers...$(RESET)"
 	@docker-compose down
-	@echo "$(GREEN)✅ Application stopped!$(RESET)"
+	@echo "$(GREEN)✅ Containers stopped and removed!$(RESET)"
 
 logs: ## 🔧 Show application logs
 	@docker-compose logs -f
@@ -114,7 +124,7 @@ clean: ## 🔧 Clean up Docker resources
 # 📊 Data Management
 # =============================================================================
 
-scrape-data: ## 📊 Scrape data for specified symbol and timeframe
+scrape: ## 📊 Scrape data for specified symbol and timeframe
 	@echo "$(CYAN)📊 Scraping $(SYMBOL) $(TIMEFRAME) data from $(EXCHANGE)...$(RESET)"
 	@docker-compose exec backend python app/backtesting/ccxt_scrapping.py \
 		--symbol $(SYMBOL) \
@@ -131,7 +141,7 @@ scrape-data: ## 📊 Scrape data for specified symbol and timeframe
 
 backtest: ## 🧪 Run backtest with specified strategy and parameters
 	@echo "$(CYAN)🧪 Running backtest: $(STRATEGY) on $(SYMBOL)...$(RESET)"
-	@if [ "$(SAVE_TO_DB)" = "true" ]; then \
+	@if [ "$(SAVE)" = "true" ]; then \
 		echo "$(YELLOW)💾 Will save results to database$(RESET)"; \
 		docker-compose exec backend python scripts/backtest/flexible_backtest.py \
 			--strategy $(STRATEGY) \
