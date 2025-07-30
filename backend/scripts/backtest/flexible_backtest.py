@@ -88,8 +88,12 @@ def run_flexible_backtest(
         print(f"❌ {e}")
         return None
     
-    # Create strategy instance
-    strategy_instance = strategy_class(parameters)
+    # Create strategy instance - try with timeframes first, fallback to parameters only
+    try:
+        strategy_instance = strategy_class(parameters, timeframes)
+    except TypeError:
+        # Fallback for strategies that don't accept timeframes parameter
+        strategy_instance = strategy_class(parameters)
     
     # Validate parameters (the strategy instance already has merged defaults)
     if not strategy_instance.validate_parameters(strategy_instance.parameters):
