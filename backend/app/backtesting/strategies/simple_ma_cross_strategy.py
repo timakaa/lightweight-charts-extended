@@ -3,7 +3,7 @@ Simple MA Cross Strategy - Direct Port from simple_ma_cross.py
 Implements the exact same logic as the original simple_ma_cross.py but in the flexible framework
 """
 
-from typing import Dict, Any
+from typing import Dict, Any, List
 import pandas as pd
 from backtesting.lib import crossover
 from backtesting import Strategy
@@ -14,18 +14,22 @@ from ..base_strategy import BaseBacktestStrategy, StrategyConfig
 class SimpleMACrossStrategy(BaseBacktestStrategy):
     """Simple Moving Average Cross Strategy - Direct port from simple_ma_cross.py"""
     
-    def __init__(self, parameters: Dict[str, Any] = None):
+    def __init__(self, parameters: Dict[str, Any] = None, timeframes: List[str] = None):
         # Merge provided parameters with defaults
         default_params = self.get_default_parameters()
         if parameters:
             default_params.update(parameters)
         
+        # Use provided timeframes or default to 1h
+        if timeframes is None:
+            timeframes = ["1h"]
+        
         # Default configuration matching simple_ma_cross.py
         config = StrategyConfig(
             name="Simple MA Cross Strategy",
-            description="Direct port of simple_ma_cross.py - Simple Moving Average Crossover with fixed parameters",
+            description="Direct port of simple_ma_cross.py - Simple Moving Average Crossover with flexible timeframes",
             parameters=default_params,
-            timeframes=["1h"],
+            timeframes=timeframes,
             required_data=["Close"]
         )
         super().__init__(config)
@@ -33,8 +37,8 @@ class SimpleMACrossStrategy(BaseBacktestStrategy):
     def get_default_parameters(self) -> Dict[str, Any]:
         """Default parameters matching simple_ma_cross.py exactly"""
         return {
-            "fast_ma": 10,      # Fast moving average period
-            "slow_ma": 30,      # Slow moving average period
+            "fast_ma": 28,      # Fast moving average period
+            "slow_ma": 100,      # Slow moving average period
             "risk_reward": 2,   # Risk:Reward ratio (1:2)
             "stop_loss_pct": 0.02,  # 2% stop loss
             "commission": 0.002,    # 0.2% commission per trade

@@ -141,12 +141,17 @@ scrape: ## 📊 Scrape data for specified symbol and timeframe
 
 backtest: ## 🧪 Run backtest with specified strategy and parameters
 	@echo "$(CYAN)🧪 Running backtest: $(STRATEGY) on $(SYMBOL)...$(RESET)"
-	@if [ "$(SAVE)" = "true" ]; then \
+	@# Use timeframe if timeframes is not explicitly set
+	@FINAL_TIMEFRAMES="$(TIMEFRAMES)"; \
+	if [ "$(TIMEFRAMES)" = "1h" ] && [ "$(TIMEFRAME)" != "1h" ]; then \
+		FINAL_TIMEFRAMES="$(TIMEFRAME)"; \
+	fi; \
+	if [ "$(SAVE)" = "true" ]; then \
 		echo "$(YELLOW)💾 Will save results to database$(RESET)"; \
 		docker-compose exec backend python scripts/backtest/flexible_backtest.py \
 			--strategy $(STRATEGY) \
 			--symbol $(SYMBOL) \
-			--timeframes $(TIMEFRAMES) \
+			--timeframes $$FINAL_TIMEFRAMES \
 			--params '$(PARAMS)' \
 			--cash $(CASH) \
 			--save-to-db; \
@@ -154,7 +159,7 @@ backtest: ## 🧪 Run backtest with specified strategy and parameters
 		docker-compose exec backend python scripts/backtest/flexible_backtest.py \
 			--strategy $(STRATEGY) \
 			--symbol $(SYMBOL) \
-			--timeframes $(TIMEFRAMES) \
+			--timeframes $$FINAL_TIMEFRAMES \
 			--params '$(PARAMS)' \
 			--cash $(CASH); \
 	fi
