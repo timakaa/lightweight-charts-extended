@@ -275,6 +275,69 @@ def run_flexible_backtest(
                     ),
                 }
             drawings.append(drawing)
+        
+        # Add custom drawings from strategy (e.g., swing highs/lows)
+        try:
+            levels = None
+            
+            # Method 1: Try to get levels from the outer strategy instance
+            if hasattr(strategy_instance, '_detected_levels'):
+                levels = strategy_instance._detected_levels
+                print(f"🔍 Found {len(levels)} levels from outer strategy instance")
+            
+            # Method 2: Try to get levels from the strategy class
+            elif hasattr(bt, '_strategy'):
+                strategy_class = bt._strategy
+                if hasattr(strategy_class, '_collected_levels'):
+                    levels = strategy_class._collected_levels
+                    print(f"🔍 Found {len(levels)} levels from strategy class")
+            
+            # Method 3: Debug - show what we have access to
+            else:
+                print(f"🔍 Strategy instance attributes: {[attr for attr in dir(strategy_instance) if not attr.startswith('_')]}")
+                if hasattr(bt, '_strategy'):
+                    strategy_class = bt._strategy
+                    print(f"🔍 Strategy class attributes: {[attr for attr in dir(strategy_class) if not attr.startswith('_')]}")
+            
+            if levels and len(levels) > 0:
+                print(f"✅ Processing {len(levels)} significant levels")
+                for level in levels:
+                    # Convert swing highs/lows to line drawings in exact format specified
+                    level_time = level['time'].tz_localize("UTC").isoformat()
+                    
+                    # Determine end time - either when broken or "relative" if still active
+                    if level.get('end_time') is not None:
+                        end_time = level['end_time'].tz_localize("UTC").isoformat()
+                        status = f"(broken {level.get('break_direction', 'unknown')})"
+                    else:
+                        end_time = "relative"
+                        status = "(active)"
+                    
+                    # Create horizontal line for swing high/low
+                    drawing = {
+                        "type": "line",
+                        "id": f"smc_{level['type']}_{len(drawings)}",
+                        "ticker": symbol,
+                        "startTime": level_time,
+                        "endTime": end_time,
+                        "startPrice": level['price'],
+                        "endPrice": level['price']
+                    }
+                    drawings.append(drawing)
+                    print(f"📍 Added {level['type']} drawing at {level['price']:.4f} {status} from {level_time[:10]} to {end_time[:10] if end_time != 'relative' else 'current'}")
+            else:
+                print("❌ Could not find any significant levels")
+                # Additional debugging
+                print(f"🔍 levels variable: {levels}")
+                print(f"🔍 levels type: {type(levels)}")
+                if levels is not None:
+                    print(f"🔍 levels length: {len(levels)}")
+        except Exception as e:
+            print(f"⚠️  Warning: Could not extract custom drawings from strategy: {e}")
+            import traceback
+            traceback.print_exc()
+        
+        print(f"📊 Total drawings created: {len(drawings)}")
 
         # Get data range
         main_data = prepared_data[main_timeframe]

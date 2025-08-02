@@ -6,10 +6,12 @@ Centralized registry for all available backtesting strategies
 from typing import Dict, Type, List
 from ..base_strategy import BaseBacktestStrategy
 from .simple_ma_cross_strategy import SimpleMACrossStrategy
+from .smart_money_simple_test import SmartMoneySimpleTestStrategy
 
 # Strategy Registry
 STRATEGY_REGISTRY: Dict[str, Type[BaseBacktestStrategy]] = {
     "simple_ma_cross": SimpleMACrossStrategy,
+    "smart_money_concepts": SmartMoneySimpleTestStrategy,  # Renamed for clarity
     # Add more strategies here as you create them
     # "rsi_strategy": RSIStrategy,
     # "bollinger_bands": BollingerBandsStrategy,
