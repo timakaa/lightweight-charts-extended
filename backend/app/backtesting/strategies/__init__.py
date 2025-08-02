@@ -7,13 +7,14 @@ from typing import Dict, Type, List
 from ..base_strategy import BaseBacktestStrategy
 from .simple_ma_cross_strategy import SimpleMACrossStrategy
 from .smart_money_simple_test import SmartMoneySimpleTestStrategy
+from .rsi_macd_combo_strategy import RSIMACDComboStrategy
 
 # Strategy Registry
 STRATEGY_REGISTRY: Dict[str, Type[BaseBacktestStrategy]] = {
     "simple_ma_cross": SimpleMACrossStrategy,
-    "smart_money_concepts": SmartMoneySimpleTestStrategy,  # Renamed for clarity
+    "smart_money_concepts": SmartMoneySimpleTestStrategy,
+    "rsi_macd_combo": RSIMACDComboStrategy,
     # Add more strategies here as you create them
-    # "rsi_strategy": RSIStrategy,
     # "bollinger_bands": BollingerBandsStrategy,
     # "multi_timeframe_trend": MultiTimeframeTrendStrategy,
 }

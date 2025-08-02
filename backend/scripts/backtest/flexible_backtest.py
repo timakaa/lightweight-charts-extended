@@ -227,6 +227,7 @@ def run_flexible_backtest(
 
         # Create drawings array from trades
         drawings = []
+        print(f"📊 Creating drawings for {len(trades_list)} trades")
         for i, trade in enumerate(trades_list):
             if trade["type"] == "long":
                 drawing = {
@@ -280,19 +281,27 @@ def run_flexible_backtest(
         try:
             levels = None
             
-            # Method 1: Try to get levels from the outer strategy instance
+            # Method 1: Try to get levels from the outer strategy instance (Smart Money Concepts)
             if hasattr(strategy_instance, '_detected_levels'):
                 levels = strategy_instance._detected_levels
-                print(f"🔍 Found {len(levels)} levels from outer strategy instance")
+                print(f"🔍 Found {len(levels)} swing levels from outer strategy instance")
             
-            # Method 2: Try to get levels from the strategy class
+            # Method 2: Try to get signals from the outer strategy instance (RSI+MACD)
+            elif hasattr(strategy_instance, '_detected_signals'):
+                levels = strategy_instance._detected_signals
+                print(f"🔍 Found {len(levels)} signals from outer strategy instance")
+            
+            # Method 3: Try to get levels from the strategy class
             elif hasattr(bt, '_strategy'):
                 strategy_class = bt._strategy
                 if hasattr(strategy_class, '_collected_levels'):
                     levels = strategy_class._collected_levels
                     print(f"🔍 Found {len(levels)} levels from strategy class")
+                elif hasattr(strategy_class, '_collected_signals'):
+                    levels = strategy_class._collected_signals
+                    print(f"🔍 Found {len(levels)} signals from strategy class")
             
-            # Method 3: Debug - show what we have access to
+            # Method 4: Debug - show what we have access to
             else:
                 print(f"🔍 Strategy instance attributes: {[attr for attr in dir(strategy_instance) if not attr.startswith('_')]}")
                 if hasattr(bt, '_strategy'):
@@ -300,9 +309,9 @@ def run_flexible_backtest(
                     print(f"🔍 Strategy class attributes: {[attr for attr in dir(strategy_class) if not attr.startswith('_')]}")
             
             if levels and len(levels) > 0:
-                print(f"✅ Processing {len(levels)} significant levels")
+                print(f"✅ Processing {len(levels)} strategy elements")
                 for level in levels:
-                    # Convert swing highs/lows to line drawings in exact format specified
+                    # Convert to line drawings in exact format specified
                     level_time = level['time'].tz_localize("UTC").isoformat()
                     
                     # Determine end time - either when broken or "relative" if still active
@@ -313,20 +322,46 @@ def run_flexible_backtest(
                         end_time = "relative"
                         status = "(active)"
                     
-                    # Create horizontal line for swing high/low
-                    drawing = {
-                        "type": "line",
-                        "id": f"smc_{level['type']}_{len(drawings)}",
-                        "ticker": symbol,
-                        "startTime": level_time,
-                        "endTime": end_time,
-                        "startPrice": level['price'],
-                        "endPrice": level['price']
-                    }
+                    # Create drawing based on type
+                    if level['type'] in ['swing_high', 'swing_low']:
+                        # Horizontal line for swing levels
+                        drawing = {
+                            "type": "line",
+                            "id": f"smc_{level['type']}_{len(drawings)}",
+                            "ticker": symbol,
+                            "startTime": level_time,
+                            "endTime": end_time,
+                            "startPrice": level['price'],
+                            "endPrice": level['price']
+                        }
+                    elif level['type'] in ['macd_bullish_cross', 'macd_bearish_cross', 'bullish_divergence', 'bearish_divergence']:
+                        # Point markers for signals (short vertical lines)
+                        price_offset = level['price'] * 0.001  # 0.1% offset for visibility
+                        drawing = {
+                            "type": "line",
+                            "id": f"signal_{level['type']}_{len(drawings)}",
+                            "ticker": symbol,
+                            "startTime": level_time,
+                            "endTime": level_time,  # Point in time
+                            "startPrice": level['price'] - price_offset,
+                            "endPrice": level['price'] + price_offset
+                        }
+                    else:
+                        # Default horizontal line
+                        drawing = {
+                            "type": "line",
+                            "id": f"custom_{level['type']}_{len(drawings)}",
+                            "ticker": symbol,
+                            "startTime": level_time,
+                            "endTime": end_time,
+                            "startPrice": level['price'],
+                            "endPrice": level['price']
+                        }
+                    
                     drawings.append(drawing)
                     print(f"📍 Added {level['type']} drawing at {level['price']:.4f} {status} from {level_time[:10]} to {end_time[:10] if end_time != 'relative' else 'current'}")
             else:
-                print("❌ Could not find any significant levels")
+                print("❌ Could not find any strategy elements")
                 # Additional debugging
                 print(f"🔍 levels variable: {levels}")
                 print(f"🔍 levels type: {type(levels)}")
