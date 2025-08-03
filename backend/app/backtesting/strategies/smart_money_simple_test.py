@@ -261,17 +261,25 @@ class SmartMoneySimpleTestStrategy(BaseBacktestStrategy):
                 for level in self.significant_levels:
                     if level.get('end_time') is None:  # Only check active levels
                         if level['type'] == 'swing_high' and current_high > level['price']:
-                            # High was broken to the upside
-                            level['end_time'] = current_time
+                            # High was broken to the upside - end line 2 candles before break
+                            break_index = current_idx - 2
+                            if break_index >= 0:
+                                level['end_time'] = self.data.index[break_index]
+                            else:
+                                level['end_time'] = current_time  # Fallback if not enough candles
                             level['break_direction'] = 'upward'
                             if len(self.significant_levels) <= 10:  # Debug print
-                                print(f"💥 Swing High {level['price']:.4f} broken upward at {current_time}")
+                                print(f"💥 Swing High {level['price']:.4f} broken upward at {current_time}, line ends at {level['end_time']}")
                         elif level['type'] == 'swing_low' and current_low < level['price']:
-                            # Low was broken to the downside
-                            level['end_time'] = current_time
+                            # Low was broken to the downside - end line 2 candles before break
+                            break_index = current_idx - 2
+                            if break_index >= 0:
+                                level['end_time'] = self.data.index[break_index]
+                            else:
+                                level['end_time'] = current_time  # Fallback if not enough candles
                             level['break_direction'] = 'downward'
                             if len(self.significant_levels) <= 10:  # Debug print
-                                print(f"💥 Swing Low {level['price']:.4f} broken downward at {current_time}")
+                                print(f"💥 Swing Low {level['price']:.4f} broken downward at {current_time}, line ends at {level['end_time']}")
                         elif level['type'] in ['bullish_fvg', 'bearish_fvg'] and level.get('filled') is False:
                             # Check if FVG got filled
                             if level['type'] == 'bullish_fvg' and current_low <= level['bottom']:
