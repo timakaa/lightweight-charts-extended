@@ -344,7 +344,7 @@ async def fetch_and_save_historical_data(params_obj: Dict[str, Any]) -> None:
         timeframes = [timeframes]
 
     # Initialize exchange using async
-    exchange = getattr(ccxt_async, exchange_id)()
+    exchange = getattr(ccxt_async, exchange_id)({"enableRateLimit": True, "options": {"defaultType": "spot"}})
 
     try:
         # Load markets
