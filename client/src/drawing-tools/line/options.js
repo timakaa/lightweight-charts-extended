@@ -7,6 +7,10 @@ export const defaultOptions = {
   handleStrokeColor: "rgba(0, 100, 255, 0.4)",
   handleStrokeWidth: 1,
   handleRadius: 5,
+  style: {
+    width: 2,
+    lineStyle: "solid", // solid, dashed, dotted, dashdot
+  },
   priceLabelFormatter: (price) => price.toFixed(2),
   timeLabelFormatter: (time) => {
     if (typeof time == "string") return time;

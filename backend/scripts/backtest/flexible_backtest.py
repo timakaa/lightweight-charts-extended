@@ -324,7 +324,10 @@ def run_flexible_backtest(
                     
                     # Create drawing based on type
                     if level['type'] in ['swing_high', 'swing_low']:
-                        # Horizontal line for swing levels
+                        # Horizontal line for swing levels with different styles
+                        line_color = "#00C851" if level['type'] == 'swing_high' else "#FF4444"
+                        line_style = "dashed" if level.get('end_time') is not None else "solid"
+                        
                         drawing = {
                             "type": "line",
                             "id": f"smc_{level['type']}_{len(drawings)}",
@@ -332,10 +335,17 @@ def run_flexible_backtest(
                             "startTime": level_time,
                             "endTime": end_time,
                             "startPrice": level['price'],
-                            "endPrice": level['price']
+                            "endPrice": level['price'],
+                            "style": {
+                                "color": line_color,
+                                "width": 1,
+                                "lineStyle": line_style
+                            }
                         }
                     elif level['type'] in ['bullish_fvg', 'bearish_fvg']:
-                        # Rectangle for Fair Value Gaps
+                        # Rectangle for Fair Value Gaps with different colors
+                        fvg_color = "rgba(76, 175, 80, 0.3)" if level['type'] == 'bullish_fvg' else "rgba(244, 67, 54, 0.3)"
+                        
                         drawing = {
                             "type": "rectangle",
                             "id": f"fvg_{level['type']}_{len(drawings)}",
@@ -343,11 +353,18 @@ def run_flexible_backtest(
                             "startTime": level_time,
                             "endTime": end_time,
                             "startPrice": level.get('bottom', level['price']),
-                            "endPrice": level.get('top', level['price'])
+                            "endPrice": level.get('top', level['price']),
+                            "style": {
+                                "fillColor": fvg_color,
+                                "borderColor": fvg_color.replace('0.3', '0.8'),
+                                "borderWidth": 1
+                            }
                         }
                     elif level['type'] in ['macd_bullish_cross', 'macd_bearish_cross', 'bullish_divergence', 'bearish_divergence']:
-                        # Point markers for signals (short vertical lines)
+                        # Point markers for signals (short vertical lines) with different colors
                         price_offset = level['price'] * 0.001  # 0.1% offset for visibility
+                        signal_color = "#00C851" if 'bullish' in level['type'] else "#FF4444"
+                        
                         drawing = {
                             "type": "line",
                             "id": f"signal_{level['type']}_{len(drawings)}",
@@ -355,7 +372,12 @@ def run_flexible_backtest(
                             "startTime": level_time,
                             "endTime": level_time,  # Point in time
                             "startPrice": level['price'] - price_offset,
-                            "endPrice": level['price'] + price_offset
+                            "endPrice": level['price'] + price_offset,
+                            "style": {
+                                "color": signal_color,
+                                "width": 1,
+                                "lineStyle": "dotted"
+                            }
                         }
                     else:
                         # Default horizontal line
