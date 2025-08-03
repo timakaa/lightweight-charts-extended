@@ -16,7 +16,7 @@ timeframes ?= 1h
 TIMEFRAMES = $(timeframes)
 exchange ?= bybit
 EXCHANGE = $(exchange)
-start_date ?= 2024-01-01
+start_date ?= 2024-12-01
 START_DATE = $(start_date)
 end_date ?= 2025-01-01
 END_DATE = $(end_date)
@@ -113,6 +113,10 @@ logs-frontend: ## 🔧 Show frontend logs only
 restart: ## 🔧 Restart the application
 	@make down
 	@make up
+
+restart-build:
+	@make down
+	@make up-build
 
 clean: ## 🔧 Clean up Docker resources
 	@echo "$(CYAN)🧹 Cleaning up Docker resources...$(RESET)"

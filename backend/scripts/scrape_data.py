@@ -9,7 +9,7 @@ import subprocess
 import sys
 import os
 
-def run_scraper(symbol="BTCUSDT", timeframe="1h", exchange="bybit", start_date="2024-01-01", end_date="2025-01-01"):
+def run_scraper(symbol="BTCUSDT", timeframe="1h", exchange="bybit", start_date="2024-12-01", end_date="2025-01-01"):
     """Run the CCXT scraper with specified parameters"""
     
     print("🔄 CCXT Historical Data Scraper")

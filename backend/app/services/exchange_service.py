@@ -376,7 +376,7 @@ class ExchangeService:
             fetch_limit = start_idx - end_idx + 1
             fetch_since = oldest_ts + end_idx * tf_ms
             candles = await asyncio.to_thread(
-                self.exchange.fetch_ohlcv, symbol, timeframe, fetch_since, fetch_limit
+                self.exchange.fetch_ohlcv, symbol.replace("/", ""), timeframe, fetch_since, fetch_limit
             )
             candles = candles[::-1]
             has_next = page < total_pages and len(candles) == page_size
@@ -406,7 +406,7 @@ class ExchangeService:
             ).start()
             # Just fetch the newest candles for this page
             candles = await asyncio.to_thread(
-                self.exchange.fetch_ohlcv, symbol, timeframe, None, page_size
+                self.exchange.fetch_ohlcv, symbol.replace('/', ''), timeframe, None, page_size
             )
             candles = candles[::-1]
             has_next = True if len(candles) == page_size else False

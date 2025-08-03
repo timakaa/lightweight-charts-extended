@@ -10,7 +10,7 @@ set -e
 SYMBOL=${1:-"BTCUSDT"}
 TIMEFRAME=${2:-"1h"}
 EXCHANGE=${3:-"bybit"}
-START_DATE=${4:-"2024-01-01"}
+START_DATE=${4:-"2024-12-01"}
 END_DATE=${5:-"2025-01-01"}
 
 echo "🔄 CCXT Historical Data Scraper"
