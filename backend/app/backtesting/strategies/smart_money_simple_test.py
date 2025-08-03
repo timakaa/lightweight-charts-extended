@@ -37,6 +37,8 @@ class SmartMoneySimpleTestStrategy(BaseBacktestStrategy):
             "min_swing_size": 0.002,    # Minimum swing size as percentage (0.2% - very small)
             "show_swing_highs": True,   # Create line drawings for swing highs
             "show_swing_lows": True,    # Create line drawings for swing lows
+            "show_fvgs": True,          # Show Fair Value Gaps
+            "fvg_min_size": 0.001,      # Minimum FVG size as percentage (0.1%)
             "commission": 0.002,        # Not used (no trading)
             "cash": 10000,              # Not used (no trading)
         }
@@ -80,6 +82,16 @@ class SmartMoneySimpleTestStrategy(BaseBacktestStrategy):
                 "show_swing_lows": {
                     "type": "boolean",
                     "description": "Show swing lows on chart"
+                },
+                "show_fvgs": {
+                    "type": "boolean",
+                    "description": "Show Fair Value Gaps on chart"
+                },
+                "fvg_min_size": {
+                    "type": "number",
+                    "minimum": 0.0001,
+                    "maximum": 0.01,
+                    "description": "Minimum FVG size as percentage"
                 }
             },
             "required": ["swing_length"]
@@ -102,6 +114,8 @@ class SmartMoneySimpleTestStrategy(BaseBacktestStrategy):
             min_swing_size = params.get("min_swing_size", 0.01)
             show_swing_highs = params.get("show_swing_highs", True)
             show_swing_lows = params.get("show_swing_lows", True)
+            show_fvgs = params.get("show_fvgs", True)
+            fvg_min_size = params.get("fvg_min_size", 0.001)
             return_trades = True  # Framework compatibility
             
             # Class variable to store levels that can be accessed later
@@ -112,6 +126,7 @@ class SmartMoneySimpleTestStrategy(BaseBacktestStrategy):
                 self.high_series = pd.Series(self.data.High)
                 self.low_series = pd.Series(self.data.Low)
                 self.close_series = pd.Series(self.data.Close)
+                self.open_series = pd.Series(self.data.Open)
                 
                 # Initialize significant levels list
                 self.significant_levels = []
@@ -120,6 +135,12 @@ class SmartMoneySimpleTestStrategy(BaseBacktestStrategy):
                 # Calculate swing highs and lows
                 self.swing_highs = self.I(self._calculate_swing_highs, self.high_series)
                 self.swing_lows = self.I(self._calculate_swing_lows, self.low_series)
+                
+                # Calculate Fair Value Gaps (don't use self.I() since it's not a traditional indicator)
+                if self.show_fvgs:
+                    self.fvgs = self._calculate_fvgs()
+                else:
+                    self.fvgs = []
                 
             def _calculate_swing_highs(self, high_series):
                 """Calculate swing highs using rolling window"""
@@ -179,6 +200,54 @@ class SmartMoneySimpleTestStrategy(BaseBacktestStrategy):
                 # For now, accept all swing lows to ensure we get drawings
                 return True
             
+            def _calculate_fvgs(self):
+                """Calculate Fair Value Gaps (FVGs) - called once during init"""
+                fvgs = []
+                data_length = len(self.data)
+                
+                # Need at least 3 candles to detect FVG
+                for i in range(2, data_length):
+                    # Get current and previous 2 candles
+                    candle_1_high = self.data.High[i-2]
+                    candle_1_low = self.data.Low[i-2]
+                    candle_3_high = self.data.High[i]
+                    candle_3_low = self.data.Low[i]
+                    
+                    # Check for Bullish FVG (gap up)
+                    # Condition: candle_1.high < candle_3.low (gap between them)
+                    if candle_1_high < candle_3_low:
+                        gap_size = (candle_3_low - candle_1_high) / candle_1_high
+                        if gap_size >= self.fvg_min_size:
+                            fvg = {
+                                'index': i,
+                                'type': 'bullish_fvg',
+                                'top': candle_3_low,
+                                'bottom': candle_1_high,
+                                'size': gap_size,
+                                'filled': False,
+                                'fill_time': None
+                            }
+                            fvgs.append(fvg)
+                    
+                    # Check for Bearish FVG (gap down)
+                    # Condition: candle_1.low > candle_3.high (gap between them)
+                    elif candle_1_low > candle_3_high:
+                        gap_size = (candle_1_low - candle_3_high) / candle_3_high
+                        if gap_size >= self.fvg_min_size:
+                            fvg = {
+                                'index': i,
+                                'type': 'bearish_fvg',
+                                'top': candle_1_low,
+                                'bottom': candle_3_high,
+                                'size': gap_size,
+                                'filled': False,
+                                'fill_time': None
+                            }
+                            fvgs.append(fvg)
+                
+                print(f"🔧 Calculated {len(fvgs)} FVGs during initialization")
+                return fvgs
+            
             def next(self):
                 """Process each bar and store significant levels - NO TRADING"""
                 current_idx = len(self.data) - 1
@@ -203,6 +272,53 @@ class SmartMoneySimpleTestStrategy(BaseBacktestStrategy):
                             level['break_direction'] = 'downward'
                             if len(self.significant_levels) <= 10:  # Debug print
                                 print(f"💥 Swing Low {level['price']:.4f} broken downward at {current_time}")
+                        elif level['type'] in ['bullish_fvg', 'bearish_fvg'] and level.get('filled') is False:
+                            # Check if FVG got filled
+                            if level['type'] == 'bullish_fvg' and current_low <= level['bottom']:
+                                # Bullish FVG filled (price came back down into the gap)
+                                level['end_time'] = current_time
+                                level['filled'] = True
+                                level['fill_time'] = current_time
+                                if len(self.significant_levels) <= 10:  # Debug print
+                                    print(f"🔄 Bullish FVG {level['bottom']:.4f}-{level['top']:.4f} filled at {current_time}")
+                            elif level['type'] == 'bearish_fvg' and current_high >= level['top']:
+                                # Bearish FVG filled (price came back up into the gap)
+                                level['end_time'] = current_time
+                                level['filled'] = True
+                                level['fill_time'] = current_time
+                                if len(self.significant_levels) <= 10:  # Debug print
+                                    print(f"🔄 Bearish FVG {level['bottom']:.4f}-{level['top']:.4f} filled at {current_time}")
+                
+                # Check for new FVGs (only add them once when we reach their index)
+                if self.show_fvgs and hasattr(self, 'fvgs'):
+                    for fvg in self.fvgs:
+                        if fvg['index'] == current_idx and not fvg.get('added_to_levels', False):
+                            # Calculate the start time from the first candle that created the FVG
+                            # FVG is detected at index i, but starts from candle at index i-2
+                            start_candle_index = fvg['index'] - 2
+                            start_time = self.data.index[start_candle_index]
+                            
+                            level_data = {
+                                'time': start_time,  # Start from the first candle of the pattern
+                                'price': (fvg['top'] + fvg['bottom']) / 2,  # Mid-point for reference
+                                'type': fvg['type'],
+                                'description': f"{fvg['type'].replace('_', ' ').title()}: {fvg['bottom']:.4f}-{fvg['top']:.4f}",
+                                'end_time': None,
+                                'filled': False,
+                                'top': fvg['top'],
+                                'bottom': fvg['bottom'],
+                                'size': fvg['size']
+                            }
+                            self.significant_levels.append(level_data)
+                            SmartMoneyHighsLowsStrategy._collected_levels.append(level_data)
+                            outer_strategy._detected_levels = SmartMoneyHighsLowsStrategy._collected_levels
+                            
+                            # Mark as added to avoid duplicates
+                            fvg['added_to_levels'] = True
+                            
+                            if len(self.significant_levels) <= 10:  # Debug print
+                                fvg_type = "📈" if fvg['type'] == 'bullish_fvg' else "📉"
+                                print(f"{fvg_type} {fvg['type'].replace('_', ' ').title()} detected: {fvg['bottom']:.4f}-{fvg['top']:.4f} at {current_time}")
                 
                 # Store swing highs for drawing
                 if (self.show_swing_highs and 

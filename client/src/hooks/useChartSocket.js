@@ -1,9 +1,8 @@
 import { useEffect, useRef } from "react";
 import { io } from "socket.io-client";
 import { useParams } from "react-router-dom";
-import { API_BASE_URL } from "../config/api";
 
-const SOCKET_URL = API_BASE_URL || "http://localhost:8000";
+const SOCKET_URL = "http://localhost:8000";
 
 const INTERVAL_MAP = {
   "1m": "1",

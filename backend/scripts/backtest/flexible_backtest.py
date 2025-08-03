@@ -334,6 +334,17 @@ def run_flexible_backtest(
                             "startPrice": level['price'],
                             "endPrice": level['price']
                         }
+                    elif level['type'] in ['bullish_fvg', 'bearish_fvg']:
+                        # Rectangle for Fair Value Gaps
+                        drawing = {
+                            "type": "rectangle",
+                            "id": f"fvg_{level['type']}_{len(drawings)}",
+                            "ticker": symbol,
+                            "startTime": level_time,
+                            "endTime": end_time,
+                            "startPrice": level.get('bottom', level['price']),
+                            "endPrice": level.get('top', level['price'])
+                        }
                     elif level['type'] in ['macd_bullish_cross', 'macd_bearish_cross', 'bullish_divergence', 'bearish_divergence']:
                         # Point markers for signals (short vertical lines)
                         price_offset = level['price'] * 0.001  # 0.1% offset for visibility
