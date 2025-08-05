@@ -39,6 +39,8 @@ class SmartMoneySimpleTestStrategy(BaseBacktestStrategy):
             "show_swing_lows": True,    # Create line drawings for swing lows
             "show_fvgs": True,          # Show Fair Value Gaps
             "fvg_min_size": 0.001,      # Minimum FVG size as percentage (0.1%)
+            "show_order_blocks": True,  # Show Order Blocks
+            "ob_close_mitigation": False, # Use high/low for OB mitigation instead of close
             "commission": 0.002,        # Not used (no trading)
             "cash": 10000,              # Not used (no trading)
         }
@@ -92,6 +94,14 @@ class SmartMoneySimpleTestStrategy(BaseBacktestStrategy):
                     "minimum": 0.0001,
                     "maximum": 0.01,
                     "description": "Minimum FVG size as percentage"
+                },
+                "show_order_blocks": {
+                    "type": "boolean",
+                    "description": "Show Order Blocks on chart"
+                },
+                "ob_close_mitigation": {
+                    "type": "boolean",
+                    "description": "Use close price for OB mitigation instead of high/low"
                 }
             },
             "required": ["swing_length"]
@@ -116,6 +126,8 @@ class SmartMoneySimpleTestStrategy(BaseBacktestStrategy):
             show_swing_lows = params.get("show_swing_lows", True)
             show_fvgs = params.get("show_fvgs", True)
             fvg_min_size = params.get("fvg_min_size", 0.001)
+            show_order_blocks = params.get("show_order_blocks", True)
+            ob_close_mitigation = params.get("ob_close_mitigation", False)
             return_trades = True  # Framework compatibility
             
             # Class variable to store levels that can be accessed later
@@ -141,6 +153,12 @@ class SmartMoneySimpleTestStrategy(BaseBacktestStrategy):
                     self.fvgs = self._calculate_fvgs()
                 else:
                     self.fvgs = []
+                
+                # Calculate Order Blocks
+                if self.show_order_blocks:
+                    self.order_blocks = self._calculate_order_blocks()
+                else:
+                    self.order_blocks = []
                 
             def _calculate_swing_highs(self, high_series):
                 """Calculate swing highs using rolling window"""
@@ -248,6 +266,133 @@ class SmartMoneySimpleTestStrategy(BaseBacktestStrategy):
                 print(f"🔧 Calculated {len(fvgs)} FVGs during initialization")
                 return fvgs
             
+            def _calculate_order_blocks(self):
+                """Calculate Order Blocks based on swing highs/lows"""
+                order_blocks = []
+                data_length = len(self.data)
+                
+                # Create swing highs/lows array for OB calculation
+                swing_hl = np.zeros(data_length)
+                
+                # Mark swing highs as 1 and swing lows as -1
+                for i in range(data_length):
+                    if not np.isnan(self.swing_highs[i]):
+                        swing_hl[i] = 1
+                    elif not np.isnan(self.swing_lows[i]):
+                        swing_hl[i] = -1
+                
+                # Track crossed swing points and active order blocks
+                crossed = np.full(data_length, False, dtype=bool)
+                active_bullish_obs = []
+                active_bearish_obs = []
+                
+                # Get indices of swing highs and lows
+                swing_high_indices = np.where(swing_hl == 1)[0]
+                swing_low_indices = np.where(swing_hl == -1)[0]
+                
+                # Process each candle for order block detection
+                for i in range(data_length):
+                    current_high = self.data.High[i]
+                    current_low = self.data.Low[i]
+                    current_close = self.data.Close[i]
+                    current_open = self.data.Open[i]
+                    current_time = self.data.index[i]
+                    
+                    # Check for bullish order blocks
+                    # Find last swing high before current candle
+                    valid_swing_highs = swing_high_indices[swing_high_indices < i]
+                    if len(valid_swing_highs) > 0:
+                        last_swing_high_idx = valid_swing_highs[-1]
+                        swing_high_price = self.data.High[last_swing_high_idx]
+                        
+                        # If price breaks above swing high and hasn't been processed
+                        if current_close > swing_high_price and not crossed[last_swing_high_idx]:
+                            crossed[last_swing_high_idx] = True
+                            
+                            # Find the order block candle (last candle before break with lowest low)
+                            ob_idx = i - 1  # Default to previous candle
+                            if i - last_swing_high_idx > 1:
+                                # Look for candle with lowest low between swing high and current
+                                search_start = last_swing_high_idx + 1
+                                search_end = i
+                                lowest_low = float('inf')
+                                
+                                for j in range(search_start, search_end):
+                                    if self.data.Low[j] < lowest_low:
+                                        lowest_low = self.data.Low[j]
+                                        ob_idx = j
+                            
+                            # Create bullish order block
+                            ob_data = {
+                                'index': ob_idx,
+                                'time': self.data.index[ob_idx],
+                                'type': 'bullish_ob',
+                                'top': self.data.High[ob_idx],
+                                'bottom': self.data.Low[ob_idx],
+                                'mitigated': False,
+                                'mitigation_time': None
+                            }
+                            order_blocks.append(ob_data)
+                            active_bullish_obs.append(ob_data)
+                    
+                    # Check for bearish order blocks
+                    valid_swing_lows = swing_low_indices[swing_low_indices < i]
+                    if len(valid_swing_lows) > 0:
+                        last_swing_low_idx = valid_swing_lows[-1]
+                        swing_low_price = self.data.Low[last_swing_low_idx]
+                        
+                        # If price breaks below swing low and hasn't been processed
+                        if current_close < swing_low_price and not crossed[last_swing_low_idx]:
+                            crossed[last_swing_low_idx] = True
+                            
+                            # Find the order block candle (last candle before break with highest high)
+                            ob_idx = i - 1  # Default to previous candle
+                            if i - last_swing_low_idx > 1:
+                                # Look for candle with highest high between swing low and current
+                                search_start = last_swing_low_idx + 1
+                                search_end = i
+                                highest_high = 0
+                                
+                                for j in range(search_start, search_end):
+                                    if self.data.High[j] > highest_high:
+                                        highest_high = self.data.High[j]
+                                        ob_idx = j
+                            
+                            # Create bearish order block
+                            ob_data = {
+                                'index': ob_idx,
+                                'time': self.data.index[ob_idx],
+                                'type': 'bearish_ob',
+                                'top': self.data.High[ob_idx],
+                                'bottom': self.data.Low[ob_idx],
+                                'mitigated': False,
+                                'mitigation_time': None
+                            }
+                            order_blocks.append(ob_data)
+                            active_bearish_obs.append(ob_data)
+                    
+                    # Check for order block mitigation
+                    for ob in active_bullish_obs.copy():
+                        if not ob['mitigated']:
+                            # Bullish OB is mitigated when price goes below its bottom
+                            mitigation_price = current_low if not self.ob_close_mitigation else min(current_open, current_close)
+                            if mitigation_price < ob['bottom']:
+                                ob['mitigated'] = True
+                                ob['mitigation_time'] = current_time
+                                active_bullish_obs.remove(ob)
+                    
+                    for ob in active_bearish_obs.copy():
+                        if not ob['mitigated']:
+                            # Bearish OB is mitigated when price goes above its top
+                            mitigation_price = current_high if not self.ob_close_mitigation else max(current_open, current_close)
+                            if mitigation_price > ob['top']:
+                                ob['mitigated'] = True
+                                ob['mitigation_time'] = current_time
+                                active_bearish_obs.remove(ob)
+                
+                print(f"🔧 Calculated {len(order_blocks)} Order Blocks during initialization")
+                return order_blocks
+            
             def next(self):
                 """Process each bar and store significant levels - NO TRADING"""
                 current_idx = len(self.data) - 1
@@ -327,6 +472,32 @@ class SmartMoneySimpleTestStrategy(BaseBacktestStrategy):
                             if len(self.significant_levels) <= 10:  # Debug print
                                 fvg_type = "📈" if fvg['type'] == 'bullish_fvg' else "📉"
                                 print(f"{fvg_type} {fvg['type'].replace('_', ' ').title()} detected: {fvg['bottom']:.4f}-{fvg['top']:.4f} at {current_time}")
+                
+                # Check for new Order Blocks
+                if self.show_order_blocks and hasattr(self, 'order_blocks'):
+                    for ob in self.order_blocks:
+                        if ob['index'] == current_idx and not ob.get('added_to_levels', False):
+                            level_data = {
+                                'time': ob['time'],
+                                'price': (ob['top'] + ob['bottom']) / 2,  # Mid-point for reference
+                                'type': ob['type'],
+                                'description': f"{ob['type'].replace('_', ' ').title()}: {ob['bottom']:.4f}-{ob['top']:.4f}",
+                                'end_time': ob['mitigation_time'] if ob['mitigated'] else None,
+                                'mitigated': ob['mitigated'],
+                                'top': ob['top'],
+                                'bottom': ob['bottom']
+                            }
+                            self.significant_levels.append(level_data)
+                            SmartMoneyHighsLowsStrategy._collected_levels.append(level_data)
+                            outer_strategy._detected_levels = SmartMoneyHighsLowsStrategy._collected_levels
+                            
+                            # Mark as added to avoid duplicates
+                            ob['added_to_levels'] = True
+                            
+                            if len(self.significant_levels) <= 10:  # Debug print
+                                ob_type = "🟣" if ob['type'] == 'bullish_ob' else "🟪"
+                                status = "mitigated" if ob['mitigated'] else "active"
+                                print(f"{ob_type} {ob['type'].replace('_', ' ').title()} detected: {ob['bottom']:.4f}-{ob['top']:.4f} ({status}) at {ob['time']}")
                 
                 # Store swing highs for drawing
                 if (self.show_swing_highs and 

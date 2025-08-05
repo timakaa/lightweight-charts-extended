@@ -360,6 +360,25 @@ def run_flexible_backtest(
                                 "borderWidth": 1
                             }
                         }
+                    elif level['type'] in ['bullish_ob', 'bearish_ob']:
+                        # Rectangle for Order Blocks with purple (bullish) and orange (bearish) colors
+                        ob_color = "rgba(138, 43, 226, 0.25)" if level['type'] == 'bullish_ob' else "rgba(23, 82, 183, 0.25)"
+                        border_color = "rgba(138, 43, 226, 0.8)" if level['type'] == 'bullish_ob' else "rgba(255, 152, 0, 0.)"
+                        
+                        drawing = {
+                            "type": "rectangle",
+                            "id": f"ob_{level['type']}_{len(drawings)}",
+                            "ticker": symbol,
+                            "startTime": level_time,
+                            "endTime": end_time,
+                            "startPrice": level.get('bottom', level['price']),
+                            "endPrice": level.get('top', level['price']),
+                            "style": {
+                                "fillColor": ob_color,
+                                "borderColor": border_color,
+                                "borderWidth": 2
+                            }
+                        }
                     elif level['type'] in ['macd_bullish_cross', 'macd_bearish_cross', 'bullish_divergence', 'bearish_divergence']:
                         # Point markers for signals (short vertical lines) with different colors
                         price_offset = level['price'] * 0.001  # 0.1% offset for visibility
