@@ -70,45 +70,45 @@ help: ## Show this help message
 
 build: ## 🔧 Build Docker containers
 	@echo "$(CYAN)🔨 Building Docker containers...$(RESET)"
-	@docker-compose build
+	@docker compose build
 
 up: ## 🔧 Start the application
 	@echo "$(CYAN)🚀 Starting application...$(RESET)"
-	@docker-compose up -d
+	@docker compose up -d
 	@echo "$(GREEN)✅ Application started!$(RESET)"
 	@echo "Frontend: http://localhost:3000"
 	@echo "Backend: http://localhost:8000"
 
 up-build: ## 🔧 Build and start the application
 	@echo "$(CYAN)🔨 Building and starting application...$(RESET)"
-	@docker-compose up --build -d
+	@docker compose up --build -d
 	@echo "$(GREEN)✅ Application built and started!$(RESET)"
 	@echo "Frontend: http://localhost:3000"
 	@echo "Backend: http://localhost:8000"
 
 start: ## 🔧 Start existing containers
 	@echo "$(CYAN)▶️  Starting containers...$(RESET)"
-	@docker-compose start
+	@docker compose start
 	@echo "$(GREEN)✅ Containers started!$(RESET)"
 
 stop: ## 🔧 Stop containers (without removing them)
 	@echo "$(CYAN)⏸️  Stopping containers...$(RESET)"
-	@docker-compose stop
+	@docker compose stop
 	@echo "$(GREEN)✅ Containers stopped!$(RESET)"
 
 down: ## 🔧 Stop and remove containers
 	@echo "$(CYAN)🛑 Stopping and removing containers...$(RESET)"
-	@docker-compose down
+	@docker compose down
 	@echo "$(GREEN)✅ Containers stopped and removed!$(RESET)"
 
 logs: ## 🔧 Show application logs
-	@docker-compose logs -f
+	@docker compose logs -f
 
 logs-backend: ## 🔧 Show backend logs only
-	@docker-compose logs -f backend
+	@docker compose logs -f backend
 
 logs-frontend: ## 🔧 Show frontend logs only
-	@docker-compose logs -f frontend
+	@docker compose logs -f frontend
 
 restart: ## 🔧 Restart the application
 	@make down
@@ -120,7 +120,7 @@ restart-build:
 
 clean: ## 🔧 Clean up Docker resources
 	@echo "$(CYAN)🧹 Cleaning up Docker resources...$(RESET)"
-	@docker-compose down -v
+	@docker compose down -v
 	@docker system prune -f
 	@echo "$(GREEN)✅ Cleanup completed!$(RESET)"
 
@@ -130,7 +130,7 @@ clean: ## 🔧 Clean up Docker resources
 
 scrape: ## 📊 Scrape data for specified symbol and timeframe
 	@echo "$(CYAN)📊 Scraping $(SYMBOL) $(TIMEFRAME) data from $(EXCHANGE)...$(RESET)"
-	@docker-compose exec backend python app/backtesting/ccxt_scrapping.py \
+	@docker compose exec backend python app/backtesting/ccxt_scrapping.py \
 		--symbol $(SYMBOL) \
 		--timeframe $(TIMEFRAME) \
 		--exchange $(EXCHANGE) \
@@ -152,7 +152,7 @@ backtest: ## 🧪 Run backtest with specified strategy and parameters
 	fi; \
 	if [ "$(SAVE)" = "true" ]; then \
 		echo "$(YELLOW)💾 Will save results to database$(RESET)"; \
-		docker-compose exec backend python scripts/backtest/flexible_backtest.py \
+		docker compose exec backend python scripts/backtest/flexible_backtest.py \
 			--strategy $(STRATEGY) \
 			--symbol $(SYMBOL) \
 			--timeframes $$FINAL_TIMEFRAMES \
@@ -160,7 +160,7 @@ backtest: ## 🧪 Run backtest with specified strategy and parameters
 			--cash $(CASH) \
 			--save-to-db; \
 	else \
-		docker-compose exec backend python scripts/backtest/flexible_backtest.py \
+		docker compose exec backend python scripts/backtest/flexible_backtest.py \
 			--strategy $(STRATEGY) \
 			--symbol $(SYMBOL) \
 			--timeframes $$FINAL_TIMEFRAMES \
@@ -174,15 +174,15 @@ backtest: ## 🧪 Run backtest with specified strategy and parameters
 
 list-strategies: ## 📚 List all available strategies
 	@echo "$(CYAN)📚 Available strategies:$(RESET)"
-	@docker-compose exec backend python scripts/backtest/flexible_backtest.py --list-strategies
+	@docker compose exec backend python scripts/backtest/flexible_backtest.py --list-strategies
 
 strategy-info: ## 📚 Get detailed info about a strategy
 	@echo "$(CYAN)📚 Strategy info for $(STRATEGY):$(RESET)"
-	@docker-compose exec backend python scripts/backtest/flexible_backtest.py --strategy-info $(STRATEGY)
+	@docker compose exec backend python scripts/backtest/flexible_backtest.py --strategy-info $(STRATEGY)
 
 list-data: ## 📚 List available data files
 	@echo "$(CYAN)📚 Available data files:$(RESET)"
-	@docker-compose exec backend find /app/charts -name "*.csv" -type f | sort
+	@docker compose exec backend find /app/charts -name "*.csv" -type f | sort
 
 
 
@@ -199,10 +199,10 @@ test-system: ## 🔧 Test the entire system
 	@make list-data
 
 shell-backend: ## 🔧 Open shell in backend container
-	@docker-compose exec backend bash
+	@docker compose exec backend bash
 
 shell-frontend: ## 🔧 Open shell in frontend container
-	@docker-compose exec frontend sh
+	@docker compose exec frontend sh
 
 # =============================================================================
 # 📋 Status & Monitoring
@@ -212,7 +212,7 @@ status: ## 📋 Show system status
 	@echo "$(CYAN)📋 System Status:$(RESET)"
 	@echo ""
 	@echo "$(YELLOW)Docker Containers:$(RESET)"
-	@docker-compose ps
+	@docker compose ps
 	@echo ""
 	@echo "$(YELLOW)Available Data Files:$(RESET)"
 	@make list-data 2>/dev/null | head -10
