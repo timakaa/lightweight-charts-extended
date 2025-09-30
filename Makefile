@@ -28,6 +28,8 @@ params ?= {}
 PARAMS = $(params)
 save ?= false
 SAVE = $(save)
+api_url ?= http://100.76.193.76:8000
+API_URL = $(api_url)
 
 # Colors for output
 CYAN = \033[36m
@@ -57,12 +59,15 @@ help: ## Show this help message
 	@echo "$(CYAN)Variables you can override (lowercase or uppercase):$(RESET)"
 	@echo "  symbol=$(symbol) → $(SYMBOL)     timeframe=$(timeframe)     exchange=$(exchange)"
 	@echo "  cash=$(cash)       strategy=$(strategy)     start_date=$(start_date)"
+	@echo "  api_url=$(api_url)"
 	@echo ""
 	@echo "$(CYAN)Examples:$(RESET)"
 	@echo "  make scrape symbol=ethusdt timeframe=4h"
 	@echo "  make backtest symbol=solusdt"
 	@echo "  make backtest symbol=btcusdt save=true"
 	@echo "  make backtest symbol=ethusdt params='{\"fast_ma\": 5, \"slow_ma\": 20}'"
+	@echo "  make up api_url=http://localhost:8000"
+	@echo "  make up-build api_url=http://192.168.1.100:8000"
 
 # =============================================================================
 # 🔧 System Management
@@ -74,17 +79,19 @@ build: ## 🔧 Build Docker containers
 
 up: ## 🔧 Start the application
 	@echo "$(CYAN)🚀 Starting application...$(RESET)"
-	@docker compose up -d
+	@VITE_API_URL=$(API_URL) docker compose up -d
 	@echo "$(GREEN)✅ Application started!$(RESET)"
 	@echo "Frontend: http://localhost:3000"
 	@echo "Backend: http://localhost:8000"
+	@echo "API URL: $(API_URL)"
 
 up-build: ## 🔧 Build and start the application
 	@echo "$(CYAN)🔨 Building and starting application...$(RESET)"
-	@docker compose up --build -d
+	@VITE_API_URL=$(API_URL) docker compose up --build -d
 	@echo "$(GREEN)✅ Application built and started!$(RESET)"
 	@echo "Frontend: http://localhost:3000"
 	@echo "Backend: http://localhost:8000"
+	@echo "API URL: $(API_URL)"
 
 start: ## 🔧 Start existing containers
 	@echo "$(CYAN)▶️  Starting containers...$(RESET)"
