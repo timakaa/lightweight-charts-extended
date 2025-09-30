@@ -1,5 +1,6 @@
 services:
   backend:
+    container_name: "backend"
     image: timakaa/lightweight-charts-extended-backend:latest
     build:
       context: ./backend
@@ -8,24 +9,20 @@ services:
       - "8000:8000"
     env_file:
       - ./backend/.env
-    environment:
-      - HOST=0.0.0.0
-      - PORT=8000
-      - DEBUG=False
-      - SOCKET_CORS_ORIGINS=http://localhost:3000
     restart: unless-stopped
 
   frontend:
+    container_name: "frontend"
     image: timakaa/lightweight-charts-extended-frontend:latest
     build:
       context: ./client
       dockerfile: Dockerfile
-      args:
-        - VITE_API_URL=http://localhost:8000
     ports:
       - "3000:80"
     depends_on:
       - backend
+    environment:
+      - VITE_API_URL=http://backend:8000
     env_file:
       - ./client/.env
     restart: unless-stopped
