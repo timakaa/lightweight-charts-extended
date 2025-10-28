@@ -3,9 +3,10 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 import os
 
-# Get the backend directory path
-backend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
-db_path = os.path.join(backend_dir, "main.db")
+# Use mounted volume for database persistence
+data_dir = os.environ.get("DATA_DIR", "/app/data")
+os.makedirs(data_dir, exist_ok=True)
+db_path = os.path.join(data_dir, "main.db")
 
 SQLALCHEMY_DATABASE_URL = f"sqlite:///{db_path}"
 

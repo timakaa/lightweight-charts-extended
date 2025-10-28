@@ -5,9 +5,9 @@ Centralized registry for all available backtesting strategies
 
 from typing import Dict, Type, List
 from ..base_strategy import BaseBacktestStrategy
-from .simple_ma_cross_strategy import SimpleMACrossStrategy
-from .smart_money_simple_test import SmartMoneySimpleTestStrategy
-from .rsi_macd_combo_strategy import RSIMACDComboStrategy
+from .simple_ma_cross.simple_ma_cross_strategy import SimpleMACrossStrategy
+from .smart_money_simple_test.smart_money_simple_test import SmartMoneySimpleTestStrategy
+from .rsi_macd_combo.rsi_macd_combo_strategy import RSIMACDComboStrategy
 
 # Strategy Registry
 STRATEGY_REGISTRY: Dict[str, Type[BaseBacktestStrategy]] = {

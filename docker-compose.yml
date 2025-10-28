@@ -9,6 +9,8 @@ services:
       - "8000:8000"
     env_file:
       - ./backend/.env
+    volumes:
+      - backend_data:/app/data
     restart: unless-stopped
 
   frontend:
@@ -28,3 +30,6 @@ services:
     env_file:
       - ./client/.env
     restart: unless-stopped
+
+volumes:
+  backend_data:

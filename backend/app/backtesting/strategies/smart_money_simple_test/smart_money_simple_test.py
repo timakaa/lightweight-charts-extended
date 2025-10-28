@@ -7,7 +7,7 @@ from typing import Dict, Any, List
 import pandas as pd
 import numpy as np
 from backtesting import Strategy
-from ..base_strategy import BaseBacktestStrategy, StrategyConfig
+from ...base_strategy import BaseBacktestStrategy, StrategyConfig
 
 
 class SmartMoneySimpleTestStrategy(BaseBacktestStrategy):
