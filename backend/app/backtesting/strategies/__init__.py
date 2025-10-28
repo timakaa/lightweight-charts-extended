@@ -12,7 +12,7 @@ from .rsi_macd_combo_strategy import RSIMACDComboStrategy
 # Strategy Registry
 STRATEGY_REGISTRY: Dict[str, Type[BaseBacktestStrategy]] = {
     "simple_ma_cross": SimpleMACrossStrategy,
-    "smart_money_concepts": SmartMoneySimpleTestStrategy,
+    "smc": SmartMoneySimpleTestStrategy,
     "rsi_macd_combo": RSIMACDComboStrategy,
     # Add more strategies here as you create them
     # "bollinger_bands": BollingerBandsStrategy,
