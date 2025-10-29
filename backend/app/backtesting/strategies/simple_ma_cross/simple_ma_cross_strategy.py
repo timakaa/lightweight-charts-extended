@@ -8,7 +8,7 @@ import pandas as pd
 from backtesting.lib import crossover
 from backtesting import Strategy
 
-from ..base_strategy import BaseBacktestStrategy, StrategyConfig
+from ...base_strategy import BaseBacktestStrategy, StrategyConfig
 
 
 class SimpleMACrossStrategy(BaseBacktestStrategy):

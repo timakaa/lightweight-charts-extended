@@ -151,6 +151,7 @@ export class Rectangle extends PluginBase {
       ...this._options,
       ...options,
     };
+    this.updateAllViews();
     if (this.requestUpdate) {
       this.requestUpdate();
     }

@@ -52,8 +52,10 @@ export const createRectangle = (
 
   // Apply styling if provided
   if (rectangleData.style) {
-    // Apply style properties to the rectangle
-    // This depends on your Rectangle class implementation
+    rectangle.applyOptions({
+      fillColor: rectangleData.style.fillColor || rectangle._options.fillColor,
+    });
+    rectangle.updateAllViews(); // Force redraw with new styling
   }
 
   // Attach to chart

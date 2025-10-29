@@ -39,6 +39,7 @@ export class LinePaneView {
       this._p1,
       this._p2,
       this._source._options.color,
+      this._source._options.style || {},
     );
   }
 }

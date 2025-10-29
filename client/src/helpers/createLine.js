@@ -13,7 +13,7 @@ export const exampleLineData = {
   style: {
     color: "#FF0000",
     width: 2,
-    style: "solid", // solid, dashed, dotted
+    lineStyle: "solid", // solid, dashed, dotted, dashdot
   },
 };
 
@@ -52,8 +52,13 @@ export const createLine = (
 
   // Apply styling if provided
   if (lineData.style) {
-    // Apply style properties to the line
-    // This depends on your Line class implementation
+    line.applyOptions({
+      color: lineData.style.color || line._options.color,
+      style: {
+        width: lineData.style.width || 4,
+        lineStyle: lineData.style.lineStyle || "solid",
+      },
+    });
   }
 
   // Attach to chart

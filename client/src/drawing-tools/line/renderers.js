@@ -3,10 +3,15 @@ import { positionsBox } from "../positions.js";
 
 // LinePaneRenderer draws the main line between two points
 export class LinePaneRenderer {
-  constructor(p1, p2, color) {
+  constructor(p1, p2, color, style = {}) {
     this._p1 = p1;
     this._p2 = p2;
     this._color = color;
+    this._style = {
+      width: 4,
+      lineStyle: "solid",
+      ...style,
+    };
   }
 
   // Draws the line on the chart
@@ -22,7 +27,35 @@ export class LinePaneRenderer {
       const ctx = scope.context;
       ctx.save();
       ctx.strokeStyle = this._color;
-      ctx.lineWidth = 4; // Line width
+      ctx.lineWidth = this._style.width * scope.verticalPixelRatio;
+
+      // Set line dash pattern based on style
+      switch (this._style.lineStyle) {
+        case "dashed":
+          ctx.setLineDash([
+            10 * scope.horizontalPixelRatio,
+            5 * scope.horizontalPixelRatio,
+          ]);
+          break;
+        case "dotted":
+          ctx.setLineDash([
+            2 * scope.horizontalPixelRatio,
+            3 * scope.horizontalPixelRatio,
+          ]);
+          break;
+        case "dashdot":
+          ctx.setLineDash([
+            10 * scope.horizontalPixelRatio,
+            3 * scope.horizontalPixelRatio,
+            2 * scope.horizontalPixelRatio,
+            3 * scope.horizontalPixelRatio,
+          ]);
+          break;
+        case "solid":
+        default:
+          ctx.setLineDash([]);
+          break;
+      }
 
       // Convert logical coordinates to pixel coordinates
       const x1 = Math.round(this._p1.x * scope.horizontalPixelRatio);
