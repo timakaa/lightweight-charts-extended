@@ -3,7 +3,7 @@ Simple MA Cross Strategy - Direct Port from simple_ma_cross.py
 Implements the exact same logic as the original simple_ma_cross.py but in the flexible framework
 """
 
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 import pandas as pd
 from backtesting.lib import crossover
 from backtesting import Strategy
@@ -13,17 +13,17 @@ from ..base_strategy import BaseBacktestStrategy, StrategyConfig
 
 class SimpleMACrossStrategy(BaseBacktestStrategy):
     """Simple Moving Average Cross Strategy - Direct port from simple_ma_cross.py"""
-    
-    def __init__(self, parameters: Dict[str, Any] = None, timeframes: List[str] = None):
+
+    def __init__(self, parameters: Optional[Dict[str, Any]] = None, timeframes: Optional[List[str]] = None):
         # Merge provided parameters with defaults
         default_params = self.get_default_parameters()
         if parameters:
             default_params.update(parameters)
-        
+
         # Use provided timeframes or default to 1h
         if timeframes is None:
             timeframes = ["1h"]
-        
+
         # Default configuration matching simple_ma_cross.py
         config = StrategyConfig(
             name="Simple MA Cross Strategy",
@@ -33,7 +33,7 @@ class SimpleMACrossStrategy(BaseBacktestStrategy):
             required_data=["Close"]
         )
         super().__init__(config)
-    
+
     def get_default_parameters(self) -> Dict[str, Any]:
         """Default parameters matching simple_ma_cross.py exactly"""
         return {
@@ -44,32 +44,32 @@ class SimpleMACrossStrategy(BaseBacktestStrategy):
             "commission": 0.002,    # 0.2% commission per trade
             "cash": 10000,          # Initial cash (can be overridden)
         }
-    
+
     def validate_parameters(self, parameters: Dict[str, Any]) -> bool:
         """Validate parameters"""
         required_params = ["fast_ma", "slow_ma", "risk_reward", "stop_loss_pct"]
-        
+
         # Check if all required parameters are present
         for param in required_params:
             if param not in parameters:
                 print(f"❌ Missing required parameter: {param}")
                 return False
-        
+
         # Validation rules
         if parameters["fast_ma"] >= parameters["slow_ma"]:
             print(f"❌ Fast MA ({parameters['fast_ma']}) must be less than Slow MA ({parameters['slow_ma']})")
             return False
-        
+
         if parameters["risk_reward"] <= 0:
             print(f"❌ Risk reward ratio ({parameters['risk_reward']}) must be greater than 0")
             return False
-            
+
         if parameters["stop_loss_pct"] <= 0:
             print(f"❌ Stop loss percentage ({parameters['stop_loss_pct']}) must be greater than 0")
             return False
-        
+
         return True
-    
+
     def get_parameter_schema(self) -> Dict[str, Any]:
         """Parameter schema for validation"""
         return {
@@ -82,7 +82,7 @@ class SimpleMACrossStrategy(BaseBacktestStrategy):
                     "description": "Fast moving average period"
                 },
                 "slow_ma": {
-                    "type": "integer", 
+                    "type": "integer",
                     "minimum": 2,
                     "maximum": 200,
                     "description": "Slow moving average period"
@@ -113,29 +113,29 @@ class SimpleMACrossStrategy(BaseBacktestStrategy):
             },
             "required": ["fast_ma", "slow_ma", "risk_reward", "stop_loss_pct"]
         }
-    
+
     def create_strategy_class(self, data_dict: Dict[str, pd.DataFrame]) -> type:
         """Create the actual Strategy class for backtesting - exact port from simple_ma_cross.py"""
-        
+
         params = self.parameters
         main_timeframe = self.timeframes[0]
-        
+
         class SimpleMACrossBacktestStrategy(Strategy):
             """Direct port of MACrossStrategy from simple_ma_cross.py"""
-            
+
             # Define parameters exactly as in original
             fast_ma = params["fast_ma"]
             slow_ma = params["slow_ma"]
             risk_reward = params["risk_reward"]
             stop_loss_pct = params["stop_loss_pct"]
             return_trades = True  # Parameter to return trade data
-            
+
             def init(self):
                 # Calculate moving averages exactly as in original
                 close_series = pd.Series(self.data.Close)
                 self.fast = self.I(close_series.rolling(self.fast_ma).mean)
                 self.slow = self.I(close_series.rolling(self.slow_ma).mean)
-            
+
             def next(self):
                 """Trading logic - exact port from simple_ma_cross.py"""
                 entry_price = self.data.Close[-1]
@@ -157,5 +157,5 @@ class SimpleMACrossStrategy(BaseBacktestStrategy):
 
                     # Enter short position with stop loss and take profit
                     self.sell(sl=stop_loss, tp=take_profit)
-        
+
         return SimpleMACrossBacktestStrategy
