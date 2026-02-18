@@ -136,6 +136,9 @@ export class RectanglePriceAxisPaneView extends RectangleAxisPaneView {
 
   getPoints() {
     const series = this._source._series;
+    if (!series) {
+      return [null, null]; // Skip if not properly attached yet
+    }
     const y1 = series.priceToCoordinate(this._source._p1.price);
     const y2 = series.priceToCoordinate(this._source._p2.price);
     return [y1, y2];
@@ -149,6 +152,9 @@ export class RectangleTimeAxisPaneView extends RectangleAxisPaneView {
   }
 
   getPoints() {
+    if (!this._source._chart) {
+      return [null, null]; // Skip if not properly attached yet
+    }
     const timeScale = this._source._chart.timeScale();
 
     // Use enhanced coordinate conversion with logical fallback
@@ -216,6 +222,9 @@ export class RectanglePriceAxisView extends RectangleAxisView {
 // RectangleTimeAxisView provides the time axis label for the rectangle
 export class RectangleTimeAxisView extends RectangleAxisView {
   update() {
+    if (!this._source._chart) {
+      return // Skip if not properly attached yet
+    }
     const timeScale = this._source._chart.timeScale();
 
     // Use enhanced coordinate conversion with logical fallback
@@ -227,6 +236,7 @@ export class RectangleTimeAxisView extends RectangleAxisView {
       this._pos = -1;
     }
   }
+
   text() {
     const time = this._source[`_${this._point}`]?.time;
     const text = this._source._options.timeLabelFormatter(time);
