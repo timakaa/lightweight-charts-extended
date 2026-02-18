@@ -23,15 +23,9 @@ class Settings:
         "*",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
-        "http://192.168.1.65:3000", 
+        "http://192.168.1.65:3000",
         "http://100.76.193.76:3000",
     ]
-
-    # Security Settings
-    SECRET_KEY: str = os.getenv("SECRET_KEY", "your-secret-key-here")
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = int(
-        os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30")
-    )
 
     # Database Settings (for future use)
     DATABASE_URL: str = os.getenv("DATABASE_URL", "")

@@ -19,8 +19,8 @@ services:
     build:
       context: ./client
       dockerfile: Dockerfile
-      args:
-        - VITE_API_URL=${VITE_API_URL:-http://100.76.193.76:8000}
+      # args:
+        # - VITE_API_URL=${VITE_API_URL:-http://100.76.193.76:8000}
     ports:
       - "3000:80"
     depends_on:
