@@ -2,13 +2,17 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Find from "@icons/Find";
 import { useChartStore } from "@store/chart";
-import TimeframeSelector from "./TimeframeSelector";
+import TimeframeSelector from "./components/TimeframeSelector";
 import BacktestModal from "@components/BacktestModal";
+import TimeframeModal from "./components/TimeframeModal";
+import TickerModal from "./components/TickerModal/TickerModal";
+import { useTimeframeModal } from "./hooks/useTimeframeModal";
+import { useTickerModal } from "./hooks/useTickerModal";
 
 const DEFAULT_TICKER = "SOL/USDT";
 const DEFAULT_TIMEFRAME = "1h";
 
-const TopBar = ({ onOpenTickerModal }) => {
+const TopBar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isBacktestModalOpen, setIsBacktestModalOpen] = useState(false);
@@ -16,6 +20,9 @@ const TopBar = ({ onOpenTickerModal }) => {
   const setTicker = useChartStore((state) => state.setTicker);
   const timeframe = useChartStore((state) => state.timeframe);
   const setTimeframe = useChartStore((state) => state.setTimeframe);
+
+  const timeframeModal = useTimeframeModal();
+  const tickerModal = useTickerModal();
 
   const isBacktestPage = location.pathname.startsWith("/backtest");
 
@@ -63,7 +70,7 @@ const TopBar = ({ onOpenTickerModal }) => {
           </>
         )}
         <button
-          onClick={onOpenTickerModal}
+          onClick={tickerModal.openModal}
           className='flex justify-center items-center p-2 hover:bg-[#2E2E2E] duration-100 gap-x-1 rounded-md text-sm font-[600] max-w-[100px]'
         >
           <div className='flex-shrink-0'>
@@ -92,6 +99,21 @@ const TopBar = ({ onOpenTickerModal }) => {
       <BacktestModal
         isOpen={isBacktestModalOpen}
         onClose={() => setIsBacktestModalOpen(false)}
+      />
+      <TimeframeModal
+        isOpen={timeframeModal.isModalOpen}
+        inputValue={timeframeModal.inputValue}
+        isValid={timeframeModal.isValid}
+        onClose={timeframeModal.closeModal}
+        onApply={timeframeModal.applyTimeframe}
+        onInputChange={timeframeModal.handleInputChange}
+        getPreviewTimeframe={timeframeModal.getPreviewTimeframe}
+      />
+      <TickerModal
+        isOpen={tickerModal.isModalOpen}
+        initialLetter={tickerModal.initialLetter}
+        onClose={tickerModal.closeModal}
+        onSelectTicker={tickerModal.handleTickerSelect}
       />
     </>
   );

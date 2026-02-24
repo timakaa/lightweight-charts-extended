@@ -216,8 +216,8 @@ const BacktestSidebar = () => {
   }
 
   return (
-    <div className='fixed z-50 border-l-[4px] cursor-default top-0 right-0 w-[400px] h-full bg-modal text-white border-[#2E2E2E] flex flex-col'>
-      <h2 className='sticky top-0 mx-5 mt-5 font-bold text-2xl py-2.5 border-[#1f2024]'>
+    <div className='border-l-[4px] cursor-default h-full bg-modal text-white border-[#2E2E2E] flex flex-col overflow-hidden'>
+      <h2 className='mx-5 mt-5 font-bold text-2xl py-2.5 border-[#1f2024]'>
         Backtest Results
       </h2>
       {stats?.title && (

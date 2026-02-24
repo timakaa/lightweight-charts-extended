@@ -1,7 +1,9 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import Chart from "./components/TradingChart";
+import Chart from "./components/Chart/Chart";
+import TopBar from "./components/TopBar/TopBar";
+import Sidebar from "./components/Sidebar/Sidebar";
 import Backtest from "./pages/Backtest/Backtest";
 import Backtests from "./pages/Backtests/Backtests";
 
@@ -16,6 +18,8 @@ const queryClient = new QueryClient({
 });
 
 function App() {
+  const [drawingTools, setDrawingTools] = React.useState(null);
+
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
@@ -23,8 +27,18 @@ function App() {
           <Route
             path='/'
             element={
-              <div style={{ overflow: "hidden" }}>
-                <Chart />
+              <div className='fixed inset-0 flex flex-col bg-black overflow-hidden'>
+                <TopBar />
+                <div className='flex-1 flex overflow-hidden'>
+                  {drawingTools && <Sidebar {...drawingTools} />}
+                  <div className='flex-1 overflow-hidden'>
+                    <Chart
+                      onChartReady={(data) =>
+                        setDrawingTools(data.drawingTools)
+                      }
+                    />
+                  </div>
+                </div>
               </div>
             }
           />

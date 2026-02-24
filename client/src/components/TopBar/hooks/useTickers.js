@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { API_BASE_URL } from "../../../config/api";
+import { API_BASE_URL } from "@config/api";
 
 // Fetch tickers from backend
 const fetchTickers = async ({
