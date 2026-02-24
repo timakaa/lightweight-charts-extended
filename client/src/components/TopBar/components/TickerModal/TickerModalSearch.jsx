@@ -3,7 +3,7 @@ import React from "react";
 export const TickerModalSearch = ({ search, onChange }) => {
   const handleInputChange = (e) => {
     const upperCaseValue = e.target.value.toUpperCase();
-    onChange({ target: { value: upperCaseValue } });
+    onChange(upperCaseValue);
   };
 
   return (
