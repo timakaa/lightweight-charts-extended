@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import Find from "./icons/Find";
+import Find from "../icons/Find";
 import { useChartStore } from "../store/chart";
 import TimeframeSelector from "./TimeframeSelector";
 import BacktestModal from "./BacktestModal";

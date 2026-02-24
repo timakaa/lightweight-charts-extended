@@ -72,6 +72,10 @@ class BaseBacktestStrategy(ABC):
             "timeframes": self.timeframes,
             "parameter_schema": self.get_parameter_schema()
         }
+    
+    def get_custom_metrics(self) -> Dict[str, Any]:
+        """Get custom DCA metrics calculated during strategy creation"""
+        return getattr(self, '_dca_metrics', {})
 
     def get_parameter_schema(self) -> Dict[str, Any]:
         """Return JSON schema for parameters validation"""

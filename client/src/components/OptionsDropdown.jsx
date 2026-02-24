@@ -1,13 +1,19 @@
-import React, { Fragment, useState } from "react";
-import { Menu, Transition } from "@headlessui/react";
-import Trash from "./icons/Trash";
-import Edit from "./icons/Edit";
+import { Fragment, useState } from "react";
+import {
+  Menu,
+  Transition,
+  MenuButton,
+  MenuItem,
+  MenuItems,
+} from "@headlessui/react";
+import Trash from "@icons/Trash";
+import Edit from "@icons/Edit";
 import {
   useDeleteBacktest,
   useUpdateBacktest,
 } from "../hooks/backtests/useBacktests";
 import { useNavigate, useParams } from "react-router-dom";
-import EditBacktestModal from "./backtests/EditBacktestModal";
+import EditBacktestModal from "../pages/Backtests/components/EditBacktestModal";
 
 const OptionsDropdown = ({ backtest }) => {
   const navigate = useNavigate();
@@ -45,7 +51,7 @@ const OptionsDropdown = ({ backtest }) => {
   return (
     <>
       <Menu as='div' className='relative z-50' data-menu='true'>
-        <Menu.Button className='p-1 hover:bg-[#1e222d] rounded-full transition-colors'>
+        <MenuButton className='p-1 hover:bg-[#1e222d] rounded-full transition-colors'>
           <svg
             xmlns='http://www.w3.org/2000/svg'
             className='h-4 w-4 text-gray-500'
@@ -54,7 +60,7 @@ const OptionsDropdown = ({ backtest }) => {
           >
             <path d='M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z' />
           </svg>
-        </Menu.Button>
+        </MenuButton>
         <Transition
           as={Fragment}
           enter='transition ease-out duration-100'
@@ -64,9 +70,9 @@ const OptionsDropdown = ({ backtest }) => {
           leaveFrom='transform opacity-100 scale-100'
           leaveTo='transform opacity-0 scale-95'
         >
-          <Menu.Items className='absolute right-0 mt-2 w-32 origin-top-right rounded-md bg-[#131722] shadow-lg ring-1 ring-[#1e222d] focus:outline-none z-10'>
+          <MenuItems className='absolute right-0 mt-2 w-32 origin-top-right rounded-md bg-[#131722] shadow-lg ring-1 ring-[#1e222d] focus:outline-none z-10'>
             <div>
-              <Menu.Item>
+              <MenuItem>
                 {({ active }) => (
                   <button
                     onClick={onEdit}
@@ -78,8 +84,8 @@ const OptionsDropdown = ({ backtest }) => {
                     Edit
                   </button>
                 )}
-              </Menu.Item>
-              <Menu.Item>
+              </MenuItem>
+              <MenuItem>
                 {({ active }) => (
                   <button
                     onClick={onDelete}
@@ -91,9 +97,9 @@ const OptionsDropdown = ({ backtest }) => {
                     Delete
                   </button>
                 )}
-              </Menu.Item>
+              </MenuItem>
             </div>
-          </Menu.Items>
+          </MenuItems>
         </Transition>
       </Menu>
 

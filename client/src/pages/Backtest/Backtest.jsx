@@ -1,8 +1,7 @@
-import React from "react";
-import Chart from "../components/TradingChart";
-import BacktestSidebar from "../components/BacktestSidebar";
+import Chart from "../../components/TradingChart";
+import BacktestSidebar from "../../components/BacktestSidebar";
 import { useNavigate, useParams } from "react-router-dom";
-import { useBacktestDrawings } from "../hooks/backtests/useBacktests";
+import { useBacktestDrawings } from "@hooks/backtests/useBacktests";
 
 const Backtest = () => {
   const { backtestId } = useParams();

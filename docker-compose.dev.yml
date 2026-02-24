@@ -1,7 +1,6 @@
 services:
   backend:
-    container_name: "backend"
-    image: timakaa/lightweight-charts-extended-backend:latest
+    container_name: "backend-dev"
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -10,25 +9,27 @@ services:
     env_file:
       - ./backend/.env
     volumes:
+      - ./backend:/app
       - backend_data:/app/data
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     restart: unless-stopped
 
   frontend:
-    container_name: "frontend"
-    image: timakaa/lightweight-charts-extended-frontend:latest
+    container_name: "frontend-dev"
     build:
       context: ./client
-      dockerfile: Dockerfile
-      # args:
-      #   - VITE_API_URL=${VITE_API_URL:-http://100.76.193.76:8000}
+      dockerfile: Dockerfile.dev
     ports:
-      - "3000:80"
+      - "3000:3000"
     depends_on:
       - backend
     environment:
-      - VITE_API_URL=http://backend:8000
+      - VITE_API_URL=${VITE_API_URL:-http://localhost:8000}
     env_file:
       - ./client/.env
+    volumes:
+      - ./client:/app
+      - /app/node_modules
     restart: unless-stopped
 
 volumes:

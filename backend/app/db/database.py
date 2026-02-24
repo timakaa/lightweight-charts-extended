@@ -4,7 +4,9 @@ from sqlalchemy.ext.declarative import declarative_base
 import os
 
 # Use mounted volume for database persistence
-data_dir = os.environ.get("DATA_DIR", "/app/data")
+# Default to ./data for local development, /app/data in Docker
+default_data_dir = "./data" if not os.path.exists("/app") else "/app/data"
+data_dir = os.environ.get("DATA_DIR", default_data_dir)
 os.makedirs(data_dir, exist_ok=True)
 db_path = os.path.join(data_dir, "main.db")
 

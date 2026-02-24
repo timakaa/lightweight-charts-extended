@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { useBacktestsSummarized } from "../hooks/backtests/useBacktests";
-import { useDebounce } from "../hooks/useDebounce";
-import BacktestList from "../components/backtests/BacktestList";
-import SearchBar from "../components/backtests/SearchBar";
-import LoadingSpinner from "../components/backtests/LoadingSpinner";
-import ErrorState from "../components/backtests/ErrorState";
+import { useState, useEffect } from "react";
+import { useBacktestsSummarized } from "@hooks/backtests/useBacktests";
+import { useDebounce } from "@hooks/useDebounce";
+import BacktestList from "./components/BacktestList";
+import SearchBar from "./components/SearchBar";
+import LoadingSpinner from "./components/LoadingSpinner";
+import ErrorState from "./components/ErrorState";
 
 const Backtests = () => {
   const [page, setPage] = useState(1);

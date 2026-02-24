@@ -2,8 +2,8 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Chart from "./components/TradingChart";
-import Backtest from "./pages/Backtest";
-import Backtests from "./pages/Backtests";
+import Backtest from "./pages/Backtest/Backtest";
+import Backtests from "./pages/Backtests/Backtests";
 
 // Create a client
 const queryClient = new QueryClient({

@@ -17,7 +17,7 @@ import useFibRetracementDrawing from "../hooks/useFibRetracementDrawing";
 import { useCreateDrawings } from "../hooks/useCreateDrawings";
 import { usePriceAxisScroll } from "../hooks/usePriceAxisScroll";
 import TopBar from "./TopBar";
-import Trash from "./icons/Trash";
+import Trash from "../icons/Trash";
 import useChartFitHotkey from "../hooks/useChartFitHotkey";
 import { useTimeframeModal } from "../hooks/useTimeframeModal";
 import TimeframeModal from "./TimeframeModal";
@@ -224,7 +224,7 @@ const TradingChart = ({ drawings }) => {
 
   return (
     <>
-      <div className='h-screen flex flex-col'>
+      <div className='h-screen flex flex-col bg-black'>
         <TopBar onOpenTickerModal={openTickerModal} />
         <div className='flex h-full'>
           <Sidebar

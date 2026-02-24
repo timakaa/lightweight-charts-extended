@@ -144,8 +144,8 @@ const BacktestSidebar = () => {
         parseNumber(val) > 1
           ? "text-green-500"
           : parseNumber(val) < 0
-          ? "text-red-500"
-          : "",
+            ? "text-red-500"
+            : "",
       "Win Rate": (val) =>
         parseNumber(val) > 50 ? "text-green-500" : "text-red-500",
       "Profit Factor": (val) =>
@@ -231,13 +231,13 @@ const BacktestSidebar = () => {
         <div className='p-4 bg-[#0d0e10] rounded-lg border border-[#1f2024]'>
           <div className='text-gray-500 text-sm mb-1'>Initial Balance</div>
           <div className='text-xl font-medium'>
-            ${initialBalance.toLocaleString()}
+            ${Math.trunc(initialBalance).toLocaleString()}
           </div>
         </div>
         <div className='p-4 bg-[#0d0e10] rounded-lg border border-[#1f2024]'>
           <div className='text-gray-500 text-sm mb-1'>Final Balance</div>
           <div className={`text-xl font-medium ${getFinalBalanceColor()}`}>
-            ${finalBalance.toLocaleString()}
+            ${Math.trunc(finalBalance).toLocaleString()}
           </div>
         </div>
       </div>

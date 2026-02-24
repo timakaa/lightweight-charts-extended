@@ -9,14 +9,14 @@ import {
   TOOL_SHORT_POSITION,
   TOOL_FIB_RETRACEMENT,
 } from "../store/tool";
-import Crosshair from "./icons/Crosshair";
-import Line from "./icons/Line";
-import Box from "./icons/Box";
-import Trash from "./icons/Trash";
-import Ruler from "./icons/Ruler";
-import LongPosition from "./icons/LongPosition";
-import ShortPosition from "./icons/ShortPosition";
-import FibRetracement from "./icons/FibRetracement";
+import Crosshair from "../icons/Crosshair";
+import Line from "../icons/Line";
+import Box from "../icons/Box";
+import Trash from "../icons/Trash";
+import Ruler from "../icons/Ruler";
+import LongPosition from "../icons/LongPosition";
+import ShortPosition from "../icons/ShortPosition";
+import FibRetracement from "../icons/FibRetracement";
 
 const Sidebar = ({
   deleteAllLines,

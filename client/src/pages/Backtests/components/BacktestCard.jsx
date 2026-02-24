@@ -1,6 +1,5 @@
-import React from "react";
 import { useParams } from "react-router-dom";
-import OptionsDropdown from "../OptionsDropdown";
+import OptionsDropdown from "@components/OptionsDropdown";
 
 const BacktestCard = ({ backtest, onClick }) => {
   const { backtestId } = useParams();

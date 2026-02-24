@@ -1,8 +1,7 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
 import BacktestCard from "./BacktestCard";
 import LoadingSpinner from "./LoadingSpinner";
-import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
+import { useInfiniteScroll } from "@hooks/useInfiniteScroll";
 
 const BacktestList = ({ backtests, isLoading, hasNextPage, onLoadMore }) => {
   const navigate = useNavigate();
