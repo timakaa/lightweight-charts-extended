@@ -41,10 +41,12 @@ const TradingChart = ({ drawings }) => {
   });
 
   useEffect(() => {
-    if (backtestId) {
+    if (backtestId && chart && candlestickSeries && candleData?.length > 0) {
       fitChartToRecentBars(chart, candlestickSeries, candleData);
     }
-  }, [backtestId, chart, candlestickSeries, candleData]);
+    // Only run on mount or when backtestId changes, not when candleData updates
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [backtestId]);
 
   const selectedLineId = useSelectedLineStore((s) => s.selectedLineId);
   const selectedBoxId = useSelectedBoxStore((s) => s.selectedBoxId);
