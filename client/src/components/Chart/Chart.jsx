@@ -2,19 +2,13 @@ import { useRef, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useSelectedLineStore } from "@store/selectedLine";
 import { useSelectedBoxStore } from "@store/selectedBox";
-import Sidebar from "./components/Sidebar";
-import TopBar from "./components/TopBar";
-import TimeframeModal from "./components/TimeframeModal";
-import TickerModal from "./components/TickerModal";
-import { useTimeframeModal } from "./hooks/useTimeframeModal";
-import { useTickerModal } from "./hooks/useTickerModal";
 import { fitChartToRecentBars } from "@helpers/fitChartToRecentBars";
 import { useChartSetup } from "./hooks/useChartSetup";
 import { useDrawingTools } from "./hooks/useDrawingTools";
 import { useDrawingSync } from "./hooks/useDrawingSync";
 import ChartContainer from "./components/ChartContainer";
 
-const TradingChart = ({ drawings }) => {
+const Chart = ({ drawings, onChartReady }) => {
   const chartContainerRef = useRef();
   const { backtestId } = useParams();
 
@@ -48,11 +42,36 @@ const TradingChart = ({ drawings }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [backtestId]);
 
+  // Notify parent when chart is ready (only once)
+  const hasNotifiedRef = useRef(false);
+  useEffect(() => {
+    if (
+      chart &&
+      candlestickSeries &&
+      candleData &&
+      onChartReady &&
+      !hasNotifiedRef.current
+    ) {
+      hasNotifiedRef.current = true;
+      onChartReady({
+        chart,
+        candleData,
+        chartDataInfo,
+        drawingTools: {
+          deleteAllLines: lineDrawing.deleteAllLines,
+          deleteAllBoxes: boxDrawing.deleteAllBoxes,
+          deleteAllLongPositions: longPositionDrawing.deleteAllLongPositions,
+          deleteAllShortPositions: shortPositionDrawing.deleteAllShortPositions,
+          deleteAllFibRetracements:
+            fibRetracementDrawing.deleteAllFibRetracements,
+        },
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chart, candlestickSeries, candleData]);
+
   const selectedLineId = useSelectedLineStore((s) => s.selectedLineId);
   const selectedBoxId = useSelectedBoxStore((s) => s.selectedBoxId);
-
-  const timeframeModal = useTimeframeModal();
-  const tickerModal = useTickerModal();
 
   const handleDeleteSelected = () => {
     if (selectedLineId) lineDrawing.deleteSelectedLine();
@@ -73,48 +92,12 @@ const TradingChart = ({ drawings }) => {
     fibRetracementDrawing.selectedFibRetracementId;
 
   return (
-    <>
-      <div className='h-screen flex flex-col bg-black'>
-        <TopBar onOpenTickerModal={tickerModal.openModal} />
-        <div className='flex h-full'>
-          <Sidebar
-            deleteAllLines={lineDrawing.deleteAllLines}
-            deleteAllBoxes={boxDrawing.deleteAllBoxes}
-            deleteAllLongPositions={longPositionDrawing.deleteAllLongPositions}
-            deleteAllShortPositions={
-              shortPositionDrawing.deleteAllShortPositions
-            }
-            deleteAllFibRetracements={
-              fibRetracementDrawing.deleteAllFibRetracements
-            }
-          />
-          <ChartContainer
-            chartContainerRef={chartContainerRef}
-            chart={chart}
-            candleData={candleData}
-            chartDataInfo={chartDataInfo}
-            hasSelectedDrawing={hasSelectedDrawing}
-            onDeleteSelected={handleDeleteSelected}
-          />
-        </div>
-      </div>
-      <TimeframeModal
-        isOpen={timeframeModal.isModalOpen}
-        inputValue={timeframeModal.inputValue}
-        isValid={timeframeModal.isValid}
-        onClose={timeframeModal.closeModal}
-        onApply={timeframeModal.applyTimeframe}
-        onInputChange={timeframeModal.handleInputChange}
-        getPreviewTimeframe={timeframeModal.getPreviewTimeframe}
-      />
-      <TickerModal
-        isOpen={tickerModal.isModalOpen}
-        initialLetter={tickerModal.initialLetter}
-        onClose={tickerModal.closeModal}
-        onSelectTicker={tickerModal.handleTickerSelect}
-      />
-    </>
+    <ChartContainer
+      chartContainerRef={chartContainerRef}
+      hasSelectedDrawing={hasSelectedDrawing}
+      onDeleteSelected={handleDeleteSelected}
+    />
   );
 };
 
-export default TradingChart;
+export default Chart;

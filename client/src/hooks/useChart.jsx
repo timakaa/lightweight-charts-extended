@@ -30,13 +30,22 @@ export const useChart = (chartContainerRef) => {
     setChart(chartInstance);
 
     const handleResize = () => {
-      chartInstance.applyOptions({
-        width: chartContainerRef.current.clientWidth,
-        height: chartContainerRef.current.clientHeight,
-      });
+      if (chartContainerRef.current) {
+        chartInstance.applyOptions({
+          width: chartContainerRef.current.clientWidth,
+          height: chartContainerRef.current.clientHeight,
+        });
+      }
     };
 
     window.addEventListener("resize", handleResize);
+
+    // Use ResizeObserver to watch container size changes
+    const resizeObserver = new ResizeObserver(() => {
+      handleResize();
+    });
+
+    resizeObserver.observe(chartContainerRef.current);
 
     chartInstance.applyOptions({
       localization: {
@@ -72,6 +81,7 @@ export const useChart = (chartContainerRef) => {
 
     return () => {
       window.removeEventListener("resize", handleResize);
+      resizeObserver.disconnect();
       chartInstance.remove();
       setChart(null);
     };

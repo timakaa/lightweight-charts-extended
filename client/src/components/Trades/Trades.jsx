@@ -50,7 +50,7 @@ const Trades = memo(
 
     if (isLoading && page === 1) {
       return (
-        <div className='border-t-[4px] cursor-default z-10 h-[350px] border-t-[#2E2E2E] bg-modal text-white absolute bottom-0 left-0 right-0 p-4 overflow-auto'>
+        <div className='border-t-[4px] cursor-default z-10 h-[350px] border-t-[#2E2E2E] bg-modal text-white p-4 overflow-auto'>
           <div className='flex justify-center items-center h-full'>
             <span className='text-gray-400'>Loading trades...</span>
           </div>
@@ -60,7 +60,7 @@ const Trades = memo(
 
     if (error) {
       return (
-        <div className='border-t-[4px] cursor-default z-10 h-[350px] border-t-[#2E2E2E] bg-modal text-white absolute bottom-0 left-0 right-0 p-4 overflow-auto'>
+        <div className='border-t-[4px] cursor-default z-10 h-[350px] border-t-[#2E2E2E] bg-modal text-white p-4 overflow-auto'>
           <div className='flex justify-center items-center h-full'>
             <span className='text-red-400'>Error loading trades</span>
           </div>
@@ -69,7 +69,7 @@ const Trades = memo(
     }
 
     return (
-      <div className='border-t-[4px] cursor-default z-10 h-[350px] border-t-[#2E2E2E] bg-modal text-white absolute bottom-0 left-0 right-0 p-4 overflow-auto'>
+      <div className='border-t-[4px] cursor-default z-10 h-[350px] border-t-[#2E2E2E] bg-modal text-white p-4 overflow-auto'>
         <div className='flex justify-between items-center mb-3'>
           <div className='flex items-center gap-2'>
             <h2 className='text-base font-bold tracking-wide'>Trade History</h2>
