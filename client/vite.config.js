@@ -12,6 +12,10 @@ export default defineConfig({
       "@hooks": "/src/hooks",
       "@components": "/src/components",
       "@icons": "/src/icons",
+      "@store": "/src/store",
+      "@helpers": "/src/helpers",
+      "@drawing-tools": "/src/drawing-tools",
+      "@config": "/src/config",
     },
   },
 });

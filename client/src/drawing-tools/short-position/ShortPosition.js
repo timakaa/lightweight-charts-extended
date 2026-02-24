@@ -9,7 +9,7 @@ import {
   ShortPositionPriceAxisView,
   ShortPositionTimeAxisView,
 } from "./views.js";
-import { enhancePointWithLogicalIndex } from "../../helpers/coordinateUtils.js";
+import { enhancePointWithLogicalIndex } from "@helpers/coordinateUtils.js";
 
 // ShortPosition represents a short trade (entry, target, stop) on the chart
 // Inherits all logic from BasePosition and provides short-specific views

@@ -4,7 +4,7 @@ import {
   FibRetracementHandlesPaneRenderer,
   FibRetracementAxisPaneRenderer,
 } from "./renderers.js";
-import { getXCoordinate } from "../../helpers/coordinateUtils.js";
+import { getXCoordinate } from "@helpers/coordinateUtils.js";
 
 /**
  * FibRetracementPaneView - Manages the main chart pane view for fib retracements

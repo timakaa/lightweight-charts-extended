@@ -3,7 +3,7 @@ import PluginBase from "../PluginBase.js";
 import {
   enhancePointWithLogicalIndex,
   logicalIndexToTime,
-} from "../../helpers/coordinateUtils.js";
+} from "@helpers/coordinateUtils.js";
 
 // BasePositionDrawingTool provides common logic for drawing tools that manage position primitives
 export class BasePositionDrawingTool extends PluginBase {

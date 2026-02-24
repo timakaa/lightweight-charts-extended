@@ -8,8 +8,8 @@ import {
   LinePriceAxisView,
   LineTimeAxisView,
 } from "./views.js";
-import { enhancePointWithLogicalIndex } from "../../helpers/coordinateUtils.js";
-import { generateId } from "../../helpers/generateId";
+import { enhancePointWithLogicalIndex } from "@helpers/coordinateUtils.js";
+import { generateId } from "@helpers/generateId";
 
 // Line.js - Implements the Line and PreviewLine primitives for drawing lines on the chart
 // The Line class represents a drawable line primitive on the chart, with endpoints p1 and p2.

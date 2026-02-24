@@ -1,4 +1,4 @@
-import { useDrawingsStore } from "../store/drawings.js";
+import { useDrawingsStore } from "@store/drawings.js";
 
 /**
  * Update drawing position in store after drag/resize operations

@@ -1,7 +1,7 @@
 // views.js - View logic for ruler primitives, axis overlays, and axis labels
 import { RulerPaneRenderer } from "./renderers.js";
 import { positionsBox } from "../positions.js";
-import { getXCoordinate } from "../../helpers/coordinateUtils.js";
+import { getXCoordinate } from "@helpers/coordinateUtils.js";
 
 // RulerPaneView manages the view for the main ruler
 export class RulerPaneView {

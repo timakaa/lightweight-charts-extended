@@ -1,8 +1,8 @@
 // index.js - Implements the LongPositionDrawingTool for managing long position drawing interactions on the chart
 import { BasePositionDrawingTool } from "../position-base/BasePositionDrawingTool.js";
 import { LongPosition } from "./LongPosition.js";
-import { useDrawingsStore } from "../../store/drawings.js";
-import { useChartStore } from "../../store/chart.js";
+import { useDrawingsStore } from "@store/drawings.js";
+import { useChartStore } from "@store/chart.js";
 
 // LongPositionDrawingTool manages the creation, drawing, and management of long position primitives on the chart
 export class LongPositionDrawingTool extends BasePositionDrawingTool {

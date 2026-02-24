@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useCandlestickData } from "./useCandlestickData";
-import { useChartStore } from "../store/chart";
+import { useChartStore } from "@store/chart";
 import { useSeriesManagement } from "./useSeriesManagement";
 import { useDataAccumulation } from "./useDataAccumulation";
 import { useRealtimeUpdates } from "./useRealtimeUpdates";

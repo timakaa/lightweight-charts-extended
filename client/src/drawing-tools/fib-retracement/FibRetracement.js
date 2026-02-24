@@ -11,8 +11,8 @@ import { defaultOptions } from "./options.js";
 import {
   enhancePointWithLogicalIndex,
   getXCoordinate,
-} from "../../helpers/coordinateUtils.js";
-import { generateId } from "../../helpers/generateId";
+} from "@helpers/coordinateUtils.js";
+import { generateId } from "@helpers/generateId";
 
 /**
  * FibRetracement - Main class for fib retracement drawing tool

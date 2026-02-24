@@ -1,7 +1,7 @@
 // BasePosition.js - Abstract base class for position drawing tools (long/short)
 import PluginBase from "../PluginBase.js";
-import { enhancePointWithLogicalIndex } from "../../helpers/coordinateUtils.js";
-import { generateId } from "../../helpers/generateId";
+import { enhancePointWithLogicalIndex } from "@helpers/coordinateUtils.js";
+import { generateId } from "@helpers/generateId";
 
 // BasePosition provides common logic for position tools (entry, target, stop, axis views, handles, etc.)
 export default class BasePosition extends PluginBase {

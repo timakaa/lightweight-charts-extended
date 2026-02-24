@@ -4,7 +4,7 @@ import {
   LineHandlesPaneRenderer,
   LineAxisPaneRenderer,
 } from "./renderers.js";
-import { getXCoordinate } from "../../helpers/coordinateUtils.js";
+import { getXCoordinate } from "@helpers/coordinateUtils.js";
 
 // LinePaneView manages the view for the main line
 export class LinePaneView {
