@@ -5,7 +5,7 @@ import {
   isPointInCircle,
   isPointInRect,
 } from "../position-base/helpers.js";
-import { getXCoordinate } from "../../helpers/coordinateUtils.js";
+import { getXCoordinate } from "@helpers/coordinateUtils.js";
 
 // Gets the specific handle being hovered over (custom for short)
 export function getHoveredHandle(logicalPoint, position, chart, series) {

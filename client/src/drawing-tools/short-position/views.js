@@ -1,7 +1,7 @@
 // views.js - View logic for short position primitives, handles, and axis overlays
 import { HandlesPaneRenderer } from "../long-position/renderers.js";
 import { ShortPositionPaneRenderer } from "./renderers.js";
-import { getXCoordinate } from "../../helpers/coordinateUtils.js";
+import { getXCoordinate } from "@helpers/coordinateUtils.js";
 
 export { HandlesPaneView } from "../long-position/views.js";
 import {

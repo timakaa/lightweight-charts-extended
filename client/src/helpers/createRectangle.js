@@ -1,7 +1,7 @@
-import { Rectangle } from "../drawing-tools/rectangle/Rectangle.js";
+import { Rectangle } from "@drawing-tools/rectangle/Rectangle.js";
 import { toUnixSeconds } from "./time.js";
-import { useDrawingsStore } from "../store/drawings.js";
-import { useChartStore } from "../store/chart.js";
+import { useDrawingsStore } from "@store/drawings.js";
+import { useChartStore } from "@store/chart.js";
 
 // Example object structure for rectangle data from backend
 export const exampleRectangleData = {

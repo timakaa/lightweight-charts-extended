@@ -3,7 +3,7 @@ import { getSnappedPrice } from "../helpers.js";
 import {
   logicalIndexToTime,
   enhancePointWithLogicalIndex,
-} from "../../helpers/coordinateUtils.js";
+} from "@helpers/coordinateUtils.js";
 import { Ruler, PreviewRuler } from "./Ruler.js";
 
 // index.js - Implements the RulerTool for managing ruler drawing interactions on the chart

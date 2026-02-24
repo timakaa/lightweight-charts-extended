@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from "react";
-import { navigateToTradeDate } from "../helpers/navigateToTradeDate";
+import { navigateToTradeDate } from "@helpers/navigateToTradeDate";
 
 export const useTradeNavigation = (chart, candleData, chartDataInfo) => {
   // Create a ref to always get the latest candleData

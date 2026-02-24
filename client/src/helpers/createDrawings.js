@@ -3,8 +3,8 @@ import { createLine } from "./createLine.js";
 import { createLongPosition } from "./createLongPosition.js";
 import { createShortPosition } from "./createShortPosition.js";
 import { createFibRetracement } from "./createFibRetracement.js";
-import { useChartStore } from "../store/chart.js";
-import { useDrawingsStore } from "../store/drawings.js";
+import { useChartStore } from "@store/chart.js";
+import { useDrawingsStore } from "@store/drawings.js";
 import {
   toUnixSeconds,
   resolveDrawingTime,

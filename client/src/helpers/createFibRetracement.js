@@ -1,8 +1,8 @@
 // createFibRetracement.js - Function to create a Fibonacci retracement drawing object from backend data
-import { FibRetracement } from "../drawing-tools/fib-retracement/FibRetracement.js";
+import { FibRetracement } from "@drawing-tools/fib-retracement/FibRetracement.js";
 import { toUnixSeconds } from "./time.js";
-import { useDrawingsStore } from "../store/drawings.js";
-import { useChartStore } from "../store/chart.js";
+import { useDrawingsStore } from "@store/drawings.js";
+import { useChartStore } from "@store/chart.js";
 
 /**
  * Creates a Fibonacci retracement drawing object from backend data

@@ -5,9 +5,9 @@ import { Line, PreviewLine } from "./Line.js";
 import {
   logicalIndexToTime,
   enhancePointWithLogicalIndex,
-} from "../../helpers/coordinateUtils";
-import { useDrawingsStore } from "../../store/drawings.js";
-import { useChartStore } from "../../store/chart.js";
+} from "@helpers/coordinateUtils";
+import { useDrawingsStore } from "@store/drawings.js";
+import { useChartStore } from "@store/chart.js";
 
 // index.js - Implements the LineDrawingTool for managing line drawing interactions on the chart
 // LineDrawingTool manages the creation, drawing, and management of line primitives on the chart

@@ -1,5 +1,5 @@
 import { useChartSocket } from "./useChartSocket";
-import { getSymbol } from "../helpers/symbol";
+import { getSymbol } from "@helpers/symbol";
 
 export const useRealtimeUpdates = (
   symbol,

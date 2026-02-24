@@ -7,4 +7,15 @@ export default defineConfig({
   server: {
     port: 3000,
   },
+  resolve: {
+    alias: {
+      "@hooks": "/src/hooks",
+      "@components": "/src/components",
+      "@icons": "/src/icons",
+      "@store": "/src/store",
+      "@helpers": "/src/helpers",
+      "@drawing-tools": "/src/drawing-tools",
+      "@config": "/src/config",
+    },
+  },
 });

@@ -2,6 +2,7 @@
 # Easy commands for data scraping, backtesting, and system management
 
 .PHONY: help build up up-build start stop down logs clean
+.PHONY: dev-up dev-down dev-logs dev-restart
 .PHONY: scrape
 .PHONY: backtest
 .PHONY: list-strategies strategy-info
@@ -28,7 +29,7 @@ params ?= {}
 PARAMS = $(params)
 save ?= false
 SAVE = $(save)
-api_url ?= http://100.76.193.76:8000
+api_url ?= http://localhost:8000
 API_URL = $(api_url)
 
 # Colors for output
@@ -130,6 +131,44 @@ clean: ## 🔧 Clean up Docker resources
 	@docker compose down -v
 	@docker system prune -f
 	@echo "$(GREEN)✅ Cleanup completed!$(RESET)"
+
+# =============================================================================
+# 🔧 Development Mode (Hot Reload)
+# =============================================================================
+
+dev-up: ## 🔧 Start application in dev mode with hot reload
+	@echo "$(CYAN)🚀 Starting application in DEV mode with hot reload...$(RESET)"
+	@VITE_API_URL=$(API_URL) docker compose -f docker-compose.dev.yml up --build -d
+	@echo "$(GREEN)✅ Dev mode started with hot reload!$(RESET)"
+	@echo "Frontend: http://localhost:3000 (hot reload enabled)"
+	@echo "Backend: http://localhost:8000 (hot reload enabled)"
+	@echo "API URL: $(API_URL)"
+	@echo ""
+	@echo "$(YELLOW)💡 Code changes will automatically reload the containers$(RESET)"
+
+dev-down: ## 🔧 Stop dev mode containers
+	@echo "$(CYAN)🛑 Stopping dev mode containers...$(RESET)"
+	@docker compose -f docker-compose.dev.yml down
+	@echo "$(GREEN)✅ Dev containers stopped!$(RESET)"
+
+dev-logs: ## 🔧 Show dev mode logs
+	@docker compose -f docker-compose.dev.yml logs -f
+
+dev-logs-backend: ## 🔧 Show backend dev logs only
+	@docker compose -f docker-compose.dev.yml logs -f backend
+
+dev-logs-frontend: ## 🔧 Show frontend dev logs only
+	@docker compose -f docker-compose.dev.yml logs -f frontend
+
+dev-restart: ## 🔧 Restart dev mode
+	@make dev-down
+	@make dev-up
+
+dev-shell-backend: ## 🔧 Open shell in backend dev container
+	@docker compose -f docker-compose.dev.yml exec backend bash
+
+dev-shell-frontend: ## 🔧 Open shell in frontend dev container
+	@docker compose -f docker-compose.dev.yml exec frontend sh
 
 # =============================================================================
 # 📊 Data Management

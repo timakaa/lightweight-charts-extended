@@ -429,6 +429,14 @@ def run_flexible_backtest(
         # Get data range
         main_data = prepared_data[main_timeframe]
         
+        # Get custom metrics from strategy if available
+        custom_metrics = {}
+        if hasattr(strategy_instance, 'get_custom_metrics'):
+            custom_metrics = strategy_instance.get_custom_metrics()
+            if custom_metrics:
+                print(f"\n📊 Custom Strategy Metrics:")
+                print(json.dumps(custom_metrics, indent=2, default=str))
+        
         results = {
             "title": f"{strategy_instance.name} - {symbol}",
             "strategy_name": strategy_name,
@@ -469,6 +477,7 @@ def run_flexible_backtest(
                     "end_date": main_data.index[-1].tz_localize("UTC").isoformat(),
                 }
             ],
+            "custom_metrics": custom_metrics,  # Add custom metrics to results
         }
         
         # Save to database if requested

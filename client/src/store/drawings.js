@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { generateId } from "../helpers/generateId";
+import { generateId } from "@helpers/generateId";
 
 export const useDrawingsStore = create(
   persist(

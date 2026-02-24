@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef } from "react";
-import { fitChartToRecentBars } from "../helpers/fitChartToRecentBars";
+import { fitChartToRecentBars } from "@helpers/fitChartToRecentBars";
 
 export const useChartFitting = (
   series,

@@ -1,4 +1,4 @@
-import { getXCoordinate } from "../../helpers/coordinateUtils.js";
+import { getXCoordinate } from "@helpers/coordinateUtils.js";
 
 /**
  * Checks if a logical point ({time, price, logicalIndex}) is near a line primitive on the chart.

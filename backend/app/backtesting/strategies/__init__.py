@@ -8,12 +8,14 @@ from ..base_strategy import BaseBacktestStrategy
 from .simple_ma_cross.simple_ma_cross_strategy import SimpleMACrossStrategy
 from .smart_money_simple_test.smart_money_simple_test import SmartMoneySimpleTestStrategy
 from .rsi_macd_combo.rsi_macd_combo_strategy import RSIMACDComboStrategy
+from .crash_buy_dca.crash_buy_dca_strategy import CrashBuyDCAStrategy
 
 # Strategy Registry
 STRATEGY_REGISTRY: Dict[str, Type[BaseBacktestStrategy]] = {
     "simple_ma_cross": SimpleMACrossStrategy,
     "smc": SmartMoneySimpleTestStrategy,
     "rsi_macd_combo": RSIMACDComboStrategy,
+    "crash_buy_dca": CrashBuyDCAStrategy,
     # Add more strategies here as you create them
     # "bollinger_bands": BollingerBandsStrategy,
     # "multi_timeframe_trend": MultiTimeframeTrendStrategy,

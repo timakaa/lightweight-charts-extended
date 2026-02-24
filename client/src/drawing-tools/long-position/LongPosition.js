@@ -9,7 +9,7 @@ import {
   LongPositionPriceAxisView,
   LongPositionTimeAxisView,
 } from "./views.js";
-import { enhancePointWithLogicalIndex } from "../../helpers/coordinateUtils.js";
+import { enhancePointWithLogicalIndex } from "@helpers/coordinateUtils.js";
 
 // LongPosition represents a long position drawing tool (entry, target, stop)
 export class LongPosition extends BasePosition {

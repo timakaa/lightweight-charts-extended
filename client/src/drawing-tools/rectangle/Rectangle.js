@@ -8,8 +8,8 @@ import {
   RectanglePriceAxisView,
   RectangleTimeAxisView,
 } from "./views.js";
-import { enhancePointWithLogicalIndex } from "../../helpers/coordinateUtils.js";
-import { generateId } from "../../helpers/generateId";
+import { enhancePointWithLogicalIndex } from "@helpers/coordinateUtils.js";
+import { generateId } from "@helpers/generateId";
 
 // Rectangle.js - Implements the Rectangle and PreviewRectangle primitives for drawing rectangles (boxes) on the chart
 // The Rectangle class represents a drawable rectangle primitive on the chart, with endpoints p1 and p2.

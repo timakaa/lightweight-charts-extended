@@ -4,9 +4,9 @@ import { FibRetracement } from "./FibRetracement.js";
 import {
   enhancePointWithLogicalIndex,
   logicalIndexToTime,
-} from "../../helpers/coordinateUtils.js";
-import { useDrawingsStore } from "../../store/drawings.js";
-import { useChartStore } from "../../store/chart.js";
+} from "@helpers/coordinateUtils.js";
+import { useDrawingsStore } from "@store/drawings.js";
+import { useChartStore } from "@store/chart.js";
 
 /**
  * PreviewFibRetracement - Temporary retracement shown while drawing

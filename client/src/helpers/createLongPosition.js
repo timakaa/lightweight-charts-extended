@@ -1,7 +1,7 @@
 // createLongPosition.js - Function to create a long position drawing object from backend data
-import { LongPosition } from "../drawing-tools/long-position/LongPosition.js";
+import { LongPosition } from "@drawing-tools/long-position/LongPosition.js";
 import { toUnixSeconds } from "./time.js";
-import { useDrawingsStore } from "../store/drawings.js";
+import { useDrawingsStore } from "@store/drawings.js";
 
 /**
  * Creates a long position drawing object from backend data

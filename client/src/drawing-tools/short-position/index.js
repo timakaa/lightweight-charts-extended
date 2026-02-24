@@ -1,8 +1,8 @@
 // index.js - Implements the ShortPositionDrawingTool for managing short position drawing interactions on the chart
 import { BasePositionDrawingTool } from "../position-base/BasePositionDrawingTool.js";
 import { ShortPosition } from "./ShortPosition.js";
-import { useDrawingsStore } from "../../store/drawings.js";
-import { useChartStore } from "../../store/chart.js";
+import { useDrawingsStore } from "@store/drawings.js";
+import { useChartStore } from "@store/chart.js";
 
 // ShortPositionDrawingTool manages the creation, drawing, and management of short position primitives on the chart
 export class ShortPositionDrawingTool extends BasePositionDrawingTool {

@@ -1,6 +1,6 @@
 // renderers.js - Rendering logic for long position primitives on the chart
 import { drawLabel } from "../position-base/helpers.js";
-import { getXCoordinate } from "../../helpers/coordinateUtils.js";
+import { getXCoordinate } from "@helpers/coordinateUtils.js";
 
 // HandlesPaneRenderer draws the resize handles for the long position
 export class HandlesPaneRenderer {
@@ -275,7 +275,8 @@ export class LongPositionPaneRenderer {
                     let rgba = this._options.fillColor
                       .replace(/rgba?\(([^)]+)\)/, "$1")
                       .split(",");
-                    if (rgba.length === 3) rgba.push("0.41"); // fallback
+                    if (rgba.length === 3)
+                      rgba.push("0.41"); // fallback
                     else
                       rgba[3] = Math.min(1, parseFloat(rgba[3]) + 0.1).toFixed(
                         2,
@@ -304,7 +305,8 @@ export class LongPositionPaneRenderer {
                     let rgba = this._options.lossFillColor
                       .replace(/rgba?\(([^)]+)\)/, "$1")
                       .split(",");
-                    if (rgba.length === 3) rgba.push("0.24"); // fallback
+                    if (rgba.length === 3)
+                      rgba.push("0.24"); // fallback
                     else
                       rgba[3] = Math.min(1, parseFloat(rgba[3]) + 0.1).toFixed(
                         2,

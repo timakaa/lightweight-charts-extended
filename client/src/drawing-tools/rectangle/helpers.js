@@ -1,5 +1,5 @@
 // helpers.js - Utility functions for rectangle (box) hit-testing and geometry
-import { getXCoordinate } from "../../helpers/coordinateUtils.js";
+import { getXCoordinate } from "@helpers/coordinateUtils.js";
 
 /**
  * Checks if a logical point ({time, price, logicalIndex}) is near the border of a rectangle (box).

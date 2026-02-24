@@ -1,7 +1,7 @@
 // createShortPosition.js - Function to create a short position drawing object from backend data
-import { ShortPosition } from "../drawing-tools/short-position/ShortPosition.js";
+import { ShortPosition } from "@drawing-tools/short-position/ShortPosition.js";
 import { toUnixSeconds } from "./time.js";
-import { useDrawingsStore } from "../store/drawings.js";
+import { useDrawingsStore } from "@store/drawings.js";
 
 /**
  * Creates a short position drawing object from backend data

@@ -7,8 +7,8 @@ import {
   RulerTimeAxisPaneView,
 } from "./views.js";
 import { defaultRulerOptions } from "./options.js";
-import { enhancePointWithLogicalIndex } from "../../helpers/coordinateUtils.js";
-import { generateId } from "../../helpers/generateId";
+import { enhancePointWithLogicalIndex } from "@helpers/coordinateUtils.js";
+import { generateId } from "@helpers/generateId";
 
 // Ruler.js - Implements the Ruler and PreviewRuler primitives for drawing measurement rulers on the chart
 // The Ruler class represents a measurement ruler primitive on the chart, with endpoints p1 and p2.

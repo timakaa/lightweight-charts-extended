@@ -4,7 +4,7 @@ import {
   RectanglePaneRenderer,
   RectangleAxisPaneRenderer,
 } from "./renderers.js";
-import { getXCoordinate } from "../../helpers/coordinateUtils.js";
+import { getXCoordinate } from "@helpers/coordinateUtils.js";
 
 // HandlesPaneView manages the view for rectangle resize handles
 export class HandlesPaneView {
@@ -223,7 +223,7 @@ export class RectanglePriceAxisView extends RectangleAxisView {
 export class RectangleTimeAxisView extends RectangleAxisView {
   update() {
     if (!this._source._chart) {
-      return // Skip if not properly attached yet
+      return; // Skip if not properly attached yet
     }
     const timeScale = this._source._chart.timeScale();
 

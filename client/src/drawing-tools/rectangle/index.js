@@ -4,9 +4,9 @@ import { getSnappedPrice } from "../helpers.js";
 import {
   logicalIndexToTime,
   enhancePointWithLogicalIndex,
-} from "../../helpers/coordinateUtils.js";
-import { useDrawingsStore } from "../../store/drawings.js";
-import { useChartStore } from "../../store/chart.js";
+} from "@helpers/coordinateUtils.js";
+import { useDrawingsStore } from "@store/drawings.js";
+import { useChartStore } from "@store/chart.js";
 
 // index.js - Implements the RectangleDrawingTool for managing rectangle (box) drawing interactions on the chart
 // RectangleDrawingTool manages the creation, drawing, and management of rectangle primitives on the chart

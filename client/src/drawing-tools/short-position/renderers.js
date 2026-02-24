@@ -1,6 +1,6 @@
 // renderers.js - Rendering logic for short position primitives on the chart
 import { drawLabel } from "../position-base/helpers.js";
-import { getXCoordinate } from "../../helpers/coordinateUtils.js";
+import { getXCoordinate } from "@helpers/coordinateUtils.js";
 
 // drawLabelShort is a wrapper for drawLabel, can be customized for short positions
 export function drawLabelShort(
