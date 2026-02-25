@@ -54,7 +54,7 @@ const Backtest = () => {
         </div>
       </div>
       {/* Sidebar on the right - part of flex layout */}
-      <div className='w-[400px] flex-shrink-0'>
+      <div className='w-[500px] flex-shrink-0'>
         <BacktestSidebar />
       </div>
     </div>

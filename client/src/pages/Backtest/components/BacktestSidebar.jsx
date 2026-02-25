@@ -216,7 +216,7 @@ const BacktestSidebar = () => {
   }
 
   return (
-    <div className='border-l-[4px] cursor-default h-full bg-modal text-white border-[#2E2E2E] flex flex-col overflow-hidden'>
+    <div className='border-l-[4px] cursor-default h-full bg-modal text-white border-[#2E2E2E] flex flex-col overflow-auto'>
       <h2 className='mx-5 mt-5 font-bold text-2xl py-2.5 border-[#1f2024]'>
         Backtest Results
       </h2>
@@ -239,51 +239,106 @@ const BacktestSidebar = () => {
             ${Math.trunc(finalBalance).toLocaleString()}
           </div>
         </div>
+        {metrics.map((metric, index) => (
+          <div
+            key={index}
+            className='p-3 bg-[#0d0e10] rounded-lg border border-[#1f2024] hover:border-[#2a2e39] transition-colors'
+          >
+            <div className='text-gray-500 text-sm mb-1'>{metric.title}</div>
+            <div className='text-lg font-medium'>{renderValue(metric)}</div>
+          </div>
+        ))}
       </div>
 
       <hr className='border-[#1f2024] my-5' />
 
-      <div className='overflow-y-auto px-5 pb-5 flex-1'>
+      <div className='mb-4 flex-1'>
         {/* Strategy Related Fields Section */}
         {stats?.strategy_related_fields &&
           stats.strategy_related_fields.length > 0 && (
-            <>
-              <div className='mb-4'>
-                <h3 className='text-lg font-semibold mb-3 text-gray-300'>
-                  Strategy Related Fields
-                </h3>
-                <div className='grid grid-cols-2 gap-3 mb-5'>
-                  {stats.strategy_related_fields.map((field, index) => (
-                    <div
-                      key={index}
-                      className='p-3 bg-[#0d0e10] rounded-lg border border-[#1f2024] hover:border-[#2a2e39] transition-colors'
-                    >
-                      <div className='text-gray-500 text-sm mb-1'>
-                        {field.label}
-                      </div>
-                      <div className='text-lg font-medium text-white'>
-                        {field.value}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <hr className='border-[#1f2024] mb-4' />
-            </>
-          )}
+            <div>
+              <h2 className='mx-5 font-bold text-2xl py-2.5 border-[#1f2024]'>
+                Strategy Related Fields
+              </h2>
+              <div className='mx-5 mt-2'>
+                {(() => {
+                  // Check if first item is a subsection to determine format
+                  const hasSubsections =
+                    stats.strategy_related_fields[0]?.title &&
+                    stats.strategy_related_fields[0]?.fields;
 
-        {/* Performance Metrics Section */}
-        <div className='grid grid-cols-2 gap-3'>
-          {metrics.map((metric, index) => (
-            <div
-              key={index}
-              className='p-3 bg-[#0d0e10] rounded-lg border border-[#1f2024] hover:border-[#2a2e39] transition-colors'
-            >
-              <div className='text-gray-500 text-sm mb-1'>{metric.title}</div>
-              <div className='text-lg font-medium'>{renderValue(metric)}</div>
+                  if (hasSubsections) {
+                    // New subsection format
+                    return stats.strategy_related_fields.map(
+                      (section, sectionIndex) => (
+                        <div key={sectionIndex} className='mb-5'>
+                          <h3 className='text-md font-semibold mb-3 text-gray-400'>
+                            {section.title}
+                          </h3>
+                          <div className='grid grid-cols-2 gap-3'>
+                            {section.fields.map((field, fieldIndex) => {
+                              let colorClass = "text-white";
+                              if (field.color === "green") {
+                                colorClass = "text-green-500";
+                              } else if (field.color === "red") {
+                                colorClass = "text-red-500";
+                              }
+
+                              return (
+                                <div
+                                  key={fieldIndex}
+                                  className='p-3 bg-[#0d0e10] rounded-lg border border-[#1f2024] hover:border-[#2a2e39] transition-colors'
+                                >
+                                  <div className='text-gray-500 text-sm mb-1'>
+                                    {field.label}
+                                  </div>
+                                  <div
+                                    className={`text-lg font-medium ${colorClass}`}
+                                  >
+                                    {field.value}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ),
+                    );
+                  } else {
+                    // Backward compatibility: flat format - render all fields in a 2-column grid
+                    return (
+                      <div className='grid grid-cols-2 gap-3'>
+                        {stats.strategy_related_fields.map((field, index) => {
+                          let colorClass = "text-white";
+                          if (field.color === "green") {
+                            colorClass = "text-green-500";
+                          } else if (field.color === "red") {
+                            colorClass = "text-red-500";
+                          }
+
+                          return (
+                            <div
+                              key={index}
+                              className='p-3 bg-[#0d0e10] rounded-lg border border-[#1f2024] hover:border-[#2a2e39] transition-colors'
+                            >
+                              <div className='text-gray-500 text-sm mb-1'>
+                                {field.label}
+                              </div>
+                              <div
+                                className={`text-lg font-medium ${colorClass}`}
+                              >
+                                {field.value}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  }
+                })()}
+              </div>
             </div>
-          ))}
-        </div>
+          )}
       </div>
     </div>
   );

@@ -431,11 +431,17 @@ def run_flexible_backtest(
         
         # Get custom metrics from strategy if available
         custom_metrics = {}
+        strategy_related_fields = []
         if hasattr(strategy_instance, 'get_custom_metrics'):
             custom_metrics = strategy_instance.get_custom_metrics()
             if custom_metrics:
                 print(f"\n📊 Custom Strategy Metrics:")
                 print(json.dumps(custom_metrics, indent=2, default=str))
+        
+        # Get strategy related fields for UI display
+        if hasattr(strategy_instance, 'get_strategy_related_fields'):
+            strategy_related_fields = strategy_instance.get_strategy_related_fields()
+        
         
         results = {
             "title": f"{strategy_instance.name} - {symbol}",
@@ -478,6 +484,7 @@ def run_flexible_backtest(
                 }
             ],
             "custom_metrics": custom_metrics,  # Add custom metrics to results
+            "strategy_related_fields": strategy_related_fields,  # Add formatted fields for UI
         }
         
         # Save to database if requested

@@ -74,8 +74,29 @@ class BaseBacktestStrategy(ABC):
         }
     
     def get_custom_metrics(self) -> Dict[str, Any]:
-        """Get custom DCA metrics calculated during strategy creation"""
+        """Get custom metrics calculated during strategy creation"""
         return getattr(self, '_dca_metrics', {})
+    
+    def get_strategy_related_fields(self) -> List[Dict[str, Any]]:
+        """
+        Get strategy-specific fields to display in the UI with subsections.
+        Override this method in subclasses to provide custom fields.
+        
+        Returns:
+            List of subsections, each with a 'title' and 'fields' array
+            Example: [
+                {
+                    "title": "Section Name",
+                    "fields": [
+                        {"label": "Field Name", "value": "Field Value", "color": "green"}
+                    ]
+                }
+            ]
+            
+            Or for backward compatibility, a flat list of fields:
+            [{"label": "Field Name", "value": "Field Value"}]
+        """
+        return []
 
     def get_parameter_schema(self) -> Dict[str, Any]:
         """Return JSON schema for parameters validation"""
