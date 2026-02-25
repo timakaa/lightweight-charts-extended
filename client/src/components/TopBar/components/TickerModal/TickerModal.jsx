@@ -9,7 +9,6 @@ import { TickerModalLoader } from "./TickerModalLoader";
 
 const TickerModalContent = ({ onClose, onSelectTicker, initialLetter }) => {
   const [searchInput, setSearchInput] = useState(initialLetter || "");
-  const [debouncedSearch, setDebouncedSearch] = useState(initialLetter || "");
   const [sortBy, setSortBy] = useState("volume");
   const [sortOrder, setSortOrder] = useState("desc");
   const [page, setPage] = useState(1);
@@ -18,24 +17,23 @@ const TickerModalContent = ({ onClose, onSelectTicker, initialLetter }) => {
 
   const pageSize = 50;
 
-  useDebounce(
-    () => {
-      setDebouncedSearch(searchInput);
-      setPage(1);
-      setAllTickers([]);
-      setHasMore(true);
-    },
-    300,
-    [searchInput],
-  );
+  // Use the debounce hook correctly - it returns a debounced value
+  const debouncedSearch = useDebounce(searchInput, 300);
 
-  const { data, isLoading, isFetching } = useTickers(
-    debouncedSearch,
+  // Reset page and tickers when search or sort changes
+  useEffect(() => {
+    setPage(1);
+    setAllTickers([]);
+    setHasMore(true);
+  }, [debouncedSearch, sortBy, sortOrder]);
+
+  const { data, isLoading, isFetching } = useTickers({
+    search: debouncedSearch,
     sortBy,
     sortOrder,
     page,
     pageSize,
-  );
+  });
 
   useEffect(() => {
     if (data?.tickers) {
@@ -44,7 +42,7 @@ const TickerModalContent = ({ onClose, onSelectTicker, initialLetter }) => {
       );
       setHasMore(data.pagination?.has_next || false);
     }
-  }, [data, page]);
+  }, [data]);
 
   const handleSort = (newSortBy) => {
     if (sortBy === newSortBy) {
