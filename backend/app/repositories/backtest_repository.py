@@ -63,6 +63,7 @@ class BacktestRepository:
             "buy_hold_return": backtest.buy_hold_return,
             "profit_factor": backtest.profit_factor,
             "max_drawdown": backtest.max_drawdown,
+            "strategy_related_fields": backtest.strategy_related_fields,
             "drawings": backtest.drawings,
             "symbols": (
                 [
@@ -154,6 +155,7 @@ class BacktestRepository:
             buy_hold_return=backtest_data.get("buy_hold_return"),
             profit_factor=backtest_data.get("profit_factor"),
             max_drawdown=backtest_data.get("max_drawdown"),
+            strategy_related_fields=backtest_data.get("strategy_related_fields"),
             drawings=backtest_data.get("drawings", []),
         )
 
@@ -360,6 +362,7 @@ class BacktestRepository:
             "buy_hold_return": backtest.buy_hold_return,
             "profit_factor": backtest.profit_factor,
             "max_drawdown": backtest.max_drawdown,
+            "strategy_related_fields": backtest.strategy_related_fields,
         }
         return self._convert_nan_to_none(result)
 

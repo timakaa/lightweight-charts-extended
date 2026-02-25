@@ -54,5 +54,8 @@ class BacktestResult(Base):
     profit_factor = Column(Float)
     max_drawdown = Column(Float)
 
+    # Strategy related custom fields
+    strategy_related_fields = Column(JSON)  # Custom strategy fields to display
+
     # Arrays of trades and drawings
     drawings = Column(JSON)  # Array of drawing objects
