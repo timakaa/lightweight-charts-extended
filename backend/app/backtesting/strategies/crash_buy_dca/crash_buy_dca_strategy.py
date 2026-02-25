@@ -377,3 +377,38 @@ class CrashBuyDCAStrategy(BaseBacktestStrategy):
                               f"(${abs(total_return - regular_return):.2f} difference)."
             }
         }
+
+    def get_strategy_related_fields(self) -> List[Dict[str, str]]:
+        """Get formatted fields for UI display"""
+        fields = []
+        
+        metrics = self.get_custom_metrics()
+        if not metrics:
+            return fields
+        
+        crash_dca = metrics.get("crash_dca", {})
+        regular_dca = metrics.get("regular_dca", {})
+        
+        # Fields from crash_dca
+        if crash_dca:
+            fields.extend([
+                {"label": "Total Invested", "value": f"${crash_dca.get('total_invested', 0):,.2f}"},
+                {"label": "Final Value", "value": f"${crash_dca.get('final_value', 0):,.2f}"},
+                {"label": "Total Return", "value": f"${crash_dca.get('total_return', 0):,.2f}"},
+                {"label": "Return %", "value": f"{crash_dca.get('return_pct', 0):.2f}%"},
+                {"label": "Crash Buys", "value": str(crash_dca.get('crash_buys', 0))},
+                {"label": "Regular Buys", "value": str(crash_dca.get('regular_buys', 0))},
+                {"label": "Total Buys", "value": str(crash_dca.get('total_buys', 0))},
+            ])
+        
+        # Fields from regular_dca
+        if regular_dca:
+            fields.extend([
+                {"label": "Regular DCA Invested", "value": f"${regular_dca.get('total_invested', 0):,.2f}"},
+                {"label": "Regular DCA Monthly Buys", "value": str(regular_dca.get('monthly_buys', 0))},
+                {"label": "Regular DCA Final Value", "value": f"${regular_dca.get('final_value', 0):,.2f}"},
+                {"label": "Regular DCA Return", "value": f"${regular_dca.get('total_return', 0):,.2f}"},
+                {"label": "Regular DCA Return %", "value": f"{regular_dca.get('return_pct', 0):.2f}%"},
+            ])
+        
+        return fields

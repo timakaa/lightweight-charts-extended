@@ -216,7 +216,7 @@ const BacktestSidebar = () => {
   }
 
   return (
-    <div className='border-l-[4px] cursor-default h-full bg-modal text-white border-[#2E2E2E] flex flex-col overflow-hidden'>
+    <div className='border-l-[4px] cursor-default h-full bg-modal text-white border-[#2E2E2E] flex flex-col overflow-auto'>
       <h2 className='mx-5 mt-5 font-bold text-2xl py-2.5 border-[#1f2024]'>
         Backtest Results
       </h2>
@@ -239,51 +239,44 @@ const BacktestSidebar = () => {
             ${Math.trunc(finalBalance).toLocaleString()}
           </div>
         </div>
+        {metrics.map((metric, index) => (
+          <div
+            key={index}
+            className='p-3 bg-[#0d0e10] rounded-lg border border-[#1f2024] hover:border-[#2a2e39] transition-colors'
+          >
+            <div className='text-gray-500 text-sm mb-1'>{metric.title}</div>
+            <div className='text-lg font-medium'>{renderValue(metric)}</div>
+          </div>
+        ))}
       </div>
 
       <hr className='border-[#1f2024] my-5' />
 
-      <div className='overflow-y-auto px-5 pb-5 flex-1'>
+      <div className='mb-4 flex-1'>
         {/* Strategy Related Fields Section */}
         {stats?.strategy_related_fields &&
           stats.strategy_related_fields.length > 0 && (
-            <>
-              <div className='mb-4'>
-                <h3 className='text-lg font-semibold mb-3 text-gray-300'>
-                  Strategy Related Fields
-                </h3>
-                <div className='grid grid-cols-2 gap-3 mb-5'>
-                  {stats.strategy_related_fields.map((field, index) => (
-                    <div
-                      key={index}
-                      className='p-3 bg-[#0d0e10] rounded-lg border border-[#1f2024] hover:border-[#2a2e39] transition-colors'
-                    >
-                      <div className='text-gray-500 text-sm mb-1'>
-                        {field.label}
-                      </div>
-                      <div className='text-lg font-medium text-white'>
-                        {field.value}
-                      </div>
+            <div>
+              <h2 className='mx-5 font-bold text-2xl py-2.5 border-[#1f2024]'>
+                Strategy Related Fields
+              </h2>
+              <div className='mx-5 mt-2 grid grid-cols-2 gap-3'>
+                {stats.strategy_related_fields.map((field, index) => (
+                  <div
+                    key={index}
+                    className='p-3 bg-[#0d0e10] rounded-lg border border-[#1f2024] hover:border-[#2a2e39] transition-colors'
+                  >
+                    <div className='text-gray-500 text-sm mb-1'>
+                      {field.label}
                     </div>
-                  ))}
-                </div>
+                    <div className='text-lg font-medium text-white'>
+                      {field.value}
+                    </div>
+                  </div>
+                ))}
               </div>
-              <hr className='border-[#1f2024] mb-4' />
-            </>
-          )}
-
-        {/* Performance Metrics Section */}
-        <div className='grid grid-cols-2 gap-3'>
-          {metrics.map((metric, index) => (
-            <div
-              key={index}
-              className='p-3 bg-[#0d0e10] rounded-lg border border-[#1f2024] hover:border-[#2a2e39] transition-colors'
-            >
-              <div className='text-gray-500 text-sm mb-1'>{metric.title}</div>
-              <div className='text-lg font-medium'>{renderValue(metric)}</div>
             </div>
-          ))}
-        </div>
+          )}
       </div>
     </div>
   );
