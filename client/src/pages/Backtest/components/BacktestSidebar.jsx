@@ -261,19 +261,29 @@ const BacktestSidebar = () => {
                 Strategy Related Fields
               </h2>
               <div className='mx-5 mt-2 grid grid-cols-2 gap-3'>
-                {stats.strategy_related_fields.map((field, index) => (
-                  <div
-                    key={index}
-                    className='p-3 bg-[#0d0e10] rounded-lg border border-[#1f2024] hover:border-[#2a2e39] transition-colors'
-                  >
-                    <div className='text-gray-500 text-sm mb-1'>
-                      {field.label}
+                {stats.strategy_related_fields.map((field, index) => {
+                  // Determine color class based on field.color
+                  let colorClass = "text-white"; // default
+                  if (field.color === "green") {
+                    colorClass = "text-green-500";
+                  } else if (field.color === "red") {
+                    colorClass = "text-red-500";
+                  }
+
+                  return (
+                    <div
+                      key={index}
+                      className='p-3 bg-[#0d0e10] rounded-lg border border-[#1f2024] hover:border-[#2a2e39] transition-colors'
+                    >
+                      <div className='text-gray-500 text-sm mb-1'>
+                        {field.label}
+                      </div>
+                      <div className={`text-lg font-medium ${colorClass}`}>
+                        {field.value}
+                      </div>
                     </div>
-                    <div className='text-lg font-medium text-white'>
-                      {field.value}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}

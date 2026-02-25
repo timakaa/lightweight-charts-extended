@@ -393,9 +393,9 @@ class CrashBuyDCAStrategy(BaseBacktestStrategy):
         if crash_dca:
             fields.extend([
                 {"label": "Total Invested", "value": f"${crash_dca.get('total_invested', 0):,.2f}"},
-                {"label": "Final Value", "value": f"${crash_dca.get('final_value', 0):,.2f}"},
-                {"label": "Total Return", "value": f"${crash_dca.get('total_return', 0):,.2f}"},
-                {"label": "Return %", "value": f"{crash_dca.get('return_pct', 0):.2f}%"},
+                {"label": "Final Value", "value": f"${crash_dca.get('final_value', 0):,.2f}", "color": "green"},
+                {"label": "Total Return", "value": f"${crash_dca.get('total_return', 0):,.2f}", "color": "green" if crash_dca.get('total_return', 0) > 0 else "red"},
+                {"label": "Return %", "value": f"{crash_dca.get('return_pct', 0):.2f}%", "color": "green" if crash_dca.get('return_pct', 0) > 0 else "red"},
                 {"label": "Crash Buys", "value": str(crash_dca.get('crash_buys', 0))},
                 {"label": "Regular Buys", "value": str(crash_dca.get('regular_buys', 0))},
                 {"label": "Total Buys", "value": str(crash_dca.get('total_buys', 0))},
@@ -406,9 +406,9 @@ class CrashBuyDCAStrategy(BaseBacktestStrategy):
             fields.extend([
                 {"label": "Regular DCA Invested", "value": f"${regular_dca.get('total_invested', 0):,.2f}"},
                 {"label": "Regular DCA Monthly Buys", "value": str(regular_dca.get('monthly_buys', 0))},
-                {"label": "Regular DCA Final Value", "value": f"${regular_dca.get('final_value', 0):,.2f}"},
-                {"label": "Regular DCA Return", "value": f"${regular_dca.get('total_return', 0):,.2f}"},
-                {"label": "Regular DCA Return %", "value": f"{regular_dca.get('return_pct', 0):.2f}%"},
+                {"label": "Regular DCA Final Value", "value": f"${regular_dca.get('final_value', 0):,.2f}", "color": "green"},
+                {"label": "Regular DCA Return", "value": f"${regular_dca.get('total_return', 0):,.2f}", "color": "green" if regular_dca.get('total_return', 0) > 0 else "red"},
+                {"label": "Regular DCA Return %", "value": f"{regular_dca.get('return_pct', 0):.2f}%", "color": "green" if regular_dca.get('return_pct', 0) > 0 else "red"},
             ])
         
         return fields
