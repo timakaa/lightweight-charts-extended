@@ -244,6 +244,35 @@ const BacktestSidebar = () => {
       <hr className='border-[#1f2024] my-5' />
 
       <div className='overflow-y-auto px-5 pb-5 flex-1'>
+        {/* Strategy Related Fields Section */}
+        {stats?.strategy_related_fields &&
+          stats.strategy_related_fields.length > 0 && (
+            <>
+              <div className='mb-4'>
+                <h3 className='text-lg font-semibold mb-3 text-gray-300'>
+                  Strategy Related Fields
+                </h3>
+                <div className='grid grid-cols-2 gap-3 mb-5'>
+                  {stats.strategy_related_fields.map((field, index) => (
+                    <div
+                      key={index}
+                      className='p-3 bg-[#0d0e10] rounded-lg border border-[#1f2024] hover:border-[#2a2e39] transition-colors'
+                    >
+                      <div className='text-gray-500 text-sm mb-1'>
+                        {field.label}
+                      </div>
+                      <div className='text-lg font-medium text-white'>
+                        {field.value}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <hr className='border-[#1f2024] mb-4' />
+            </>
+          )}
+
+        {/* Performance Metrics Section */}
         <div className='grid grid-cols-2 gap-3'>
           {metrics.map((metric, index) => (
             <div
