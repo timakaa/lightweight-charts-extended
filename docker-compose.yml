@@ -1,4 +1,14 @@
 services:
+  redis:
+    container_name: "redis"
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+
   backend:
     container_name: "backend"
     image: timakaa/lightweight-charts-extended-backend:latest
@@ -11,6 +21,10 @@ services:
       - ./backend/.env
     volumes:
       - backend_data:/app/data
+    depends_on:
+      - redis
+    environment:
+      - REDIS_URL=redis://redis:6379
     restart: unless-stopped
 
   frontend:
@@ -33,3 +47,4 @@ services:
 
 volumes:
   backend_data:
+  redis_data:

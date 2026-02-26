@@ -1,19 +1,18 @@
 import asyncio
 from typing import List, Dict, Any, Optional
-from .cache import CacheManager
+from .cache import ExchangeCache
 
 
 class TickerHandler:
     """Handles ticker-related operations"""
 
-    def __init__(self, exchange, cache_manager: CacheManager):
+    def __init__(self, exchange):
         self.exchange = exchange
-        self.cache = cache_manager
 
     async def fetch_all_tickers(self) -> List[Dict[str, Any]]:
         """Fetch all tickers from exchange with caching"""
         # Check cache first
-        cached = self.cache.get_tickers()
+        cached = ExchangeCache.get_tickers()
         if cached:
             return cached
 
@@ -26,7 +25,7 @@ class TickerHandler:
 
             # Cache if valid
             if formatted_tickers:
-                self.cache.set_tickers(formatted_tickers)
+                ExchangeCache.set_tickers(formatted_tickers)
                 return formatted_tickers
             else:
                 print("Warning: No tickers received from exchange")
@@ -183,3 +182,27 @@ class TickerHandler:
         }
 
         return paginated_items, pagination_info
+
+    def build_ticker_response(
+        self,
+        tickers: List[Dict[str, Any]],
+        page: int,
+        page_size: int,
+        search: Optional[str],
+        quote_currency: Optional[str],
+        sort_by: str,
+        sort_order: str,
+    ) -> Dict[str, Any]:
+        """Build complete ticker response with pagination and filters"""
+        paginated_tickers, pagination_info = self.paginate(tickers, page, page_size)
+
+        return {
+            "tickers": paginated_tickers,
+            "pagination": pagination_info,
+            "filters": {
+                "search": search,
+                "quote_currency": quote_currency,
+                "sort_by": sort_by,
+                "sort_order": sort_order,
+            },
+        }

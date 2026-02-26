@@ -1,46 +1,53 @@
-import time
-from typing import Optional, Tuple
+"""
+Exchange-specific cache wrapper using the global cache manager
+"""
+from typing import Optional
+from app.core.cache import cache
 
 
-class CacheManager:
-    """Manages caching for exchange data"""
+class ExchangeCache:
+    """Exchange-specific cache operations"""
 
-    def __init__(self):
-        self._ticker_cache = None
-        self._ticker_cache_time = 0
-        self._ticker_cache_duration = 60  # seconds
+    # Cache TTLs
+    TICKER_TTL = 60  # 60 seconds
+    OLDEST_CANDLE_TTL = 3600  # 1 hour
 
-        self._oldest_candle_cache = {}  # (symbol, timeframe): (timestamp, cache_time)
-        self._oldest_candle_ttl = 3600  # seconds (1 hour)
+    # Key prefixes
+    TICKER_KEY = "exchange:tickers"
+    OLDEST_CANDLE_PREFIX = "exchange:oldest_candle"
 
-    def get_tickers(self) -> Optional[list]:
-        """Get cached tickers if still valid"""
-        current_time = time.time()
-        if (
-            self._ticker_cache is not None
-            and len(self._ticker_cache) > 0
-            and current_time - self._ticker_cache_time < self._ticker_cache_duration
-        ):
-            return self._ticker_cache
-        return None
+    @staticmethod
+    def get_tickers() -> Optional[list]:
+        """Get cached tickers"""
+        return cache.get(ExchangeCache.TICKER_KEY)
 
-    def set_tickers(self, tickers: list) -> None:
+    @staticmethod
+    def set_tickers(tickers: list) -> bool:
         """Cache tickers data"""
         if tickers:
-            self._ticker_cache = tickers
-            self._ticker_cache_time = time.time()
+            return cache.set(
+                ExchangeCache.TICKER_KEY, tickers, ExchangeCache.TICKER_TTL
+            )
+        return False
 
-    def get_oldest_candle(self, symbol: str, timeframe: str) -> Optional[int]:
+    @staticmethod
+    def get_oldest_candle(symbol: str, timeframe: str) -> Optional[int]:
         """Get cached oldest candle timestamp"""
-        key = (symbol, timeframe)
-        entry = self._oldest_candle_cache.get(key)
-        if entry:
-            ts, cache_time = entry
-            if time.time() - cache_time < self._oldest_candle_ttl:
-                return ts
-        return None
+        key = f"{ExchangeCache.OLDEST_CANDLE_PREFIX}:{symbol}:{timeframe}"
+        return cache.get(key)
 
-    def set_oldest_candle(self, symbol: str, timeframe: str, timestamp: int) -> None:
+    @staticmethod
+    def set_oldest_candle(symbol: str, timeframe: str, timestamp: int) -> bool:
         """Cache oldest candle timestamp"""
-        key = (symbol, timeframe)
-        self._oldest_candle_cache[key] = (timestamp, time.time())
+        key = f"{ExchangeCache.OLDEST_CANDLE_PREFIX}:{symbol}:{timeframe}"
+        return cache.set(key, timestamp, ExchangeCache.OLDEST_CANDLE_TTL)
+
+    @staticmethod
+    def clear_tickers() -> bool:
+        """Clear ticker cache"""
+        return cache.delete(ExchangeCache.TICKER_KEY)
+
+    @staticmethod
+    def clear_oldest_candles() -> int:
+        """Clear all oldest candle caches"""
+        return cache.flush_pattern(f"{ExchangeCache.OLDEST_CANDLE_PREFIX}:*")

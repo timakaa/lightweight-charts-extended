@@ -3,7 +3,7 @@ import threading
 from typing import Dict, Any, Optional
 from app.models.backtest_symbol import BacktestSymbol
 from app.db.database import get_db
-from .cache import CacheManager
+from .cache import ExchangeCache
 
 
 class CandleHandler:
@@ -25,9 +25,8 @@ class CandleHandler:
         "1M": 30 * 24 * 60 * 60 * 1000,
     }
 
-    def __init__(self, exchange, cache_manager: CacheManager):
+    def __init__(self, exchange):
         self.exchange = exchange
-        self.cache = cache_manager
 
     def normalize_symbol(self, symbol: str) -> str:
         """Normalize symbol format"""
@@ -75,7 +74,7 @@ class CandleHandler:
                 symbol, timeframe, oldest_possible, 1
             )
             if oldest_candle:
-                self.cache.set_oldest_candle(symbol, timeframe, oldest_candle[0][0])
+                ExchangeCache.set_oldest_candle(symbol, timeframe, oldest_candle[0][0])
         except Exception as e:
             print(
                 f"Debug: Background fetch oldest candle failed for {symbol} {timeframe}: {e}"
@@ -113,7 +112,7 @@ class CandleHandler:
         newest_ts = newest_candle[-1][0]
 
         # Get oldest timestamp
-        oldest_ts = self.cache.get_oldest_candle(symbol, timeframe)
+        oldest_ts = ExchangeCache.get_oldest_candle(symbol, timeframe)
 
         # Override with backtest range if provided
         if start_limit is not None and end_limit is not None:

@@ -1,4 +1,14 @@
 services:
+  redis:
+    container_name: "redis-dev"
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+
   backend:
     container_name: "backend-dev"
     build:
@@ -11,6 +21,10 @@ services:
     volumes:
       - ./backend:/app
       - backend_data:/app/data
+    depends_on:
+      - redis
+    environment:
+      - REDIS_URL=redis://redis:6379
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     restart: unless-stopped
 
@@ -34,3 +48,4 @@ services:
 
 volumes:
   backend_data:
+  redis_data:

@@ -2,7 +2,7 @@ import ccxt
 import asyncio
 from typing import List, Dict, Any, Optional
 
-from .exchange import CacheManager, TickerHandler, CandleHandler
+from .exchange import TickerHandler, CandleHandler
 
 
 class ExchangeService:
@@ -16,9 +16,8 @@ class ExchangeService:
         self._markets_lock = asyncio.Lock()
 
         # Initialize handlers
-        self.cache = CacheManager()
-        self.ticker_handler = TickerHandler(self.exchange, self.cache)
-        self.candle_handler = CandleHandler(self.exchange, self.cache)
+        self.ticker_handler = TickerHandler(self.exchange)
+        self.candle_handler = CandleHandler(self.exchange)
 
     async def ensure_markets_loaded(self):
         """Ensure markets are loaded only once per process"""
@@ -43,8 +42,8 @@ class ExchangeService:
             all_tickers = await self.ticker_handler.fetch_all_tickers()
 
             if not all_tickers:
-                return self._empty_ticker_response(
-                    page, page_size, search, quote_currency, sort_by, sort_order
+                return self.ticker_handler.build_ticker_response(
+                    [], page, page_size, search, quote_currency, sort_by, sort_order
                 )
 
             # Filter and sort
@@ -52,26 +51,15 @@ class ExchangeService:
                 all_tickers, search, quote_currency, sort_by, sort_order
             )
 
-            # Paginate
-            paginated_tickers, pagination_info = self.ticker_handler.paginate(
-                filtered_tickers, page, page_size
+            # Build response with pagination
+            return self.ticker_handler.build_ticker_response(
+                filtered_tickers, page, page_size, search, quote_currency, sort_by, sort_order
             )
-
-            return {
-                "tickers": paginated_tickers,
-                "pagination": pagination_info,
-                "filters": {
-                    "search": search,
-                    "quote_currency": quote_currency,
-                    "sort_by": sort_by,
-                    "sort_order": sort_order,
-                },
-            }
 
         except Exception as e:
             print(f"Error in get_tickers_paginated: {e}")
-            return self._empty_ticker_response(
-                page, page_size, search, quote_currency, sort_by, sort_order
+            return self.ticker_handler.build_ticker_response(
+                [], page, page_size, search, quote_currency, sort_by, sort_order
             )
 
     async def get_ticker(self, symbol: str) -> Dict[str, Any]:
@@ -94,34 +82,6 @@ class ExchangeService:
         return await self.candle_handler.get_candlesticks_paginated(
             symbol, timeframe, page, page_size, backtest_id
         )
-
-    def _empty_ticker_response(
-        self,
-        page: int,
-        page_size: int,
-        search: Optional[str],
-        quote_currency: Optional[str],
-        sort_by: str,
-        sort_order: str,
-    ) -> Dict[str, Any]:
-        """Return empty ticker response structure"""
-        return {
-            "tickers": [],
-            "pagination": {
-                "page": page,
-                "page_size": page_size,
-                "total_count": 0,
-                "total_pages": 0,
-                "has_next": False,
-                "has_prev": False,
-            },
-            "filters": {
-                "search": search,
-                "quote_currency": quote_currency,
-                "sort_by": sort_by,
-                "sort_order": sort_order,
-            },
-        }
 
 
 # Create global instance

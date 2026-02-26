@@ -47,6 +47,7 @@ python-multipart==0.0.6
 python-socketio==5.10.0
 pytz==2025.2
 PyYAML==6.0.2
+redis==5.2.1
 requests==2.32.4
 rsa==4.9.1
 setuptools==80.9.0
