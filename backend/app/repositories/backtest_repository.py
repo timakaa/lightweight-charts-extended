@@ -3,30 +3,20 @@ from app.models.backtest_results import BacktestResult
 from app.models.backtest_symbol import BacktestSymbol
 from app.models.trade import Trade
 from datetime import datetime
-from typing import Optional, List, Dict, Any
-
-from .backtest import BacktestSerializer, BacktestQueries
-from .backtest.cache import BacktestCache
+from typing import Optional, List
 
 
 class BacktestRepository:
+    """Pure data access layer for backtests - returns raw SQLAlchemy models"""
+    
     def __init__(self, db: Session):
         self.db = db
-        self.serializer = BacktestSerializer
-        self.queries = BacktestQueries(db)
 
-    def create(
-        self, backtest_data: dict, numerate_title: bool = False
-    ) -> BacktestResult:
+    def create(self, backtest_data: dict) -> BacktestResult:
         """Create a new backtest with trades and symbols"""
-        title = backtest_data.get("title")
-
-        if numerate_title and title:
-            title = self.queries.generate_unique_title(title)
-
         # Create backtest instance
         backtest = BacktestResult(
-            title=title,
+            title=backtest_data.get("title"),
             is_live=backtest_data.get("is_live", False),
             start_date=backtest_data.get("start_date"),
             end_date=backtest_data.get("end_date"),
@@ -67,12 +57,9 @@ class BacktestRepository:
         self.db.commit()
         self.db.refresh(backtest)
         
-        # Invalidate list cache since we added a new backtest
-        BacktestCache.invalidate_list()
-        
         return backtest
 
-    def _create_trades(self, backtest_id: int, trades_data: List[Dict]) -> None:
+    def _create_trades(self, backtest_id: int, trades_data: list) -> None:
         """Create trade records for a backtest"""
         for trade_data in trades_data:
             trade = Trade(
@@ -101,7 +88,7 @@ class BacktestRepository:
             self.db.add(trade)
 
     def _create_symbols(
-        self, backtest: BacktestResult, symbols_data: List[Dict]
+        self, backtest: BacktestResult, symbols_data: list
     ) -> None:
         """Create symbol records for a backtest"""
         for symbol_data in symbols_data:
@@ -113,93 +100,47 @@ class BacktestRepository:
             )
             backtest.symbols.append(symbol)
 
-    def get_by_id(self, backtest_id: int) -> Optional[Dict[str, Any]]:
-        """Get full backtest details by ID with caching"""
-        # Try cache first
-        cached = BacktestCache.get_detail(backtest_id)
-        if cached:
-            return cached
-
-        # Fetch from database
-        backtest = (
+    def get_by_id(self, backtest_id: int) -> Optional[BacktestResult]:
+        """Get backtest by ID"""
+        return (
             self.db.query(BacktestResult)
             .filter(BacktestResult.id == backtest_id)
             .first()
         )
+
+    def get_all(self) -> List[BacktestResult]:
+        """Get all backtests"""
+        return self.db.query(BacktestResult).all()
+
+    def get_all_with_filter(self, search: Optional[str] = None) -> List[BacktestResult]:
+        """Get all backtests with optional search filter"""
+        query = self.db.query(BacktestResult)
         
-        result = self.serializer.serialize_backtest(backtest)
+        if search:
+            query = query.filter(BacktestResult.title.ilike(f"%{search}%"))
         
-        # Cache the result
-        if result:
-            BacktestCache.set_detail(backtest_id, result)
-        
-        return result
+        return query.order_by(BacktestResult.id.desc()).all()
 
-    def get_all(self) -> List[Dict[str, Any]]:
-        """Get all backtests (full details)"""
-        backtests = self.db.query(BacktestResult).all()
-        serialized = [self.serializer.serialize_backtest(bt) for bt in backtests]
-        return [item for item in serialized if item is not None]
-
-    def get_all_summarized(
-        self, page: int = 1, page_size: int = 10, search: Optional[str] = None
-    ) -> Dict[str, Any]:
-        """Get paginated backtest summaries"""
-        return self.queries.get_all_summarized(page, page_size, search)
-
-    def get_trades_by_backtest_id(
-        self, backtest_id: int, page: int = 1, page_size: int = 10
-    ) -> Dict[str, Any]:
-        """Get paginated trades for a backtest"""
-        return self.queries.get_trades_paginated(backtest_id, page, page_size)
-
-    def get_stats_by_id(self, backtest_id: int) -> Optional[Dict[str, Any]]:
-        """Get backtest statistics only with caching"""
-        # Try cache first
-        cached = BacktestCache.get_stats(backtest_id)
-        if cached:
-            return cached
-
-        # Fetch from database
-        backtest = (
-            self.db.query(BacktestResult)
-            .filter(BacktestResult.id == backtest_id)
-            .first()
+    def get_trades_by_backtest_id(self, backtest_id: int) -> List[Trade]:
+        """Get all trades for a backtest"""
+        return (
+            self.db.query(Trade)
+            .filter(Trade.backtest_id == backtest_id)
+            .order_by(Trade.id.desc())
+            .all()
         )
-        if not backtest:
-            return None
-        
-        result = self.serializer.serialize_backtest_stats(backtest)
-        
-        # Cache the result
-        BacktestCache.set_stats(backtest_id, result)
-        
-        return result
 
-    def get_symbols_by_backtest_id(self, backtest_id: int) -> Optional[List[Dict]]:
-        """Get symbols for a backtest"""
-        backtest = (
-            self.db.query(BacktestResult)
-            .filter(BacktestResult.id == backtest_id)
-            .first()
+    def find_titles_like(self, base_title: str) -> List[str]:
+        """Find all titles matching a pattern"""
+        results = (
+            self.db.query(BacktestResult.title)
+            .filter(BacktestResult.title.like(f"{base_title}%"))
+            .all()
         )
-        if not backtest:
-            return None
-        return [self.serializer.serialize_symbol(symbol) for symbol in backtest.symbols]
+        return [t[0] for t in results]
 
-    def get_drawings_by_backtest_id(self, backtest_id: int) -> Optional[Any]:
-        """Get drawings for a backtest"""
-        backtest = (
-            self.db.query(BacktestResult)
-            .filter(BacktestResult.id == backtest_id)
-            .first()
-        )
-        if not backtest:
-            return None
-        return self.serializer.convert_nan_to_none(backtest.drawings)
-
-    def update(self, backtest_id: int, update_data: dict) -> Optional[Dict[str, Any]]:
-        """Update backtest (currently only title)"""
+    def update(self, backtest_id: int, update_data: dict) -> Optional[BacktestResult]:
+        """Update backtest"""
         backtest = (
             self.db.query(BacktestResult)
             .filter(BacktestResult.id == backtest_id)
@@ -214,11 +155,7 @@ class BacktestRepository:
         self.db.commit()
         self.db.refresh(backtest)
         
-        # Invalidate caches
-        BacktestCache.invalidate_backtest(backtest_id)
-        BacktestCache.invalidate_list()
-        
-        return self.serializer.serialize_backtest(backtest)
+        return backtest
 
     def delete(self, backtest_id: int) -> bool:
         """Delete a backtest"""
@@ -230,10 +167,5 @@ class BacktestRepository:
         if backtest:
             self.db.delete(backtest)
             self.db.commit()
-            
-            # Invalidate caches
-            BacktestCache.invalidate_backtest(backtest_id)
-            BacktestCache.invalidate_list()
-            
             return True
         return False
