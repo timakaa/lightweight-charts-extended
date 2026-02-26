@@ -4,6 +4,7 @@ from app.models.trade import Trade
 from typing import Optional, List, Dict, Any
 from app.utils.pagination import Paginator
 from .serializers import BacktestSerializer
+from .cache import BacktestCache
 
 
 class BacktestQueries:
@@ -13,7 +14,13 @@ class BacktestQueries:
     def get_all_summarized(
         self, page: int = 1, page_size: int = 10, search: Optional[str] = None
     ) -> Dict[str, Any]:
-        """Get paginated list of backtest summaries"""
+        """Get paginated list of backtest summaries with caching"""
+        # Try cache first
+        cached = BacktestCache.get_list(page, page_size, search)
+        if cached:
+            return cached
+
+        # Fetch from database
         query = self.db.query(BacktestResult).options(
             joinedload(BacktestResult.symbols)
         )
@@ -30,17 +37,28 @@ class BacktestQueries:
             for backtest in backtests
         ]
 
-        return Paginator.create_response(
+        response = Paginator.create_response(
             items=summaries,
             page=page,
             page_size=page_size,
             items_key="backtests",
         )
 
+        # Cache the response
+        BacktestCache.set_list(page, page_size, response, search)
+
+        return response
+
     def get_trades_paginated(
         self, backtest_id: int, page: int = 1, page_size: int = 10
     ) -> Dict[str, Any]:
-        """Get paginated trades for a backtest"""
+        """Get paginated trades for a backtest with caching"""
+        # Try cache first
+        cached = BacktestCache.get_trades(backtest_id, page, page_size)
+        if cached:
+            return cached
+
+        # Fetch from database
         query = self.db.query(Trade).filter(Trade.backtest_id == backtest_id)
         query = query.order_by(Trade.id.desc())
 
@@ -49,12 +67,17 @@ class BacktestQueries:
             BacktestSerializer.serialize_trade(trade) for trade in trades
         ]
 
-        return Paginator.create_response(
+        response = Paginator.create_response(
             items=serialized_trades,
             page=page,
             page_size=page_size,
             items_key="trades",
         )
+
+        # Cache the response
+        BacktestCache.set_trades(backtest_id, page, page_size, response)
+
+        return response
 
     def generate_unique_title(self, base_title: str) -> str:
         """Generate a unique title by appending a number if needed"""

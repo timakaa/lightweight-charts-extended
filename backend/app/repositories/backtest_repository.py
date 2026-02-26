@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Optional, List, Dict, Any
 
 from .backtest import BacktestSerializer, BacktestQueries
+from .backtest.cache import BacktestCache
 
 
 class BacktestRepository:
@@ -65,6 +66,10 @@ class BacktestRepository:
 
         self.db.commit()
         self.db.refresh(backtest)
+        
+        # Invalidate list cache since we added a new backtest
+        BacktestCache.invalidate_list()
+        
         return backtest
 
     def _create_trades(self, backtest_id: int, trades_data: List[Dict]) -> None:
@@ -109,13 +114,26 @@ class BacktestRepository:
             backtest.symbols.append(symbol)
 
     def get_by_id(self, backtest_id: int) -> Optional[Dict[str, Any]]:
-        """Get full backtest details by ID"""
+        """Get full backtest details by ID with caching"""
+        # Try cache first
+        cached = BacktestCache.get_detail(backtest_id)
+        if cached:
+            return cached
+
+        # Fetch from database
         backtest = (
             self.db.query(BacktestResult)
             .filter(BacktestResult.id == backtest_id)
             .first()
         )
-        return self.serializer.serialize_backtest(backtest)
+        
+        result = self.serializer.serialize_backtest(backtest)
+        
+        # Cache the result
+        if result:
+            BacktestCache.set_detail(backtest_id, result)
+        
+        return result
 
     def get_all(self) -> List[Dict[str, Any]]:
         """Get all backtests (full details)"""
@@ -136,7 +154,13 @@ class BacktestRepository:
         return self.queries.get_trades_paginated(backtest_id, page, page_size)
 
     def get_stats_by_id(self, backtest_id: int) -> Optional[Dict[str, Any]]:
-        """Get backtest statistics only"""
+        """Get backtest statistics only with caching"""
+        # Try cache first
+        cached = BacktestCache.get_stats(backtest_id)
+        if cached:
+            return cached
+
+        # Fetch from database
         backtest = (
             self.db.query(BacktestResult)
             .filter(BacktestResult.id == backtest_id)
@@ -144,7 +168,13 @@ class BacktestRepository:
         )
         if not backtest:
             return None
-        return self.serializer.serialize_backtest_stats(backtest)
+        
+        result = self.serializer.serialize_backtest_stats(backtest)
+        
+        # Cache the result
+        BacktestCache.set_stats(backtest_id, result)
+        
+        return result
 
     def get_symbols_by_backtest_id(self, backtest_id: int) -> Optional[List[Dict]]:
         """Get symbols for a backtest"""
@@ -183,6 +213,11 @@ class BacktestRepository:
 
         self.db.commit()
         self.db.refresh(backtest)
+        
+        # Invalidate caches
+        BacktestCache.invalidate_backtest(backtest_id)
+        BacktestCache.invalidate_list()
+        
         return self.serializer.serialize_backtest(backtest)
 
     def delete(self, backtest_id: int) -> bool:
@@ -195,5 +230,10 @@ class BacktestRepository:
         if backtest:
             self.db.delete(backtest)
             self.db.commit()
+            
+            # Invalidate caches
+            BacktestCache.invalidate_backtest(backtest_id)
+            BacktestCache.invalidate_list()
+            
             return True
         return False
