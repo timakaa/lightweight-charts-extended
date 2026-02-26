@@ -1,191 +1,89 @@
-# Simple MA Cross Strategy Backtest Runner
+# Backtesting Scripts
 
-This directory contains scripts to run the Simple Moving Average Cross Strategy backtest inside the Docker container with configurable parameters and automatic data scraping.
+## Refactored Structure
 
-## 🚀 Quick Start
+The backtesting system has been refactored into modular components for better maintainability.
 
-### Method 1: Using Docker Compose Exec (Recommended)
+### Core Modules
 
-```bash
-# Basic backtest with BTCUSDT
-docker-compose exec backend python scripts/backtest/run_backtest.py
+#### `data_loader.py`
 
-# With custom symbol
-docker-compose exec backend python scripts/backtest/run_backtest.py --symbol ETHUSDT
+Handles loading and preparing multi-timeframe data from CSV files.
 
-# Save to database
-docker-compose exec backend python scripts/backtest/run_backtest.py --save-to-db
+- `load_multi_timeframe_data()` - Loads data for multiple timeframes
 
-# Run backtest (data must exist in charts folder)
-docker-compose exec backend python scripts/backtest/run_backtest.py --symbol SOLUSDT
+#### `trade_processor.py`
 
-# Full customization
-docker-compose exec backend python scripts/backtest/run_backtest.py --symbol ADAUSDT --cash 500000 --timeframe 4h --save-to-db --scrape
-```
+Processes backtest trades and calculates metrics.
 
-### Method 2: Using Bash Script
+- `process_trades()` - Processes trades from backtest results
+- `calculate_trading_days()` - Calculates unique trading days
+- `calculate_value_at_risk()` - Calculates VaR at 95% confidence
 
-```bash
-# Run the bash script inside container
-docker-compose exec backend bash scripts/backtest/run_backtest.sh
+#### `drawing_creator.py`
 
-# With parameters: symbol, save_to_db, cash, scrape, timeframe
-docker-compose exec backend bash scripts/backtest/run_backtest.sh ETHUSDT true 500000 true 1h
-```
+Creates visualization drawings for trades and strategy elements.
 
-### Method 3: Using Makefile
+- `create_trade_drawings()` - Creates drawings for long/short positions
+- `create_strategy_drawings()` - Creates strategy-specific drawings (levels, signals, etc.)
 
-```bash
-# Show available commands
-docker-compose exec backend make -C scripts/backtest help
+#### `results_builder.py`
 
-# Run with defaults
-docker-compose exec backend make -C scripts/backtest backtest
+Constructs the final results dictionary with all metrics.
 
-# Run with ETHUSDT
-docker-compose exec backend make -C scripts/backtest backtest-eth
+- `extract_capital_metrics()` - Extracts capital efficiency metrics (ROIC, utilization)
+- `build_results_dict()` - Builds complete results dictionary
+- `print_results_summary()` - Prints results summary
+- `save_to_database()` - Saves results to database
 
-# Run and save to database
-docker-compose exec backend make -C scripts/backtest backtest-save
+### Main File
 
-# Custom symbol
-docker-compose exec backend make -C scripts/backtest backtest SYMBOL=SOLUSDT
-```
+#### `flexible_backtest.py`
 
-## 📊 Parameters
+Clean, modular orchestration using the refactored components.
 
-| Parameter      | Description              | Default   | Example                   |
-| -------------- | ------------------------ | --------- | ------------------------- |
-| `--symbol`     | Trading symbol           | BTCUSDT   | ETHUSDT, SOLUSDT, ADAUSDT |
-| `--save-to-db` | Save results to database | False     | --save-to-db              |
-| `--cash`       | Initial cash amount      | 1,000,000 | 500000                    |
-| `--timeframe`  | Data timeframe           | 1h        | 1h, 4h, 1d                |
-| `--scrape`     | Force scrape fresh data  | False     | --scrape                  |
-| `--limit`      | Number of bars to scrape | 1000      | 500, 2000                 |
+- ~200 lines (refactored from original 650 lines)
+- Easy to understand and maintain
+- Imports and uses the modular components above
 
-## 🔄 Data Management
-
-The script automatically handles data in the following priority:
-
-1. **Existing Data**: Checks for existing CSV files in `backend/charts/`
-2. **Auto Scraping**: If no data exists, automatically scrapes from Bybit
-3. **Force Scraping**: Use `--scrape` flag to get fresh data regardless
-
-### Data Sources
-
-- **Exchange**: Bybit (via ccxt)
-- **Timeframes**: 1h, 4h, 1d
-- **Storage**: `backend/charts/{SYMBOL}-{TIMEFRAME}-bybit.csv`
-
-## 🎯 Strategy Details
-
-The Simple MA Cross Strategy uses:
-
-- **Fast MA**: 10-period moving average
-- **Slow MA**: 30-period moving average
-- **Risk/Reward**: 1:2 ratio
-- **Stop Loss**: 2% from entry price
-- **Commission**: 0.2% per trade
-
-### Entry Rules
-
-- **Long**: When fast MA crosses above slow MA
-- **Short**: When fast MA crosses below slow MA
-
-### Exit Rules
-
-- **Take Profit**: 2x the stop loss distance (4% for longs, -4% for shorts)
-- **Stop Loss**: 2% from entry price
-
-## 📈 Example Commands
+## Usage
 
 ```bash
-# Basic Bitcoin backtest
-docker-compose exec backend python scripts/backtest/run_backtest.py
+# List available strategies
+python flexible_backtest.py --list-strategies
 
-# First scrape the data
-docker-compose exec backend python app/backtesting/ccxt_scrapping.py --symbol ETHUSDT --timeframe 4h
+# Get strategy info
+python flexible_backtest.py --strategy-info crash_buy_dca
 
-# Then run backtest with Ethereum 4h data
-docker-compose exec backend python scripts/backtest/run_backtest.py --symbol ETHUSDT --timeframe 4h
+# Run backtest
+python flexible_backtest.py --strategy crash_buy_dca --symbol SOLUSDT --save-to-db
 
-# Solana with smaller capital, save to DB
-docker-compose exec backend python scripts/backtest/run_backtest.py --symbol SOLUSDT --cash 100000 --save-to-db
-
-# Daily timeframe backtest
-docker-compose exec backend python scripts/backtest/run_backtest.py --symbol BTCUSDT --timeframe 1d
-
-# Quick commands using Makefile
-docker-compose exec backend make -C scripts/backtest backtest-eth
-docker-compose exec backend make -C scripts/backtest backtest SYMBOL=ADAUSDT
+# Run with custom parameters
+python flexible_backtest.py --strategy crash_buy_dca --symbol BTCUSDT \
+  --params '{"base_amount": 200, "crash_multiplier": 4}'
 ```
 
-## 🛠️ Requirements
+## Benefits of Refactoring
 
-### Python Dependencies
+1. **Modularity** - Each module has a single responsibility
+2. **Testability** - Easy to unit test individual components
+3. **Maintainability** - Changes are isolated to specific modules
+4. **Readability** - Main file is ~200 lines instead of ~650
+5. **Reusability** - Modules can be imported and used elsewhere
 
-The following packages should be in your `backend/requirements.txt`:
+## Architecture
 
 ```
-ccxt>=4.0.0
-pandas>=1.5.0
-backtesting>=0.3.3
+flexible_backtest.py (Main orchestration)
+├── data_loader.py (Load CSV data)
+├── trade_processor.py (Process trades & calculate metrics)
+├── drawing_creator.py (Create visualizations)
+└── results_builder.py (Build results & save to DB)
 ```
 
-### Docker Setup
+## Future Improvements
 
-Make sure your `docker-compose.yml` includes the backend service and that the container has access to the required Python packages.
-
-## 🔧 Troubleshooting
-
-### CCXT Not Found
-
-If you get "ccxt not installed" error:
-
-```bash
-# Add to backend/requirements.txt
-echo "ccxt>=4.0.0" >> backend/requirements.txt
-
-# Rebuild container
-docker-compose build backend
-```
-
-### Data Scraping Issues
-
-- Check your internet connection
-- Verify the symbol exists on Bybit
-- Try reducing the `--limit` parameter
-- Check Bybit API status
-
-### Database Connection Issues
-
-- Ensure database service is running
-- Check database connection settings in `backend/.env`
-- Verify database tables are created
-
-### Permission Issues
-
-```bash
-# Make scripts executable
-docker-compose exec backend chmod +x scripts/backtest/run_backtest.sh
-```
-
-## 📋 Output
-
-The backtest provides comprehensive results including:
-
-- **Performance Metrics**: Win rate, Sharpe ratio, profit factor
-- **Risk Metrics**: Maximum drawdown, Value at Risk
-- **Trade Analysis**: Individual trade details, P&L statistics
-- **Chart Data**: Drawings for visualization in your frontend
-
-Results can be saved to your database for further analysis and visualization in your trading application.
-
-## 🚀 Integration
-
-This backtest runner integrates seamlessly with your existing trading application:
-
-- Uses your existing database models
-- Generates chart drawings for your frontend
-- Follows your application's data structure
-- Can be extended with additional strategies
+- Add unit tests for each module
+- Add type hints throughout
+- Create async versions for parallel backtesting
+- Add progress bars for long-running backtests
