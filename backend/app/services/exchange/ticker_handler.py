@@ -1,6 +1,7 @@
 import asyncio
 from typing import List, Dict, Any, Optional
 from .cache import ExchangeCache
+from app.utils.pagination import Paginator
 
 
 class TickerHandler:
@@ -163,25 +164,9 @@ class TickerHandler:
     def paginate(
         self, items: List[Any], page: int, page_size: int
     ) -> tuple[List[Any], Dict[str, Any]]:
-        """Paginate a list of items"""
-        total_count = len(items)
-        total_pages = max(1, (total_count + page_size - 1) // page_size)
-        page = max(1, min(page, total_pages))
-
-        start_idx = (page - 1) * page_size
-        end_idx = min(start_idx + page_size, total_count)
-        paginated_items = items[start_idx:end_idx]
-
-        pagination_info = {
-            "page": page,
-            "page_size": page_size,
-            "total_count": total_count,
-            "total_pages": total_pages,
-            "has_next": page < total_pages,
-            "has_prev": page > 1,
-        }
-
-        return paginated_items, pagination_info
+        """Paginate a list of items (deprecated - use Paginator directly)"""
+        paginated_items, pagination_info = Paginator.paginate(items, page, page_size)
+        return paginated_items, pagination_info.to_dict()
 
     def build_ticker_response(
         self,
@@ -194,15 +179,17 @@ class TickerHandler:
         sort_order: str,
     ) -> Dict[str, Any]:
         """Build complete ticker response with pagination and filters"""
-        paginated_tickers, pagination_info = self.paginate(tickers, page, page_size)
-
-        return {
-            "tickers": paginated_tickers,
-            "pagination": pagination_info,
-            "filters": {
-                "search": search,
-                "quote_currency": quote_currency,
-                "sort_by": sort_by,
-                "sort_order": sort_order,
-            },
+        filters = {
+            "search": search,
+            "quote_currency": quote_currency,
+            "sort_by": sort_by,
+            "sort_order": sort_order,
         }
+
+        return Paginator.create_response(
+            items=tickers,
+            page=page,
+            page_size=page_size,
+            filters=filters,
+            items_key="tickers",
+        )

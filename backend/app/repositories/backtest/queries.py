@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session, joinedload
 from app.models.backtest_results import BacktestResult
 from app.models.trade import Trade
 from typing import Optional, List, Dict, Any
+from app.utils.pagination import Paginator
 from .serializers import BacktestSerializer
 
 
@@ -22,28 +23,19 @@ class BacktestQueries:
 
         query = query.order_by(BacktestResult.id.desc())
 
-        total_count = query.count()
-        total_pages = (total_count + page_size - 1) // page_size
-
-        offset = (page - 1) * page_size
-        backtests = query.offset(offset).limit(page_size).all()
+        backtests = query.all()
 
         summaries = [
             BacktestSerializer.serialize_backtest_summary(backtest)
             for backtest in backtests
         ]
 
-        return {
-            "backtests": summaries,
-            "pagination": {
-                "page": page,
-                "page_size": page_size,
-                "total_count": total_count,
-                "total_pages": total_pages,
-                "has_next": page < total_pages,
-                "has_prev": page > 1,
-            },
-        }
+        return Paginator.create_response(
+            items=summaries,
+            page=page,
+            page_size=page_size,
+            items_key="backtests",
+        )
 
     def get_trades_paginated(
         self, backtest_id: int, page: int = 1, page_size: int = 10
@@ -52,23 +44,17 @@ class BacktestQueries:
         query = self.db.query(Trade).filter(Trade.backtest_id == backtest_id)
         query = query.order_by(Trade.id.desc())
 
-        total_count = query.count()
-        total_pages = (total_count + page_size - 1) // page_size
+        trades = query.all()
+        serialized_trades = [
+            BacktestSerializer.serialize_trade(trade) for trade in trades
+        ]
 
-        offset = (page - 1) * page_size
-        trades = query.offset(offset).limit(page_size).all()
-
-        return {
-            "trades": [BacktestSerializer.serialize_trade(trade) for trade in trades],
-            "pagination": {
-                "page": page,
-                "page_size": page_size,
-                "total_count": total_count,
-                "total_pages": total_pages,
-                "has_next": page < total_pages,
-                "has_prev": page > 1,
-            },
-        }
+        return Paginator.create_response(
+            items=serialized_trades,
+            page=page,
+            page_size=page_size,
+            items_key="trades",
+        )
 
     def generate_unique_title(self, base_title: str) -> str:
         """Generate a unique title by appending a number if needed"""
