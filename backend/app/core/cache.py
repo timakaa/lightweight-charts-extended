@@ -8,24 +8,22 @@ import redis
 
 
 class CacheManager:
-    """Generic Redis cache manager"""
+    """Generic Redis cache manager (Singleton)"""
 
-    _instance = None
+    _instance: Optional["CacheManager"] = None
+    _redis_client: Optional[redis.Redis] = None
 
     def __new__(cls):
         """Singleton pattern to ensure one Redis connection"""
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            cls._instance._initialized = False
         return cls._instance
 
     def __init__(self):
         """Initialize Redis connection (only once)"""
-        if self._initialized:
-            return
-
-        self.redis = self._initialize_redis()
-        self._initialized = True
+        # Only initialize if not already done
+        if CacheManager._redis_client is None:
+            CacheManager._redis_client = self._initialize_redis()
 
     def _initialize_redis(self) -> redis.Redis:
         """Initialize Redis connection"""
@@ -45,6 +43,13 @@ class CacheManager:
                 f"Failed to connect to Redis at {redis_url}. "
                 "Please ensure Redis is running and REDIS_URL is correct."
             )
+
+    @property
+    def redis(self) -> redis.Redis:
+        """Get Redis client instance"""
+        if CacheManager._redis_client is None:
+            raise RuntimeError("Redis client not initialized")
+        return CacheManager._redis_client
 
     def get(self, key: str) -> Optional[Any]:
         """
@@ -206,5 +211,15 @@ class CacheManager:
             return None
 
 
-# Global cache instance
-cache = CacheManager()
+def get_cache() -> CacheManager:
+    """
+    Get the global cache instance (lazy initialization)
+    
+    This is the recommended way to access the cache.
+    """
+    return CacheManager()
+
+
+# Global cache instance (for backward compatibility and convenience)
+# This will be initialized on first access
+cache = get_cache()
