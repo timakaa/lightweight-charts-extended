@@ -61,19 +61,26 @@ docker-compose exec backend bash scripts/scrape_data.sh ETHUSDT 4h bybit 2024-01
 
 ## 🧪 Backtesting
 
-### Simple MA Cross Strategy
+### Flexible Backtesting System
 
-Run backtests with the Simple Moving Average Cross strategy.
+Run backtests with any strategy using the flexible backtesting system.
 
 ```bash
-# Basic backtest
-docker-compose exec backend python scripts/backtest/run_backtest.py
+# List available strategies
+docker-compose exec backend python scripts/backtest/flexible_backtest.py --list-strategies
 
-# With custom parameters
-docker-compose exec backend python scripts/backtest/run_backtest.py --symbol ETHUSDT --cash 500000 --save-to-db
+# Get strategy info
+docker-compose exec backend python scripts/backtest/flexible_backtest.py --strategy-info simple_ma_cross
 
-# Auto-scrape data if missing
-docker-compose exec backend python scripts/backtest/run_backtest.py --symbol SOLUSDT --scrape
+# Run Simple MA Cross strategy
+docker-compose exec backend python scripts/backtest/flexible_backtest.py --strategy simple_ma_cross --symbol BTCUSDT --save-to-db
+
+# Run Crash Buy DCA strategy
+docker-compose exec backend python scripts/backtest/flexible_backtest.py --strategy crash_buy_dca --symbol SOLUSDT --save-to-db
+
+# Run with custom parameters
+docker-compose exec backend python scripts/backtest/flexible_backtest.py --strategy crash_buy_dca --symbol BTCUSDT \
+  --params '{"base_amount": 200, "crash_multiplier": 4}'
 ```
 
 See `backtest/README.md` for detailed documentation.
@@ -87,9 +94,11 @@ backend/scripts/
 ├── scrape_data.sh              # Bash wrapper for data scraping
 └── backtest/
     ├── README.md               # Backtest documentation
-    ├── run_backtest.py         # Backtest runner with ccxt integration
-    ├── run_backtest.sh         # Bash wrapper for backtesting
-    └── Makefile               # Quick commands for backtesting
+    ├── flexible_backtest.py    # Main flexible backtesting runner
+    ├── data_loader.py          # Data loading module
+    ├── trade_processor.py      # Trade processing module
+    ├── drawing_creator.py      # Drawing creation module
+    └── results_builder.py      # Results building module
 ```
 
 ## 🚀 Quick Examples
@@ -103,11 +112,10 @@ docker-compose exec backend python app/backtesting/ccxt_scrapping.py --symbol BT
 
 # First scrape data, then run backtest
 docker-compose exec backend python app/backtesting/ccxt_scrapping.py --symbol ETHUSDT --timeframe 1h
-docker-compose exec backend python scripts/backtest/run_backtest.py --symbol ETHUSDT --save-to-db
+docker-compose exec backend python scripts/backtest/flexible_backtest.py --strategy simple_ma_cross --symbol ETHUSDT --save-to-db
 
-# Quick backtest commands
-docker-compose exec backend make -C scripts/backtest backtest-eth
-docker-compose exec backend make -C scripts/backtest backtest SYMBOL=SOLUSDT
+# Run different strategies
+docker-compose exec backend python scripts/backtest/flexible_backtest.py --strategy crash_buy_dca --symbol SOLUSDT --save-to-db
 ```
 
 ## 🛠️ Requirements
