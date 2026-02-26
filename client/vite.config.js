@@ -16,6 +16,7 @@ export default defineConfig({
       "@helpers": "/src/helpers",
       "@drawing-tools": "/src/drawing-tools",
       "@config": "/src/config",
+      "@pages": "/src/pages",
     },
   },
 });
