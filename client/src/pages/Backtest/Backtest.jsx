@@ -14,7 +14,7 @@ const Backtest = () => {
   const [chartData, setChartData] = useState(null);
 
   // Show 404 when backtest is not found
-  if (error || !backtestDrawings) {
+  if (error) {
     return (
       <div className='h-screen w-screen flex items-center justify-center bg-modal'>
         <div className='text-center'>
