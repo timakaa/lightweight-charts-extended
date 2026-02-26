@@ -432,11 +432,24 @@ def run_flexible_backtest(
         # Get custom metrics from strategy if available
         custom_metrics = {}
         strategy_related_fields = []
+        capital_deployed = None
+        capital_utilization = None
+        roic = None
+        
         if hasattr(strategy_instance, 'get_custom_metrics'):
             custom_metrics = strategy_instance.get_custom_metrics()
             if custom_metrics:
                 print(f"\n📊 Custom Strategy Metrics:")
                 print(json.dumps(custom_metrics, indent=2, default=str))
+                
+                # Extract capital deployed for DCA strategies
+                if 'crash_dca' in custom_metrics:
+                    crash_dca = custom_metrics['crash_dca']
+                    capital_deployed = crash_dca.get('total_invested')
+                    if capital_deployed and capital_deployed > 0:
+                        capital_utilization = (capital_deployed / cash) * 100
+                        final_value = crash_dca.get('final_value', 0)
+                        roic = ((final_value - capital_deployed) / capital_deployed) * 100
         
         # Get strategy related fields for UI display
         if hasattr(strategy_instance, 'get_strategy_related_fields'):
@@ -474,6 +487,9 @@ def run_flexible_backtest(
             "loss_trades": loss_trades,
             "long_trades": long_trades,
             "short_trades": short_trades,
+            "capital_deployed": capital_deployed,
+            "capital_utilization": capital_utilization,
+            "roic": roic,
             "drawings": drawings,
             "is_live": False,  # Always False for backtests
             "symbols": [
