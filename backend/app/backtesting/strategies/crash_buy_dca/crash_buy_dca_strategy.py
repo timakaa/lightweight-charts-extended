@@ -9,16 +9,24 @@ we simulate it by opening a single position and tracking buy signals separately.
 from typing import Dict, Any, List, Optional
 import pandas as pd
 from backtesting import Strategy
-from datetime import datetime, timedelta
 
 from ...base_strategy import BaseBacktestStrategy, StrategyConfig
+from .parameters import (
+    get_default_parameters, 
+    validate_parameters, 
+    get_parameter_schema,
+    format_strategy_fields
+)
+from .dca_simulator import simulate_dca
+from .chart_generator import generate_charts
+from .strategy_class import create_strategy_class
 
 
 class CrashBuyDCAStrategy(BaseBacktestStrategy):
     """DCA Strategy that increases buying during market crashes"""
 
     def __init__(self, parameters: Optional[Dict[str, Any]] = None, timeframes: Optional[List[str]] = None, save_charts: bool = False):
-        default_params = self.get_default_parameters()
+        default_params = get_default_parameters()
         if parameters:
             default_params.update(parameters)
 
@@ -42,487 +50,50 @@ class CrashBuyDCAStrategy(BaseBacktestStrategy):
 
     def get_default_parameters(self) -> Dict[str, Any]:
         """Default parameters for crash buying DCA"""
-        return {
-            "base_amount": 100,           # Base monthly investment amount
-            "crash_multiplier": 3,        # Multiply investment by this during crashes
-            "daily_crash_threshold": 0.05,  # 5% daily drop threshold
-            "weekly_crash_threshold": 0.10, # 10% weekly drop threshold
-            "monthly_interval_days": 30,  # Buy every N days normally
-            "commission": 0.002,          # 0.2% commission per trade
-            "cash": 100000,               # Initial cash
-        }
+        return get_default_parameters()
 
     def validate_parameters(self, parameters: Dict[str, Any]) -> bool:
         """Validate parameters"""
-        required_params = ["base_amount", "crash_multiplier", "daily_crash_threshold", 
-                          "weekly_crash_threshold", "monthly_interval_days"]
-
-        for param in required_params:
-            if param not in parameters:
-                print(f"❌ Missing required parameter: {param}")
-                return False
-
-        if parameters["base_amount"] <= 0:
-            print(f"❌ Base amount must be greater than 0")
-            return False
-
-        if parameters["crash_multiplier"] < 1:
-            print(f"❌ Crash multiplier must be >= 1")
-            return False
-
-        if parameters["daily_crash_threshold"] <= 0 or parameters["daily_crash_threshold"] >= 1:
-            print(f"❌ Daily crash threshold must be between 0 and 1")
-            return False
-
-        if parameters["weekly_crash_threshold"] <= 0 or parameters["weekly_crash_threshold"] >= 1:
-            print(f"❌ Weekly crash threshold must be between 0 and 1")
-            return False
-
-        return True
+        return validate_parameters(parameters)
 
     def get_parameter_schema(self) -> Dict[str, Any]:
         """Parameter schema for validation"""
-        return {
-            "type": "object",
-            "properties": {
-                "base_amount": {
-                    "type": "number",
-                    "minimum": 1,
-                    "description": "Base investment amount per interval"
-                },
-                "crash_multiplier": {
-                    "type": "number",
-                    "minimum": 1,
-                    "maximum": 10,
-                    "description": "Multiply investment by this during crashes"
-                },
-                "daily_crash_threshold": {
-                    "type": "number",
-                    "minimum": 0.01,
-                    "maximum": 0.5,
-                    "description": "Daily drop percentage to trigger crash buying (e.g., 0.05 = 5%)"
-                },
-                "weekly_crash_threshold": {
-                    "type": "number",
-                    "minimum": 0.01,
-                    "maximum": 0.5,
-                    "description": "Weekly drop percentage to trigger crash buying (e.g., 0.10 = 10%)"
-                },
-                "monthly_interval_days": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "maximum": 90,
-                    "description": "Days between regular DCA purchases"
-                },
-                "commission": {
-                    "type": "number",
-                    "minimum": 0.0,
-                    "maximum": 0.01,
-                    "description": "Commission per trade"
-                },
-                "cash": {
-                    "type": "number",
-                    "minimum": 1000,
-                    "description": "Initial cash amount"
-                }
-            },
-            "required": ["base_amount", "crash_multiplier", "daily_crash_threshold", 
-                        "weekly_crash_threshold", "monthly_interval_days"]
-        }
+        return get_parameter_schema()
 
     def create_strategy_class(self, data_dict: Dict[str, pd.DataFrame]) -> type:
         """Create the actual Strategy class for backtesting"""
-
-        params = self.parameters
         main_timeframe = self.timeframes[0]
-        buy_signals_list = self._buy_signals  # Reference to store signals
-        balance_history_list = self._balance_history  # Reference to store balance
-        should_track_balance = self.save_charts  # Only track if we're saving charts
-        
-        # Get DCA metrics for buy & hold calculation
         main_data = data_dict[main_timeframe]
-        dca_metrics = self._dca_metrics if hasattr(self, '_dca_metrics') else None
         
         # Run custom DCA simulation to get real metrics
-        main_data = data_dict[main_timeframe]
-        dca_metrics = self._simulate_dca(main_data, params)
+        self._dca_metrics = simulate_dca(main_data, self.parameters)
         
-        # Store metrics for later retrieval
-        self._dca_metrics = dca_metrics
-
-        class CrashBuyDCABacktestStrategy(Strategy):
-            """Crash Buy DCA Strategy - Buy and Hold with tracked signals"""
-
-            base_amount = params["base_amount"]
-            crash_multiplier = params["crash_multiplier"]
-            daily_crash_threshold = params["daily_crash_threshold"]
-            weekly_crash_threshold = params["weekly_crash_threshold"]
-            monthly_interval_days = params["monthly_interval_days"]
-
-            def init(self):
-                self.last_buy_date = None
-                self.position_opened = False
-
-            def next(self):
-                """Open ONE position at start and hold. Track DCA signals separately."""
-                current_date = self.data.index[-1]
-                current_price = self.data.Close[-1]
-                
-                # Track balance history if needed
-                if should_track_balance:
-                    balance_history_list.append({
-                        'time': current_date,
-                        'balance': self.equity,
-                        'price': current_price  # Store price for buy & hold calculation
-                    })
-                
-                # Open position ONCE at the very first bar
-                if not self.position_opened:
-                    # Buy and hold with all cash
-                    self.buy(size=1.0)
-                    self.position_opened = True
-                    
-                    buy_signals_list.append({
-                        'time': current_date,
-                        'price': current_price,
-                        'type': 'initial_buy',
-                        'amount': self.base_amount,
-                        'reason': 'Initial Buy & Hold Position'
-                    })
-                    return
-                
-                # From here on, just TRACK when we would buy (don't actually buy)
-                # Calculate daily drop percentage
-                daily_drop = 0
-                if len(self.data.Close) > 1:
-                    prev_close = self.data.Close[-2]
-                    daily_drop = (prev_close - current_price) / prev_close
-                
-                # Calculate weekly drop percentage (7 days)
-                weekly_drop = 0
-                if len(self.data.Close) >= 7:
-                    week_ago_close = self.data.Close[-7]
-                    weekly_drop = (week_ago_close - current_price) / week_ago_close
-                
-                # Check if it's a crash day
-                is_daily_crash = daily_drop >= self.daily_crash_threshold
-                is_weekly_crash = weekly_drop >= self.weekly_crash_threshold
-                is_crash = is_daily_crash and is_weekly_crash
-                
-                # Check if it's time for regular monthly buy
-                should_buy_monthly = False
-                if self.last_buy_date is None:
-                    should_buy_monthly = True
-                else:
-                    days_since_last_buy = (current_date - self.last_buy_date).days
-                    should_buy_monthly = days_since_last_buy >= self.monthly_interval_days
-                
-                # Track buy signals (but don't execute)
-                if is_crash:
-                    buy_amount = self.base_amount * self.crash_multiplier
-                    reason = f"CRASH BUY SIGNAL (Daily: {daily_drop:.2%}, Weekly: {weekly_drop:.2%})"
-                    self.last_buy_date = current_date
-                    
-                    buy_signals_list.append({
-                        'time': current_date,
-                        'price': current_price,
-                        'type': 'crash_buy_signal',
-                        'amount': buy_amount,
-                        'reason': reason,
-                        'daily_drop': daily_drop,
-                        'weekly_drop': weekly_drop
-                    })
-                    
-                elif should_buy_monthly:
-                    buy_amount = self.base_amount
-                    reason = "Regular DCA SIGNAL"
-                    self.last_buy_date = current_date
-                    
-                    buy_signals_list.append({
-                        'time': current_date,
-                        'price': current_price,
-                        'type': 'regular_buy_signal',
-                        'amount': buy_amount,
-                        'reason': reason
-                    })
-
-        return CrashBuyDCABacktestStrategy
-    
-    def _simulate_dca(self, data: pd.DataFrame, params: Dict[str, Any]) -> Dict[str, Any]:
-        """Simulate actual DCA strategy with crash buying"""
-        base_amount = params["base_amount"]
-        crash_multiplier = params["crash_multiplier"]
-        daily_crash_threshold = params["daily_crash_threshold"]
-        weekly_crash_threshold = params["weekly_crash_threshold"]
-        monthly_interval_days = params["monthly_interval_days"]
-        
-        # First pass: Calculate crash DCA
-        total_invested = 0
-        total_units = 0
-        last_buy_date = None
-        crash_buys = 0
-        regular_buys = 0
-        
-        for i in range(len(data)):
-            current_date = data.index[i]
-            current_price = data.iloc[i]['Close']
-            
-            # Calculate drops
-            daily_drop = 0
-            if i > 0:
-                prev_close = data.iloc[i-1]['Close']
-                daily_drop = (prev_close - current_price) / prev_close
-            
-            weekly_drop = 0
-            if i >= 7:
-                week_ago_close = data.iloc[i-7]['Close']
-                weekly_drop = (week_ago_close - current_price) / week_ago_close
-            
-            # Check conditions
-            is_crash = (daily_drop >= daily_crash_threshold and 
-                       weekly_drop >= weekly_crash_threshold)
-            
-            should_buy_monthly = False
-            if last_buy_date is None:
-                should_buy_monthly = True
-            else:
-                days_since = (current_date - last_buy_date).days
-                should_buy_monthly = days_since >= monthly_interval_days
-            
-            # Execute buy
-            buy_amount = 0
-            if is_crash:
-                buy_amount = base_amount * crash_multiplier
-                crash_buys += 1
-                last_buy_date = current_date
-            elif should_buy_monthly:
-                buy_amount = base_amount
-                regular_buys += 1
-                last_buy_date = current_date
-            
-            if buy_amount > 0:
-                units_bought = buy_amount / current_price
-                total_units += units_bought
-                total_invested += buy_amount
-        
-        # Calculate final value for crash DCA
-        final_price = data.iloc[-1]['Close']
-        final_value = total_units * final_price
-        total_return = final_value - total_invested
-        return_pct = (total_return / total_invested * 100) if total_invested > 0 else 0
-        avg_cost = total_invested / total_units if total_units > 0 else 0
-        
-        # Second pass: Regular DCA with SAME total investment
-        # Calculate how much to invest per month to reach the same total
-        # Count how many monthly buys we'll have
-        monthly_buy_count = 0
-        last_check = None
-        for i in range(len(data)):
-            current_date = data.index[i]
-            should_buy = False
-            if last_check is None:
-                should_buy = True
-            else:
-                days_since = (current_date - last_check).days
-                should_buy = days_since >= monthly_interval_days
-            
-            if should_buy:
-                monthly_buy_count += 1
-                last_check = current_date
-        
-        # Calculate amount per monthly buy to match total investment
-        amount_per_month = total_invested / monthly_buy_count if monthly_buy_count > 0 else base_amount
-        
-        regular_dca_invested = 0
-        regular_dca_units = 0
-        last_regular_buy = None
-        
-        for i in range(len(data)):
-            current_date = data.index[i]
-            current_price = data.iloc[i]['Close']
-            
-            should_buy = False
-            if last_regular_buy is None:
-                should_buy = True
-            else:
-                days_since = (current_date - last_regular_buy).days
-                should_buy = days_since >= monthly_interval_days
-            
-            if should_buy:
-                units_bought = amount_per_month / current_price
-                regular_dca_units += units_bought
-                regular_dca_invested += amount_per_month
-                last_regular_buy = current_date
-        
-        regular_final_value = regular_dca_units * final_price
-        regular_return = regular_final_value - regular_dca_invested
-        regular_return_pct = (regular_return / regular_dca_invested * 100) if regular_dca_invested > 0 else 0
-        regular_avg_cost = regular_dca_invested / regular_dca_units if regular_dca_units > 0 else 0
-        
-        # Third pass: Buy & Hold with same capital deployed
-        # Buy at first price with total_invested amount, hold until end
-        first_price = data.iloc[0]['Close']
-        buy_hold_units = total_invested / first_price if first_price > 0 else 0
-        buy_hold_final_value = buy_hold_units * final_price
-        buy_hold_return = buy_hold_final_value - total_invested
-        buy_hold_return_pct = (buy_hold_return / total_invested * 100) if total_invested > 0 else 0
-        
-        return {
-            'crash_dca': {
-                'total_invested': total_invested,
-                'total_units': total_units,
-                'final_value': final_value,
-                'total_return': total_return,
-                'return_pct': return_pct,
-                'avg_cost': avg_cost,
-                'crash_buys': crash_buys,
-                'regular_buys': regular_buys,
-                'total_buys': crash_buys + regular_buys
-            },
-            'regular_dca': {
-                'total_invested': regular_dca_invested,
-                'amount_per_month': amount_per_month,
-                'monthly_buys': monthly_buy_count,
-                'total_units': regular_dca_units,
-                'final_value': regular_final_value,
-                'total_return': regular_return,
-                'return_pct': regular_return_pct,
-                'avg_cost': regular_avg_cost
-            },
-            'buy_hold': {
-                'total_invested': total_invested,
-                'units': buy_hold_units,
-                'entry_price': first_price,
-                'final_value': buy_hold_final_value,
-                'total_return': buy_hold_return,
-                'return_pct': buy_hold_return_pct
-            },
-            'comparison': {
-                'same_capital_invested': abs(total_invested - regular_dca_invested) < 1,  # Should be equal
-                'crash_dca_better': return_pct > regular_return_pct,
-                'return_difference': return_pct - regular_return_pct,
-                'profit_difference': total_return - regular_return,
-                'avg_cost_difference': avg_cost - regular_avg_cost,
-                'explanation': f"Both strategies invested ${total_invested:.2f}. "
-                              f"Crash DCA: ${final_value:.2f} ({return_pct:.2f}% return, avg cost ${avg_cost:.2f}). "
-                              f"Regular DCA: ${regular_final_value:.2f} ({regular_return_pct:.2f}% return, avg cost ${regular_avg_cost:.2f}). "
-                              f"Crash DCA {'outperformed' if return_pct > regular_return_pct else 'underperformed'} by {abs(return_pct - regular_return_pct):.2f}% "
-                              f"(${abs(total_return - regular_return):.2f} difference)."
-            }
-        }
+        # Create and return the strategy class
+        return create_strategy_class(
+            params=self.parameters,
+            buy_signals_list=self._buy_signals,
+            balance_history_list=self._balance_history,
+            should_track_balance=self.save_charts
+        )
 
     def get_strategy_related_fields(self) -> List[Dict[str, Any]]:
         """Get formatted fields for UI display with subsections"""
-        sections = []
-        
-        metrics = self.get_custom_metrics()
-        if not metrics:
-            return sections
-        
-        crash_dca = metrics.get("crash_dca", {})
-        regular_dca = metrics.get("regular_dca", {})
-        
-        # Crash DCA subsection
-        if crash_dca:
-            sections.append({
-                "title": "Crash DCA",
-                "fields": [
-                    {"label": "Total Invested", "value": f"${crash_dca.get('total_invested', 0):,.2f}"},
-                    {"label": "Final Value", "value": f"${crash_dca.get('final_value', 0):,.2f}", "color": "green"},
-                    {"label": "Total Return", "value": f"${crash_dca.get('total_return', 0):,.2f}", "color": "green" if crash_dca.get('total_return', 0) > 0 else "red"},
-                    {"label": "Return %", "value": f"{crash_dca.get('return_pct', 0):.2f}%", "color": "green" if crash_dca.get('return_pct', 0) > 0 else "red"},
-                    {"label": "Crash Buys", "value": str(crash_dca.get('crash_buys', 0))},
-                    {"label": "Regular Buys", "value": str(crash_dca.get('regular_buys', 0))},
-                    {"label": "Total Buys", "value": str(crash_dca.get('total_buys', 0))},
-                ]
-            })
-        
-        # Regular DCA subsection
-        if regular_dca:
-            sections.append({
-                "title": "Regular DCA",
-                "fields": [
-                    {"label": "Total Invested", "value": f"${regular_dca.get('total_invested', 0):,.2f}"},
-                    {"label": "Monthly Buys", "value": str(regular_dca.get('monthly_buys', 0))},
-                    {"label": "Final Value", "value": f"${regular_dca.get('final_value', 0):,.2f}", "color": "green"},
-                    {"label": "Total Return", "value": f"${regular_dca.get('total_return', 0):,.2f}", "color": "green" if regular_dca.get('total_return', 0) > 0 else "red"},
-                    {"label": "Return %", "value": f"{regular_dca.get('return_pct', 0):.2f}%", "color": "green" if regular_dca.get('return_pct', 0) > 0 else "red"},
-                ]
-            })
-        
-        return sections
+        return format_strategy_fields(self.get_custom_metrics())
 
     def generate_charts(self, backtest_id: int) -> List[str]:
         """Generate and upload charts to MinIO"""
         if not self.save_charts or not self._balance_history:
             return []
         
-        from app.core.storage import storage
-        from app.backtesting.charts import generate_balance_chart
-        
-        chart_keys = []
-        
-        # Calculate buy & hold balance history for comparison
-        buy_hold_history = self._calculate_buy_hold_history()
-        
-        # Generate balance chart with buy & hold comparison
-        try:
-            balance_chart_buf = generate_balance_chart(
-                balance_history=self._balance_history,
-                title=f"Balance History - {self.name}",
-                initial_balance=self.parameters.get("cash", 100000),
-                buy_hold_history=buy_hold_history
-            )
-            
-            # Upload to MinIO
-            chart_key = f"backtest_{backtest_id}_balance.png"
-            success = storage.upload_file(
-                chart_key,
-                balance_chart_buf.getvalue(),
-                "image/png"
-            )
-            
-            if success:
-                chart_keys.append(chart_key)
-                print(f"✓ Generated balance chart: {chart_key}")
-            
-        except Exception as e:
-            print(f"✗ Failed to generate balance chart: {e}")
+        chart_keys = generate_charts(
+            backtest_id=backtest_id,
+            balance_history=self._balance_history,
+            dca_metrics=self._dca_metrics,
+            strategy_name=self.name,
+            initial_balance=self.parameters.get("cash", 100000)
+        )
         
         # Clear balance history to free memory
         self._balance_history.clear()
         
         return chart_keys
-    
-    def _calculate_buy_hold_history(self) -> List[Dict[str, Any]]:
-        """Calculate buy & hold balance over time using deployed capital"""
-        if not self._balance_history or not hasattr(self, '_dca_metrics'):
-            return []
-        
-        buy_hold_data = self._dca_metrics.get('buy_hold', {})
-        units = buy_hold_data.get('units', 0)
-        capital_deployed = buy_hold_data.get('total_invested', 0)
-        
-        if units == 0 or capital_deployed == 0 or not self._balance_history:
-            return []
-        
-        # Get the starting balance from portfolio value (first entry)
-        starting_balance = self._balance_history[0]['balance']
-        first_price = self._balance_history[0]['price']
-        
-        # Calculate uninvested cash based on starting balance
-        uninvested_cash = starting_balance - capital_deployed
-        
-        # Calculate buy & hold value at each timestamp
-        buy_hold_history = []
-        for entry in self._balance_history:
-            current_price = entry.get('price', 0)
-            if current_price > 0:
-                # Buy & hold value = (units * current_price) + uninvested cash
-                buy_hold_value = (units * current_price) + uninvested_cash
-                buy_hold_history.append({
-                    'time': entry['time'],
-                    'balance': buy_hold_value
-                })
-        
-        return buy_hold_history
