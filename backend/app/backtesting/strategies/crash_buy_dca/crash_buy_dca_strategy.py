@@ -76,9 +76,40 @@ class CrashBuyDCAStrategy(BaseBacktestStrategy):
             should_track_balance=self.save_charts
         )
 
+    def get_metrics_overrides(self) -> Dict[str, Any]:
+        """Override metrics with DCA-specific calculations"""
+        if not hasattr(self, '_dca_metrics'):
+            return {}
+        
+        crash_dca = self._dca_metrics.get('crash_dca', {})
+        buy_hold = self._dca_metrics.get('buy_hold', {})
+        
+        overrides = {}
+        
+        # Override capital deployed with actual DCA invested amount
+        capital_deployed = crash_dca.get('total_invested')
+        if capital_deployed:
+            overrides['Capital Deployed [$]'] = capital_deployed
+            
+            # Also calculate and override capital utilization
+            initial_cash = self.parameters.get('cash')
+            if initial_cash > 0:
+                overrides['Capital Utilization [%]'] = (capital_deployed / initial_cash) * 100
+        
+        # Override ROIC with DCA-specific calculation
+        if crash_dca.get('return_pct') is not None:
+            overrides['ROIC [%]'] = crash_dca['return_pct']
+        
+        # Override buy & hold return on deployed capital
+        if buy_hold.get('total_return') is not None:
+            overrides['Buy & Hold Return Deployed [$]'] = buy_hold['total_return']
+        
+        return overrides
+
     def get_strategy_related_fields(self) -> List[Dict[str, Any]]:
         """Get formatted fields for UI display with subsections"""
-        return format_strategy_fields(self.get_custom_metrics())
+        metrics = getattr(self, '_dca_metrics', {})
+        return format_strategy_fields(metrics)
 
     def generate_charts(self, backtest_id: int) -> List[str]:
         """Generate and upload charts to MinIO"""
@@ -90,7 +121,7 @@ class CrashBuyDCAStrategy(BaseBacktestStrategy):
             balance_history=self._balance_history,
             dca_metrics=self._dca_metrics,
             strategy_name=self.name,
-            initial_balance=self.parameters.get("cash", 100000)
+            initial_balance=self.parameters.get("cash")
         )
         
         # Clear balance history to free memory

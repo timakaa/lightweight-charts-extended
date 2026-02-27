@@ -8,44 +8,35 @@ import pandas as pd
 from typing import Dict, Any, List, Optional
 
 
-def calculate_capital_metrics(
+def calculate_additional_metrics(
     trades_list: List[Dict[str, Any]],
     cash: float,
     final_balance: float,
     first_price: float,
-    last_price: float,
-    capital_deployed_override: float = None,
-    return_on_deployed_override: float = None
-) -> tuple[Optional[float], Optional[float], Optional[float], Optional[float]]:
+    last_price: float
+) -> Dict[str, Any]:
     """
-    Calculate capital metrics for any strategy
-    
-    ROIC Formula (same for all): (Return on Deployed Capital) / (Capital Deployed) × 100
+    Calculate additional metrics not provided by backtesting.py
+    Returns a dict with: capital_deployed, capital_utilization, roic, buy_hold_return_deployed
     
     Args:
         trades_list: List of trades
         cash: Initial cash amount
         final_balance: Final balance after backtest
-        first_price: First price in the data (for buy & hold calculation)
-        last_price: Last price in the data (for buy & hold calculation)
-        capital_deployed_override: Override capital deployed (for DCA strategies)
-        return_on_deployed_override: Override return amount (for DCA strategies)
+        first_price: First price in the data
+        last_price: Last price in the data
         
     Returns:
-        Tuple of (capital_deployed, capital_utilization, roic, buy_hold_return_deployed)
+        Dict with additional metrics
     """
     capital_deployed = None
     capital_utilization = None
     roic = None
     buy_hold_return_deployed = None
     
-    # Determine capital deployed and return
-    if capital_deployed_override and return_on_deployed_override is not None:
-        # DCA strategies: use provided values
-        capital_deployed = capital_deployed_override
-        return_on_deployed = return_on_deployed_override
-    elif trades_list and len(trades_list) > 0:
-        # Trading strategies: calculate from trades
+    # Calculate from trades
+    if trades_list and len(trades_list) > 0:
+        # Calculate max position value from trades
         max_position_value = 0
         for trade in trades_list:
             entry_price = trade.get('entry_price', 0)
@@ -55,61 +46,25 @@ def calculate_capital_metrics(
         
         if max_position_value > 0:
             capital_deployed = max_position_value
-            return_on_deployed = final_balance - cash  # Total portfolio return
-        else:
-            return None, None, None, None
-    else:
-        return None, None, None, None
+            return_on_deployed = final_balance - cash
+            
+            # Calculate metrics
+            if cash > 0:
+                capital_utilization = (capital_deployed / cash) * 100
+                roic = (return_on_deployed / capital_deployed) * 100
+                
+                # Buy & Hold Return on Deployed Capital
+                if first_price > 0 and last_price > 0:
+                    units = capital_deployed / first_price
+                    final_value = units * last_price
+                    buy_hold_return_deployed = final_value - capital_deployed
     
-    # Calculate metrics using same formula for everyone
-    if capital_deployed and capital_deployed > 0 and cash > 0:
-        # Capital Utilization: what % of initial cash was deployed
-        capital_utilization = (capital_deployed / cash) * 100
-        
-        # ROIC: Return on Invested Capital (same formula for all)
-        roic = (return_on_deployed / capital_deployed) * 100
-        
-        # Buy & Hold Return on Deployed Capital (for all strategies)
-        if first_price > 0 and last_price > 0:
-            # Buy at first price with deployed capital, sell at last price
-            units = capital_deployed / first_price
-            final_value = units * last_price
-            buy_hold_return_deployed = final_value - capital_deployed
-    
-    return capital_deployed, capital_utilization, roic, buy_hold_return_deployed
-
-
-def extract_dca_specific_metrics(
-    custom_metrics: Dict[str, Any]
-) -> tuple[Optional[float], Optional[float], Optional[float]]:
-    """
-    Extract DCA-specific metrics from custom metrics
-    
-    Args:
-        custom_metrics: Custom metrics from strategy
-        
-    Returns:
-        Tuple of (capital_deployed, return_on_deployed, buy_hold_return_deployed)
-    """
-    capital_deployed = None
-    return_on_deployed = None
-    buy_hold_return_deployed = None
-    
-    # Extract metrics for DCA strategies
-    if 'crash_dca' in custom_metrics:
-        crash_dca = custom_metrics['crash_dca']
-        capital_deployed = crash_dca.get('total_invested')
-        # Return = final_value - capital_deployed
-        final_value = crash_dca.get('final_value', 0)
-        if capital_deployed:
-            return_on_deployed = final_value - capital_deployed
-    
-    # Extract buy & hold return on deployed capital (absolute dollars)
-    if 'buy_hold' in custom_metrics:
-        buy_hold = custom_metrics['buy_hold']
-        buy_hold_return_deployed = buy_hold.get('total_return', 0)
-    
-    return capital_deployed, return_on_deployed, buy_hold_return_deployed
+    return {
+        'capital_deployed': capital_deployed,
+        'capital_utilization': capital_utilization,
+        'roic': roic,
+        'buy_hold_return_deployed': buy_hold_return_deployed
+    }
 
 
 def build_results_dict(
@@ -126,12 +81,7 @@ def build_results_dict(
     drawings: List[Dict],
     main_data: pd.DataFrame,
     cash: float,
-    custom_metrics: Dict[str, Any],
-    strategy_related_fields: List[Dict],
-    capital_deployed: Optional[float],
-    capital_utilization: Optional[float],
-    roic: Optional[float],
-    buy_hold_return_deployed: Optional[float]
+    strategy_related_fields: List[Dict]
 ) -> Dict[str, Any]:
     """
     Build the complete results dictionary
@@ -175,10 +125,10 @@ def build_results_dict(
         "loss_trades": loss_trades,
         "long_trades": long_trades,
         "short_trades": short_trades,
-        "capital_deployed": capital_deployed,
-        "capital_utilization": capital_utilization,
-        "roic": roic,
-        "buy_hold_return_deployed": buy_hold_return_deployed,
+        "capital_deployed": stats.get('Capital Deployed [$]'),
+        "capital_utilization": stats.get('Capital Utilization [%]'),
+        "roic": stats.get('ROIC [%]'),
+        "buy_hold_return_deployed": stats.get('Buy & Hold Return Deployed [$]'),
         "drawings": drawings,
         "is_live": False,  # Always False for backtests
         "symbols": [
@@ -188,7 +138,6 @@ def build_results_dict(
                 "end_date": main_data.index[-1].tz_localize("UTC").isoformat(),
             }
         ],
-        "custom_metrics": custom_metrics,
         "strategy_related_fields": strategy_related_fields,
     }
     
@@ -214,8 +163,12 @@ def print_results_summary(results: Dict[str, Any]):
     
     if results.get('capital_deployed'):
         print(f"Capital Deployed: ${results['capital_deployed']:,.2f}")
+    if results.get('capital_utilization') is not None:
         print(f"Capital Utilization: {results['capital_utilization']:.2f}%")
+    if results.get('roic') is not None:
         print(f"ROIC: {results['roic']:.2f}%")
+    if results.get('buy_hold_return_deployed') is not None:
+        print(f"Buy & Hold $ (Deployed): ${results['buy_hold_return_deployed']:,.2f}")
 
 
 def save_to_database(results: Dict[str, Any]) -> Optional[int]:

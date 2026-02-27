@@ -74,9 +74,18 @@ class BaseBacktestStrategy(ABC):
             "parameter_schema": self.get_parameter_schema()
         }
     
-    def get_custom_metrics(self) -> Dict[str, Any]:
-        """Get custom metrics calculated during strategy creation"""
-        return getattr(self, '_dca_metrics', {})
+    def get_metrics_overrides(self) -> Dict[str, Any]:
+        """
+        Override specific metrics that can't be calculated from trades
+        
+        Strategies can override any metric in stats by returning a dict with:
+        - Key: metric name as it appears in stats (e.g., 'Capital Deployed [$]', 'Win Rate [%]')
+        - Value: the override value
+        
+        Returns:
+            Dict with metric overrides, empty dict if no overrides needed
+        """
+        return {}
     
     def get_strategy_related_fields(self) -> List[Dict[str, Any]]:
         """
