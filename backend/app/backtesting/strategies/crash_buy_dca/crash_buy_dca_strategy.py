@@ -139,6 +139,10 @@ class CrashBuyDCAStrategy(BaseBacktestStrategy):
         balance_history_list = self._balance_history  # Reference to store balance
         should_track_balance = self.save_charts  # Only track if we're saving charts
         
+        # Get DCA metrics for buy & hold calculation
+        main_data = data_dict[main_timeframe]
+        dca_metrics = self._dca_metrics if hasattr(self, '_dca_metrics') else None
+        
         # Run custom DCA simulation to get real metrics
         main_data = data_dict[main_timeframe]
         dca_metrics = self._simulate_dca(main_data, params)
@@ -168,7 +172,8 @@ class CrashBuyDCAStrategy(BaseBacktestStrategy):
                 if should_track_balance:
                     balance_history_list.append({
                         'time': current_date,
-                        'balance': self.equity
+                        'balance': self.equity,
+                        'price': current_price  # Store price for buy & hold calculation
                     })
                 
                 # Open position ONCE at the very first bar
@@ -457,12 +462,16 @@ class CrashBuyDCAStrategy(BaseBacktestStrategy):
         
         chart_keys = []
         
-        # Generate balance chart
+        # Calculate buy & hold balance history for comparison
+        buy_hold_history = self._calculate_buy_hold_history()
+        
+        # Generate balance chart with buy & hold comparison
         try:
             balance_chart_buf = generate_balance_chart(
                 balance_history=self._balance_history,
                 title=f"Balance History - {self.name}",
-                initial_balance=self.parameters.get("cash", 100000)
+                initial_balance=self.parameters.get("cash", 100000),
+                buy_hold_history=buy_hold_history
             )
             
             # Upload to MinIO
@@ -484,3 +493,36 @@ class CrashBuyDCAStrategy(BaseBacktestStrategy):
         self._balance_history.clear()
         
         return chart_keys
+    
+    def _calculate_buy_hold_history(self) -> List[Dict[str, Any]]:
+        """Calculate buy & hold balance over time using deployed capital"""
+        if not self._balance_history or not hasattr(self, '_dca_metrics'):
+            return []
+        
+        buy_hold_data = self._dca_metrics.get('buy_hold', {})
+        units = buy_hold_data.get('units', 0)
+        capital_deployed = buy_hold_data.get('total_invested', 0)
+        
+        if units == 0 or capital_deployed == 0 or not self._balance_history:
+            return []
+        
+        # Get the starting balance from portfolio value (first entry)
+        starting_balance = self._balance_history[0]['balance']
+        first_price = self._balance_history[0]['price']
+        
+        # Calculate uninvested cash based on starting balance
+        uninvested_cash = starting_balance - capital_deployed
+        
+        # Calculate buy & hold value at each timestamp
+        buy_hold_history = []
+        for entry in self._balance_history:
+            current_price = entry.get('price', 0)
+            if current_price > 0:
+                # Buy & hold value = (units * current_price) + uninvested cash
+                buy_hold_value = (units * current_price) + uninvested_cash
+                buy_hold_history.append({
+                    'time': entry['time'],
+                    'balance': buy_hold_value
+                })
+        
+        return buy_hold_history

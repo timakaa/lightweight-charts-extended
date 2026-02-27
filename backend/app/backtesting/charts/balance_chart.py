@@ -12,15 +12,17 @@ from datetime import datetime
 def generate_balance_chart(
     balance_history: List[Dict[str, Any]],
     title: str = "Balance History",
-    initial_balance: float = None
+    initial_balance: float = None,
+    buy_hold_history: List[Dict[str, Any]] = None
 ) -> BytesIO:
     """
-    Generate balance history chart with dark theme
+    Generate balance history chart with dark theme and optional buy & hold comparison
     
     Args:
         balance_history: List of {time: datetime, balance: float}
         title: Chart title
         initial_balance: Initial balance (not used, kept for compatibility)
+        buy_hold_history: Optional list of {time: datetime, balance: float} for buy & hold comparison
         
     Returns:
         BytesIO buffer containing PNG image
@@ -33,8 +35,15 @@ def generate_balance_chart(
     balances = [entry['balance'] for entry in balance_history]
     
     # Calculate y-axis limits for better visualization
-    min_balance = min(balances)
-    max_balance = max(balances)
+    all_balances = balances.copy()
+    
+    # Include buy & hold data in y-axis calculation if provided
+    if buy_hold_history:
+        buy_hold_balances = [entry['balance'] for entry in buy_hold_history]
+        all_balances.extend(buy_hold_balances)
+    
+    min_balance = min(all_balances)
+    max_balance = max(all_balances)
     balance_range = max_balance - min_balance
     
     # Add 10% padding to top and bottom
@@ -50,10 +59,19 @@ def generate_balance_chart(
     fig, ax = plt.subplots(figsize=(12, 6), facecolor='#0d0e10')
     ax.set_facecolor('#0d0e10')
     
-    # Plot balance line
+    # Plot buy & hold line first (so it's behind)
+    if buy_hold_history:
+        buy_hold_times = [entry['time'] for entry in buy_hold_history]
+        buy_hold_balances = [entry['balance'] for entry in buy_hold_history]
+        ax.plot(buy_hold_times, buy_hold_balances, linewidth=2, color='#FF9800', 
+                label='Buy & Hold (Deployed Capital)', linestyle='-', alpha=0.8, zorder=2)
+        # Fill area under buy & hold curve
+        ax.fill_between(buy_hold_times, buy_hold_balances, y_min, alpha=0.2, color='#FF9800', zorder=1)
+    
+    # Plot strategy balance line
     ax.plot(times, balances, linewidth=2.5, color='#2196F3', label='Portfolio Value', zorder=3)
     
-    # Fill area under curve
+    # Fill area under strategy curve
     ax.fill_between(times, balances, y_min, alpha=0.3, color='#2196F3', zorder=1)
     
     # Set y-axis limits
