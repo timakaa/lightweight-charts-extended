@@ -24,7 +24,8 @@ from data_loader import load_multi_timeframe_data
 from trade_processor import process_trades, calculate_trading_days, calculate_value_at_risk
 from drawing_creator import create_trade_drawings, create_strategy_drawings
 from results_builder import (
-    extract_capital_metrics,
+    calculate_capital_metrics,
+    extract_dca_specific_metrics,
     build_results_dict,
     print_results_summary,
     save_to_database
@@ -135,8 +136,27 @@ def run_flexible_backtest(
         if hasattr(strategy_instance, 'get_strategy_related_fields'):
             strategy_related_fields = strategy_instance.get_strategy_related_fields()
         
-        # Extract capital metrics
-        capital_deployed, capital_utilization, roic, buy_hold_return_deployed = extract_capital_metrics(custom_metrics, cash)
+        # Extract DCA-specific overrides if present
+        capital_deployed_override, return_on_deployed_override, buy_hold_return_deployed_override = extract_dca_specific_metrics(custom_metrics)
+        
+        # Get first and last prices for buy & hold calculation
+        first_price = main_data.iloc[0]['Close']
+        last_price = main_data.iloc[-1]['Close']
+        
+        # Calculate standard capital metrics for all strategies (same formula for everyone)
+        capital_deployed, capital_utilization, roic, buy_hold_return_deployed = calculate_capital_metrics(
+            trades_list=trades_list,
+            cash=cash,
+            final_balance=stats["Equity Final [$]"],
+            first_price=first_price,
+            last_price=last_price,
+            capital_deployed_override=capital_deployed_override,
+            return_on_deployed_override=return_on_deployed_override
+        )
+        
+        # Use DCA override if provided, otherwise use calculated value
+        if buy_hold_return_deployed_override is not None:
+            buy_hold_return_deployed = buy_hold_return_deployed_override
         
         # Build results dictionary
         results = build_results_dict(
