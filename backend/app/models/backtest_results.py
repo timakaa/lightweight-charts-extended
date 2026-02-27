@@ -55,7 +55,8 @@ class BacktestResult(Base):
 
     # Performance metrics
     sharpe_ratio = Column(Float)
-    buy_hold_return = Column(Float)
+    buy_hold_return = Column(Float)  # Based on initial balance
+    buy_hold_return_deployed = Column(Float)  # Based on capital deployed
     profit_factor = Column(Float)
     max_drawdown = Column(Float)
 

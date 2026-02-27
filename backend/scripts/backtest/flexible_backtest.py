@@ -136,7 +136,7 @@ def run_flexible_backtest(
             strategy_related_fields = strategy_instance.get_strategy_related_fields()
         
         # Extract capital metrics
-        capital_deployed, capital_utilization, roic = extract_capital_metrics(custom_metrics, cash)
+        capital_deployed, capital_utilization, roic, buy_hold_return_deployed = extract_capital_metrics(custom_metrics, cash)
         
         # Build results dictionary
         results = build_results_dict(
@@ -157,7 +157,8 @@ def run_flexible_backtest(
             strategy_related_fields=strategy_related_fields,
             capital_deployed=capital_deployed,
             capital_utilization=capital_utilization,
-            roic=roic
+            roic=roic,
+            buy_hold_return_deployed=buy_hold_return_deployed
         )
         
         # Save to database if requested

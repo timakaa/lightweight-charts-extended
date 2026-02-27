@@ -107,6 +107,14 @@ const MetricsGrid = ({ stats }) => {
           : "-",
     },
     {
+      title: "Buy & Hold $ (Deployed Capital)",
+      value:
+        stats?.buy_hold_return_deployed !== undefined &&
+        stats?.buy_hold_return_deployed !== null
+          ? `$${Number(stats.buy_hold_return_deployed).toFixed(2)}`
+          : "-",
+    },
+    {
       title: "Profit Factor",
       value:
         stats?.profit_factor !== undefined && stats?.profit_factor !== null
@@ -177,6 +185,8 @@ const MetricsGrid = ({ stats }) => {
       "Average PNL %": (val) =>
         parseNumber(val) > 0 ? "text-green-500" : "text-red-500",
       "Buy & Hold Return": (val) =>
+        parseNumber(val) > 0 ? "text-green-500" : "text-red-500",
+      "Buy & Hold $ (Deployed Capital)": (val) =>
         parseNumber(val) > 0 ? "text-green-500" : "text-red-500",
       ROIC: (val) => (parseNumber(val) > 0 ? "text-green-500" : "text-red-500"),
     };

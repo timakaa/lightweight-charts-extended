@@ -39,6 +39,7 @@ class BacktestRepository:
             average_pnl_percentage=backtest_data.get("average_pnl_percentage"),
             sharpe_ratio=backtest_data.get("sharpe_ratio"),
             buy_hold_return=backtest_data.get("buy_hold_return"),
+            buy_hold_return_deployed=backtest_data.get("buy_hold_return_deployed"),
             profit_factor=backtest_data.get("profit_factor"),
             max_drawdown=backtest_data.get("max_drawdown"),
             strategy_related_fields=backtest_data.get("strategy_related_fields"),

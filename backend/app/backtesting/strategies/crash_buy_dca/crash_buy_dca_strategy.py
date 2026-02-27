@@ -354,6 +354,14 @@ class CrashBuyDCAStrategy(BaseBacktestStrategy):
         regular_return_pct = (regular_return / regular_dca_invested * 100) if regular_dca_invested > 0 else 0
         regular_avg_cost = regular_dca_invested / regular_dca_units if regular_dca_units > 0 else 0
         
+        # Third pass: Buy & Hold with same capital deployed
+        # Buy at first price with total_invested amount, hold until end
+        first_price = data.iloc[0]['Close']
+        buy_hold_units = total_invested / first_price if first_price > 0 else 0
+        buy_hold_final_value = buy_hold_units * final_price
+        buy_hold_return = buy_hold_final_value - total_invested
+        buy_hold_return_pct = (buy_hold_return / total_invested * 100) if total_invested > 0 else 0
+        
         return {
             'crash_dca': {
                 'total_invested': total_invested,
@@ -375,6 +383,14 @@ class CrashBuyDCAStrategy(BaseBacktestStrategy):
                 'total_return': regular_return,
                 'return_pct': regular_return_pct,
                 'avg_cost': regular_avg_cost
+            },
+            'buy_hold': {
+                'total_invested': total_invested,
+                'units': buy_hold_units,
+                'entry_price': first_price,
+                'final_value': buy_hold_final_value,
+                'total_return': buy_hold_return,
+                'return_pct': buy_hold_return_pct
             },
             'comparison': {
                 'same_capital_invested': abs(total_invested - regular_dca_invested) < 1,  # Should be equal

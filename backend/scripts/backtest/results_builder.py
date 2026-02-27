@@ -20,11 +20,12 @@ def extract_capital_metrics(
         cash: Initial cash amount
         
     Returns:
-        Tuple of (capital_deployed, capital_utilization, roic)
+        Tuple of (capital_deployed, capital_utilization, roic, buy_hold_return_deployed)
     """
     capital_deployed = None
     capital_utilization = None
     roic = None
+    buy_hold_return_deployed = None
     
     # Extract capital deployed for DCA strategies
     if 'crash_dca' in custom_metrics:
@@ -35,7 +36,12 @@ def extract_capital_metrics(
             final_value = crash_dca.get('final_value', 0)
             roic = ((final_value - capital_deployed) / capital_deployed) * 100
     
-    return capital_deployed, capital_utilization, roic
+    # Extract buy & hold return on deployed capital (absolute dollars)
+    if 'buy_hold' in custom_metrics:
+        buy_hold = custom_metrics['buy_hold']
+        buy_hold_return_deployed = buy_hold.get('total_return', 0)  # Dollar amount, not percentage
+    
+    return capital_deployed, capital_utilization, roic, buy_hold_return_deployed
 
 
 def build_results_dict(
@@ -56,7 +62,8 @@ def build_results_dict(
     strategy_related_fields: List[Dict],
     capital_deployed: Optional[float],
     capital_utilization: Optional[float],
-    roic: Optional[float]
+    roic: Optional[float],
+    buy_hold_return_deployed: Optional[float]
 ) -> Dict[str, Any]:
     """
     Build the complete results dictionary
@@ -103,6 +110,7 @@ def build_results_dict(
         "capital_deployed": capital_deployed,
         "capital_utilization": capital_utilization,
         "roic": roic,
+        "buy_hold_return_deployed": buy_hold_return_deployed,
         "drawings": drawings,
         "is_live": False,  # Always False for backtests
         "symbols": [
