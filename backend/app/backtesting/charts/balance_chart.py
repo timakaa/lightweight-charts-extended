@@ -15,12 +15,12 @@ def generate_balance_chart(
     initial_balance: float = None
 ) -> BytesIO:
     """
-    Generate balance history chart
+    Generate balance history chart with dark theme
     
     Args:
         balance_history: List of {time: datetime, balance: float}
         title: Chart title
-        initial_balance: Initial balance for reference line
+        initial_balance: Initial balance (not used, kept for compatibility)
         
     Returns:
         BytesIO buffer containing PNG image
@@ -32,26 +32,45 @@ def generate_balance_chart(
     times = [entry['time'] for entry in balance_history]
     balances = [entry['balance'] for entry in balance_history]
     
-    # Create figure
-    fig, ax = plt.subplots(figsize=(12, 6))
+    # Calculate y-axis limits for better visualization
+    min_balance = min(balances)
+    max_balance = max(balances)
+    balance_range = max_balance - min_balance
+    
+    # Add 10% padding to top and bottom
+    y_min = min_balance - (balance_range * 0.1) if balance_range > 0 else min_balance * 0.9
+    y_max = max_balance + (balance_range * 0.1) if balance_range > 0 else max_balance * 1.1
+    
+    # Ensure y_min starts from a reasonable point (not negative if all positive)
+    if min_balance > 0:
+        y_min = max(0, y_min)
+    
+    # Create figure with dark background
+    plt.style.use('dark_background')
+    fig, ax = plt.subplots(figsize=(12, 6), facecolor='#0d0e10')
+    ax.set_facecolor('#0d0e10')
     
     # Plot balance line
-    ax.plot(times, balances, linewidth=2, color='#2196F3', label='Portfolio Value')
-    
-    # Add initial balance reference line if provided
-    if initial_balance:
-        ax.axhline(y=initial_balance, color='gray', linestyle='--', 
-                   linewidth=1, alpha=0.7, label=f'Initial: ${initial_balance:,.0f}')
+    ax.plot(times, balances, linewidth=2.5, color='#2196F3', label='Portfolio Value', zorder=3)
     
     # Fill area under curve
-    ax.fill_between(times, balances, alpha=0.3, color='#2196F3')
+    ax.fill_between(times, balances, y_min, alpha=0.3, color='#2196F3', zorder=1)
+    
+    # Set y-axis limits
+    ax.set_ylim(y_min, y_max)
     
     # Formatting
-    ax.set_title(title, fontsize=14, fontweight='bold', pad=20)
-    ax.set_xlabel('Date', fontsize=11)
-    ax.set_ylabel('Balance ($)', fontsize=11)
-    ax.grid(True, alpha=0.3, linestyle='--')
-    ax.legend(loc='best', fontsize=10)
+    ax.set_title(title, fontsize=16, fontweight='bold', pad=20, color='#ffffff')
+    ax.set_xlabel('Date', fontsize=12, color='#cccccc')
+    ax.set_ylabel('Balance ($)', fontsize=12, color='#cccccc')
+    
+    # Grid styling
+    ax.grid(True, alpha=0.2, linestyle='--', color='#444444')
+    
+    # Legend styling
+    legend = ax.legend(loc='upper left', fontsize=11, framealpha=0.9, facecolor='#1a1a1a', edgecolor='#444444')
+    for text in legend.get_texts():
+        text.set_color('#cccccc')
     
     # Format y-axis as currency
     ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'${x:,.0f}'))
@@ -61,12 +80,20 @@ def generate_balance_chart(
     ax.xaxis.set_major_locator(mdates.AutoDateLocator())
     fig.autofmt_xdate()
     
+    # Tick colors
+    ax.tick_params(colors='#cccccc', which='both')
+    
+    # Spine colors
+    for spine in ax.spines.values():
+        spine.set_edgecolor('#444444')
+        spine.set_linewidth(1)
+    
     # Tight layout
     plt.tight_layout()
     
     # Save to buffer
     buf = BytesIO()
-    fig.savefig(buf, format='png', dpi=100, bbox_inches='tight')
+    fig.savefig(buf, format='png', dpi=100, bbox_inches='tight', facecolor='#0d0e10')
     buf.seek(0)
     plt.close(fig)
     
