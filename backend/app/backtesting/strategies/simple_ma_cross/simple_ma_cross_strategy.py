@@ -14,7 +14,7 @@ from ...base_strategy import BaseBacktestStrategy, StrategyConfig
 class SimpleMACrossStrategy(BaseBacktestStrategy):
     """Simple Moving Average Cross Strategy - Direct port from simple_ma_cross.py"""
 
-    def __init__(self, parameters: Optional[Dict[str, Any]] = None, timeframes: Optional[List[str]] = None):
+    def __init__(self, parameters: Optional[Dict[str, Any]] = None, timeframes: Optional[List[str]] = None, save_charts: bool = False):
         # Merge provided parameters with defaults
         default_params = self.get_default_parameters()
         if parameters:
@@ -32,7 +32,10 @@ class SimpleMACrossStrategy(BaseBacktestStrategy):
             timeframes=timeframes,
             required_data=["Close"]
         )
-        super().__init__(config)
+        super().__init__(config, save_charts)
+        
+        # Store balance history for chart generation
+        self._balance_history = []
 
     def get_default_parameters(self) -> Dict[str, Any]:
         """Default parameters matching simple_ma_cross.py exactly"""
@@ -119,6 +122,8 @@ class SimpleMACrossStrategy(BaseBacktestStrategy):
 
         params = self.parameters
         main_timeframe = self.timeframes[0]
+        balance_history_list = self._balance_history
+        should_track_balance = self.save_charts
 
         class SimpleMACrossBacktestStrategy(Strategy):
             """Direct port of MACrossStrategy from simple_ma_cross.py"""
@@ -138,7 +143,18 @@ class SimpleMACrossStrategy(BaseBacktestStrategy):
 
             def next(self):
                 """Trading logic - exact port from simple_ma_cross.py"""
-                entry_price = self.data.Close[-1]
+                current_date = self.data.index[-1]
+                current_price = self.data.Close[-1]
+                
+                # Track balance history if needed
+                if should_track_balance:
+                    balance_history_list.append({
+                        'time': current_date,
+                        'balance': self.equity,
+                        'price': current_price
+                    })
+                
+                entry_price = current_price
 
                 # Long position when fast crosses above slow
                 if crossover(list(self.fast), list(self.slow)) and not self.position:
@@ -159,3 +175,37 @@ class SimpleMACrossStrategy(BaseBacktestStrategy):
                     self.sell(sl=stop_loss, tp=take_profit)
 
         return SimpleMACrossBacktestStrategy
+    
+    def generate_charts(self, backtest_id: int) -> List[str]:
+        """Generate and upload charts to MinIO"""
+        if not self.save_charts or not self._balance_history:
+            return []
+        
+        from app.backtesting.charts.common import (
+            calculate_simple_buy_hold_history,
+            generate_and_upload_balance_chart
+        )
+        
+        chart_keys = []
+        
+        # Calculate simple buy & hold (buys at first price with all capital)
+        buy_hold_history = calculate_simple_buy_hold_history(
+            balance_history=self._balance_history
+        )
+        
+        # Generate and upload balance chart
+        chart_key = generate_and_upload_balance_chart(
+            backtest_id=backtest_id,
+            balance_history=self._balance_history,
+            strategy_name=self.name,
+            initial_balance=self.parameters.get("cash", 10000),
+            buy_hold_history=buy_hold_history
+        )
+        
+        if chart_key:
+            chart_keys.append(chart_key)
+        
+        # Clear balance history to free memory
+        self._balance_history.clear()
+        
+        return chart_keys
