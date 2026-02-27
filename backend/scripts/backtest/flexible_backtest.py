@@ -60,8 +60,9 @@ def run_flexible_backtest(
     
     # Create strategy instance
     try:
-        strategy_instance = strategy_class(parameters, timeframes)
+        strategy_instance = strategy_class(parameters, timeframes, save_charts=save_to_db)
     except TypeError:
+        # Fallback for strategies that don't support save_charts yet
         strategy_instance = strategy_class(parameters)
     
     # Validate parameters
@@ -164,6 +165,30 @@ def run_flexible_backtest(
             backtest_id = save_to_database(results)
             if backtest_id:
                 results["id"] = backtest_id
+                
+                # Generate and upload charts
+                print(f"\n📊 Generating charts...")
+                chart_keys = strategy_instance.generate_charts(backtest_id)
+                if chart_keys:
+                    results["chart_images"] = chart_keys
+                    print(f"✓ Generated {len(chart_keys)} chart(s)")
+                    
+                    # Update database with chart URLs
+                    from app.db.database import SessionLocal
+                    from app.models.backtest_results import BacktestResult
+                    db = SessionLocal()
+                    try:
+                        backtest = db.query(BacktestResult).filter(BacktestResult.id == backtest_id).first()
+                        if backtest:
+                            backtest.chart_images = chart_keys
+                            db.commit()
+                            print(f"✓ Saved chart references to database")
+                    except Exception as e:
+                        print(f"✗ Failed to update chart references: {e}")
+                    finally:
+                        db.close()
+                else:
+                    print(f"ℹ No charts generated")
         
         # Display summary
         print_results_summary(results)

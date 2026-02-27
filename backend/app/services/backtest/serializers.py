@@ -65,6 +65,7 @@ class BacktestSerializer:
             "max_drawdown": backtest.max_drawdown,
             "strategy_related_fields": backtest.strategy_related_fields,
             "drawings": backtest.drawings,
+            "chart_images": backtest.chart_images or [],
             "symbols": (
                 [
                     {
@@ -152,6 +153,7 @@ class BacktestSerializer:
             "profit_factor": backtest.profit_factor,
             "max_drawdown": backtest.max_drawdown,
             "strategy_related_fields": backtest.strategy_related_fields,
+            "chart_images": backtest.chart_images or [],
         }
         return BacktestSerializer.convert_nan_to_none(result)
 

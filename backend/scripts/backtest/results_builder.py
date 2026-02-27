@@ -154,17 +154,13 @@ def save_to_database(results: Dict[str, Any]) -> Optional[int]:
     """
     print("💾 Attempting to save results to database...")
     try:
-        from app.db.database import get_db
-        from app.repositories.backtest_repository import BacktestRepository
+        from app.services.backtest_service import BacktestService
         
-        db = next(get_db())
-        repository = BacktestRepository(db)
-        try:
-            saved_backtest = repository.create(results, numerate_title=True)
-            print(f"✅ Successfully saved to database with ID: {saved_backtest.id}")
-            return saved_backtest.id
-        finally:
-            db.close()
+        service = BacktestService()
+        saved_backtest = service.create_backtest(results, numerate_title=True)
+        backtest_id = saved_backtest.get("id")
+        print(f"✅ Successfully saved to database with ID: {backtest_id}")
+        return backtest_id
     except Exception as e:
         print(f"❌ Error saving to database: {e}")
         import traceback

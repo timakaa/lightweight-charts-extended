@@ -26,6 +26,7 @@ httptools==0.6.4
 idna==3.10
 Jinja2==3.1.6
 MarkupSafe==3.0.2
+matplotlib==3.9.4
 multidict==6.6.2
 narwhals==1.46.0
 numpy==2.3.1
@@ -48,6 +49,7 @@ python-socketio==5.10.0
 pytz==2025.2
 PyYAML==6.0.2
 redis==5.2.1
+minio==7.2.11
 requests==2.32.4
 rsa==4.9.1
 setuptools==80.9.0

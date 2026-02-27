@@ -17,7 +17,7 @@ from ...base_strategy import BaseBacktestStrategy, StrategyConfig
 class CrashBuyDCAStrategy(BaseBacktestStrategy):
     """DCA Strategy that increases buying during market crashes"""
 
-    def __init__(self, parameters: Optional[Dict[str, Any]] = None, timeframes: Optional[List[str]] = None):
+    def __init__(self, parameters: Optional[Dict[str, Any]] = None, timeframes: Optional[List[str]] = None, save_charts: bool = False):
         default_params = self.get_default_parameters()
         if parameters:
             default_params.update(parameters)
@@ -32,10 +32,13 @@ class CrashBuyDCAStrategy(BaseBacktestStrategy):
             timeframes=timeframes,
             required_data=["Close", "High", "Low"]
         )
-        super().__init__(config)
+        super().__init__(config, save_charts)
         
         # Store detected buy signals for visualization
         self._buy_signals = []
+        
+        # Store balance history for chart generation
+        self._balance_history = []
 
     def get_default_parameters(self) -> Dict[str, Any]:
         """Default parameters for crash buying DCA"""
@@ -133,6 +136,8 @@ class CrashBuyDCAStrategy(BaseBacktestStrategy):
         params = self.parameters
         main_timeframe = self.timeframes[0]
         buy_signals_list = self._buy_signals  # Reference to store signals
+        balance_history_list = self._balance_history  # Reference to store balance
+        should_track_balance = self.save_charts  # Only track if we're saving charts
         
         # Run custom DCA simulation to get real metrics
         main_data = data_dict[main_timeframe]
@@ -158,6 +163,13 @@ class CrashBuyDCAStrategy(BaseBacktestStrategy):
                 """Open ONE position at start and hold. Track DCA signals separately."""
                 current_date = self.data.index[-1]
                 current_price = self.data.Close[-1]
+                
+                # Track balance history if needed
+                if should_track_balance:
+                    balance_history_list.append({
+                        'time': current_date,
+                        'balance': self.equity
+                    })
                 
                 # Open position ONCE at the very first bar
                 if not self.position_opened:
@@ -418,3 +430,41 @@ class CrashBuyDCAStrategy(BaseBacktestStrategy):
             })
         
         return sections
+
+    def generate_charts(self, backtest_id: int) -> List[str]:
+        """Generate and upload charts to MinIO"""
+        if not self.save_charts or not self._balance_history:
+            return []
+        
+        from app.core.storage import storage
+        from app.backtesting.charts import generate_balance_chart
+        
+        chart_keys = []
+        
+        # Generate balance chart
+        try:
+            balance_chart_buf = generate_balance_chart(
+                balance_history=self._balance_history,
+                title=f"Balance History - {self.name}",
+                initial_balance=self.parameters.get("cash", 100000)
+            )
+            
+            # Upload to MinIO
+            chart_key = f"backtest_{backtest_id}_balance.png"
+            success = storage.upload_file(
+                chart_key,
+                balance_chart_buf.getvalue(),
+                "image/png"
+            )
+            
+            if success:
+                chart_keys.append(chart_key)
+                print(f"✓ Generated balance chart: {chart_key}")
+            
+        except Exception as e:
+            print(f"✗ Failed to generate balance chart: {e}")
+        
+        # Clear balance history to free memory
+        self._balance_history.clear()
+        
+        return chart_keys

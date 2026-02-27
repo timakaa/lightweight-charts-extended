@@ -33,7 +33,7 @@ const BacktestCard = ({ backtest, onClick }) => {
   };
 
   return (
-    <button
+    <div
       onClick={handleCardClick}
       className={`bg-[#0D0E10] w-full p-4 rounded-lg border transition-colors cursor-pointer relative ${
         isActive
@@ -77,7 +77,7 @@ const BacktestCard = ({ backtest, onClick }) => {
           </span>
         )}
       </div>
-    </button>
+    </div>
   );
 };
 

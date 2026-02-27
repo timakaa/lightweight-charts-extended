@@ -33,12 +33,13 @@ class StrategyConfig:
 class BaseBacktestStrategy(ABC):
     """Abstract base class for all backtesting strategies"""
 
-    def __init__(self, config: StrategyConfig):
+    def __init__(self, config: StrategyConfig, save_charts: bool = False):
         self.config = config
         self.name = config.name
         self.description = config.description
         self.parameters = config.parameters
         self.timeframes = config.timeframes
+        self.save_charts = save_charts
 
     @abstractmethod
     def create_strategy_class(self, data_dict: Dict[str, pd.DataFrame]) -> type:
@@ -98,6 +99,22 @@ class BaseBacktestStrategy(ABC):
         """
         return []
 
+    def generate_charts(self, backtest_id: int) -> List[str]:
+        """
+        Generate charts for this backtest and upload to MinIO
+        Called after backtest completes, only if save_charts=True
+        Override this method in subclasses to generate custom charts
+        
+        Args:
+            backtest_id: ID of the backtest for naming files
+            
+        Returns:
+            List of MinIO object keys (e.g., ["backtest_123_balance.png"])
+        """
+        # By default, no charts
+        # Subclasses override to generate and upload their charts
+        return []
+
     def get_parameter_schema(self) -> Dict[str, Any]:
         """Return JSON schema for parameters validation"""
         # Override in subclasses for specific parameter schemas
@@ -137,6 +154,7 @@ class MultiTimeframeStrategy(Strategy):
         super().__init__()
         self.data_dict = {}
         self.indicators = {}
+        self.balance_history = []  # Track balance at each candle
 
     def set_data(self, data_dict: Dict[str, pd.DataFrame]):
         """Set multiple timeframe data"""

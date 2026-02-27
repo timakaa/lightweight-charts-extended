@@ -64,3 +64,6 @@ class BacktestResult(Base):
 
     # Arrays of trades and drawings
     drawings = Column(JSON)  # Array of drawing objects
+    
+    # Chart images (stored in MinIO)
+    chart_images = Column(JSON)  # Array of image keys/URLs (max 10)

@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import Response
 from app.services.backtest_service import backtest_service
+from app.core.storage import storage
 from typing import Optional
 from pydantic import BaseModel, Field
 
@@ -87,4 +89,20 @@ def get_backtest_drawings(backtest_id: int):
     if drawings is None:
         raise HTTPException(status_code=404, detail="Backtest not found")
     return drawings
+
+
+@router.get("/backtest/image/{image_key}")
+def get_backtest_image(image_key: str):
+    """
+    Fetch image from MinIO storage
+    Example: /backtest/image/backtest_123_balance.png
+    """
+    try:
+        image_data = storage.download_file(image_key)
+        if not image_data:
+            raise HTTPException(status_code=404, detail="Image not found")
+        
+        return Response(content=image_data, media_type="image/png")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching image: {str(e)}")
 
