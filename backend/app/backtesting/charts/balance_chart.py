@@ -98,6 +98,9 @@ def generate_balance_chart(
     ax.xaxis.set_major_locator(mdates.AutoDateLocator())
     fig.autofmt_xdate()
     
+    # Remove x-axis padding
+    ax.margins(x=0)
+    
     # Tick colors
     ax.tick_params(colors='#cccccc', which='both')
     

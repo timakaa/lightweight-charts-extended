@@ -44,7 +44,6 @@ const Trades = memo(
       useTradeNavigation(chart, candleData, chartDataInfo);
 
     const handleTradeClick = (trade) => {
-      const tradeId = trade.id || `${trade.entry_time}-${trade.symbol}`;
       navigateToTrade(trade, chartDataInfo?.loadMore);
     };
 
@@ -93,7 +92,7 @@ const Trades = memo(
 
             return (
               <div
-                key={trade.id || `${trade.entry_time}-${trade.symbol}-${index}`}
+                key={`${trade.entry_time}-${trade.symbol}-${index}`}
                 onClick={() => !isLoadingForTrade && handleTradeClick(trade)}
                 className={`rounded p-2 transition-all duration-200 ${
                   isLoadingForTrade
