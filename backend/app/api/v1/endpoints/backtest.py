@@ -28,14 +28,6 @@ def get_all_backtests_summarized(
     return backtest_service.get_backtests_paginated(page=page, page_size=page_size, search=search)
 
 
-@router.get("/backtest/{backtest_id}")
-def get_backtest(backtest_id: int):
-    backtest = backtest_service.get_backtest(backtest_id)
-    if not backtest:
-        raise HTTPException(status_code=404, detail="Backtest not found")
-    return backtest
-
-
 @router.get("/backtest")
 def get_all_backtests():
     return backtest_service.get_all_backtests()

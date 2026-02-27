@@ -31,22 +31,6 @@ export const useBacktestsSummarized = (page, pageSize, search) => {
   });
 };
 
-const fetchBacktestById = async (backtestId) => {
-  const response = await fetch(`${API_BASE_URL}/backtest/${backtestId}`);
-  if (!response.ok) {
-    throw new Error("Network response was not ok");
-  }
-  return response.json();
-};
-
-export const useBacktest = (backtestId) => {
-  return useQuery({
-    queryKey: ["backtest", backtestId],
-    queryFn: () => fetchBacktestById(backtestId),
-    enabled: !!backtestId,
-  });
-};
-
 const createBacktest = async (backtestData) => {
   const response = await fetch(`${API_BASE_URL}/backtest`, {
     method: "POST",
