@@ -8,6 +8,7 @@ from colorama import Fore
 
 from .config import Timeframe, TimeframeType, RESET_COLOR
 from .processor import process_timeframe
+from .cache import get_cached_markets, save_markets_cache
 
 
 async def fetch_ohlcv_chunk(
@@ -121,14 +122,43 @@ async def fetch_and_save_historical_data(params_obj: Dict[str, Any]) -> None:
     )
 
     try:
-        await exchange.load_markets()
-
+        # Check if we have cached markets for this exchange
+        cached_markets = get_cached_markets(exchange_id)
+        
+        # Create sync exchange
         sync_exchange = getattr(ccxt, exchange_id)()
-        sync_exchange.load_markets()
-        market: Dict[str, Any] = sync_exchange.market(symbol)
+        
+        if cached_markets:
+            print(f"{Fore.GREEN}Using cached markets for {exchange_id}{RESET_COLOR}")
+            # Set markets directly from cache, skip load_markets()
+            sync_exchange.markets = cached_markets
+            sync_exchange.markets_by_id = {m['id']: m for m in cached_markets.values() if 'id' in m}
+            sync_exchange.symbols = list(cached_markets.keys())
+            
+            # Look up market by ID (e.g., BTCUSDT -> market data)
+            market: Dict[str, Any] = sync_exchange.markets_by_id.get(symbol)
+            if not market:
+                raise ValueError(f"Market {symbol} not found in cache")
+        else:
+            print(f"{Fore.YELLOW}Loading markets from exchange (this may take a moment)...{RESET_COLOR}")
+            await exchange.load_markets()
+            
+            # Load markets on sync exchange (this is the slow part we want to cache)
+            sync_exchange.load_markets()
+            
+            # Cache the sync exchange's markets dictionary
+            save_markets_cache(exchange_id, sync_exchange.markets)
+            
+            # Use .market() method which handles symbol resolution
+            market: Dict[str, Any] = sync_exchange.market(symbol)
 
-        min_date: datetime = datetime.fromtimestamp(market["created"] / 1000)
-        print(f"Minimum available date for {symbol}: {min_date.strftime('%Y-%m-%d')}")
+        # Get min_date if available (perpetuals have it, spot markets don't)
+        min_date = None
+        if market.get("created"):
+            min_date = datetime.fromtimestamp(market["created"] / 1000)
+            print(f"Minimum available date for {symbol}: {min_date.strftime('%Y-%m-%d')}")
+        else:
+            print(f"Market creation date not available for {symbol} (type: {market.get('type')})")
 
         tasks = [
             process_timeframe(

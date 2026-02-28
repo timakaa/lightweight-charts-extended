@@ -183,6 +183,11 @@ scrape: ## 📊 Scrape data for specified symbol and timeframe
 		--start $(START_DATE) \
 		--end $(END_DATE)
 
+clear-cache: ## 📊 Clear market data cache
+	@echo "$(CYAN)🧹 Clearing market data cache...$(RESET)"
+	@docker compose exec backend rm -rf /app/app/backtesting/scraper/.cache
+	@echo "$(GREEN)✅ Cache cleared!$(RESET)"
+
 
 
 # =============================================================================
