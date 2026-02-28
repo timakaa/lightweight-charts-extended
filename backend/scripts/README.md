@@ -12,26 +12,16 @@ Scrape historical OHLCV data from various exchanges using ccxt.
 
 ```bash
 # Basic usage - scrape BTCUSDT 1h data from Bybit
-docker-compose exec backend python app/backtesting/ccxt_scrapping.py
+docker-compose exec backend python scripts/ccxt_scraper.py
 
 # With custom parameters
-docker-compose exec backend python app/backtesting/ccxt_scrapping.py --symbol ETHUSDT --timeframe 4h --start 2023-01-01
+docker-compose exec backend python scripts/ccxt_scraper.py --symbol ETHUSDT --timeframe 4h --start 2023-01-01
 
 # Multiple symbols and timeframes
-docker-compose exec backend python app/backtesting/ccxt_scrapping.py --symbol BTCUSDT,ETHUSDT --timeframe 1h,4h,1d
+docker-compose exec backend python scripts/ccxt_scraper.py --symbol BTCUSDT,ETHUSDT --timeframe 1h,4h,1d
 
 # Different exchange
-docker-compose exec backend python app/backtesting/ccxt_scrapping.py --symbol BTCUSDT --exchange binance
-```
-
-#### Using Wrapper Scripts
-
-```bash
-# Python wrapper
-docker-compose exec backend python scripts/scrape_data.py --symbol ETHUSDT --timeframe 4h
-
-# Bash wrapper
-docker-compose exec backend bash scripts/scrape_data.sh ETHUSDT 4h bybit 2024-01-01 2024-12-31
+docker-compose exec backend python scripts/ccxt_scraper.py --symbol BTCUSDT --exchange binance
 ```
 
 #### Parameters
@@ -105,13 +95,13 @@ backend/scripts/
 
 ```bash
 # Scrape Bitcoin hourly data for 2024
-docker-compose exec backend python scripts/scrape_data.py --symbol BTCUSDT --start 2024-01-01 --end 2024-12-31
+docker-compose exec backend python scripts/ccxt_scraper.py --symbol BTCUSDT --start 2024-01-01 --end 2024-12-31
 
 # Scrape multiple symbols and timeframes
-docker-compose exec backend python app/backtesting/ccxt_scrapping.py --symbol BTCUSDT,ETHUSDT,SOLUSDT --timeframe 1h,4h
+docker-compose exec backend python scripts/ccxt_scraper.py --symbol BTCUSDT,ETHUSDT,SOLUSDT --timeframe 1h,4h
 
 # First scrape data, then run backtest
-docker-compose exec backend python app/backtesting/ccxt_scrapping.py --symbol ETHUSDT --timeframe 1h
+docker-compose exec backend python scripts/ccxt_scraper.py --symbol ETHUSDT --timeframe 1h
 docker-compose exec backend python scripts/backtest/flexible_backtest.py --strategy simple_ma_cross --symbol ETHUSDT --save-to-db
 
 # Run different strategies

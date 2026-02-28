@@ -1,10 +1,23 @@
+#!/usr/bin/env python3
+"""
+CCXT Historical Data Scraper
+CLI tool for scraping historical market data from exchanges
+"""
+
 import asyncio
 import argparse
+import sys
+import os
 from typing import Dict, List, Any
 from colorama import Fore
 
-from scraper import Timeframe, fetch_and_save_historical_data
-from scraper.config import RESET_COLOR, SUCCESS_COLOR, WARNING_LABEL
+# Add project root to Python path
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.abspath(os.path.join(current_dir, "../"))
+sys.path.insert(0, project_root)
+
+from app.backtesting.scraper import Timeframe, fetch_and_save_historical_data
+from app.backtesting.scraper.config import RESET_COLOR, SUCCESS_COLOR, WARNING_LABEL
 
 
 def parse_timeframes(timeframe_str: str) -> List[Timeframe]:
@@ -48,9 +61,9 @@ async def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python ccxt_scrapping.py --symbol BTCUSDT --timeframe 1h --start 2024-01-01 --end 2024-12-31
-  python ccxt_scrapping.py --symbol ETHUSDT,SOLUSDT --timeframe 1h,4h --exchange binance
-  python ccxt_scrapping.py --symbol ADAUSDT --timeframe 1d --start 2023-01-01
+  python ccxt_scraper.py --symbol BTCUSDT --timeframe 1h --start 2024-01-01 --end 2024-12-31
+  python ccxt_scraper.py --symbol ETHUSDT,SOLUSDT --timeframe 1h,4h --exchange binance
+  python ccxt_scraper.py --symbol ADAUSDT --timeframe 1d --start 2023-01-01
         """,
     )
 
