@@ -4,7 +4,7 @@ CLI argument parsing and command handling
 import argparse
 import json
 import sys
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from app.backtesting.strategies import list_strategies, get_strategy_info
 
 
@@ -83,3 +83,43 @@ def parse_parameters(params_str: str) -> Dict[str, Any]:
 def parse_timeframes(timeframes_str: str) -> List[str]:
     """Parse comma-separated timeframes string"""
     return [tf.strip() for tf in timeframes_str.split(",")]
+
+
+def parse_and_handle_args() -> Optional[Dict[str, Any]]:
+    """
+    Parse command line arguments and handle commands
+    
+    Returns:
+        Dict with backtest configuration if should run backtest, None otherwise
+    """
+    parser = create_parser()
+    args = parser.parse_args()
+    
+    # Handle list strategies command
+    if args.list_strategies:
+        handle_list_strategies()
+        return None
+    
+    # Handle strategy info command
+    if args.strategy_info:
+        handle_strategy_info(args.strategy_info)
+        return None
+    
+    # Validate strategy is provided
+    if not args.strategy:
+        print("❌ Please specify a strategy with --strategy")
+        sys.exit(1)
+    
+    # Parse parameters and timeframes
+    parameters = parse_parameters(args.params)
+    timeframes = parse_timeframes(args.timeframes)
+    
+    # Return backtest configuration
+    return {
+        "strategy_name": args.strategy,
+        "symbol": args.symbol,
+        "parameters": parameters,
+        "timeframes": timeframes,
+        "cash": args.cash,
+        "save_to_db": args.save_to_db
+    }

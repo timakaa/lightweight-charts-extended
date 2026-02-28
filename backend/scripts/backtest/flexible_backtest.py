@@ -13,15 +13,7 @@ project_root = os.path.abspath(os.path.join(current_dir, "../../"))
 sys.path.insert(0, project_root)
 
 from app.db.database import Base, engine
-
-# Import flexible backtest modules
-from flexible.cli import (
-    create_parser,
-    handle_list_strategies,
-    handle_strategy_info,
-    parse_parameters,
-    parse_timeframes
-)
+from flexible.cli import parse_and_handle_args
 from flexible.strategy_loader import load_and_validate_strategy
 from flexible.data_loader import load_multi_timeframe_data
 from flexible.backtest_runner import run_backtest
@@ -30,7 +22,6 @@ from flexible.drawing_creator import create_trade_drawings, create_strategy_draw
 from flexible.metrics_calculator import calculate_and_apply_metrics
 from flexible.results_builder import build_results_dict, print_results_summary, save_to_database
 from flexible.chart_handler import generate_and_save_charts
-
 
 from typing import Dict, Any, List
 import json
@@ -64,9 +55,6 @@ def run_flexible_backtest(
         return None
     
     # Load multi-timeframe data
-    import os
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    project_root = os.path.abspath(os.path.join(current_dir, "../../"))
     charts_dir = os.path.join(project_root, "charts")
     data_dict = load_multi_timeframe_data(symbol, timeframes, charts_dir)
     if data_dict is None:
@@ -145,37 +133,13 @@ def main():
     # Create database tables if they don't exist
     Base.metadata.create_all(bind=engine)
     
-    # Parse arguments
-    parser = create_parser()
-    args = parser.parse_args()
-    
-    # Handle commands
-    if args.list_strategies:
-        handle_list_strategies()
-        return
-    
-    if args.strategy_info:
-        handle_strategy_info(args.strategy_info)
+    # Parse arguments and handle commands
+    config = parse_and_handle_args()
+    if config is None:
         return
     
     # Run backtest
-    if not args.strategy:
-        print("❌ Please specify a strategy with --strategy")
-        return
-    
-    # Parse parameters and timeframes
-    parameters = parse_parameters(args.params)
-    timeframes = parse_timeframes(args.timeframes)
-    
-    # Run backtest
-    results = run_flexible_backtest(
-        strategy_name=args.strategy,
-        symbol=args.symbol,
-        parameters=parameters,
-        timeframes=timeframes,
-        cash=args.cash,
-        save_to_db=args.save_to_db
-    )
+    results = run_flexible_backtest(**config)
     
     if results is None:
         sys.exit(1)
