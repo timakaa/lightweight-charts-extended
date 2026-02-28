@@ -176,7 +176,7 @@ dev-shell-frontend: ## 🔧 Open shell in frontend dev container
 
 scrape: ## 📊 Scrape data for specified symbol and timeframe
 	@echo "$(CYAN)📊 Scraping $(SYMBOL) $(TIMEFRAME) data from $(EXCHANGE)...$(RESET)"
-	@docker compose exec backend python scripts/ccxt_scraper.py \
+	@docker compose exec backend python scripts/scraper/ccxt_scraper.py \
 		--symbol $(SYMBOL) \
 		--timeframe $(TIMEFRAME) \
 		--exchange $(EXCHANGE) \

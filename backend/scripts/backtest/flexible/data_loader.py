@@ -54,7 +54,7 @@ def load_multi_timeframe_data(
         
         if not data_loaded:
             print(f"❌ No data found for {symbol} {timeframe}")
-            print(f"💡 Scrape data first: python scripts/ccxt_scraper.py --symbol {symbol} --timeframe {timeframe}")
+            print(f"💡 Scrape data first: python scripts/scraper/ccxt_scraper.py --symbol {symbol} --timeframe {timeframe}")
             return None
     
     return data_dict
