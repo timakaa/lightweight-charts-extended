@@ -26,11 +26,11 @@ const Backtests = () => {
   const hasNextPage = data?.pagination?.total_pages > page;
 
   return (
-    <div className='min-h-screen bg-modal p-6'>
+    <div className='min-h-screen bg-background p-6'>
       <div className='max-w-5xl mx-auto'>
         {/* Header */}
         <div className='flex justify-between items-center mb-6'>
-          <h1 className='text-2xl font-bold text-white'>Backtests</h1>
+          <h1 className='text-2xl font-bold text-primary'>Backtests</h1>
           <SearchBar value={searchInput} onChange={setSearchInput} />
         </div>
 

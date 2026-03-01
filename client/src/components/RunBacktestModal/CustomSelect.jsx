@@ -9,7 +9,7 @@ import {
 const CustomSelect = ({ value, onChange, options }) => {
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className='w-full bg-background border-border text-white'>
+      <SelectTrigger className='w-full bg-background border-border text-primary'>
         <SelectValue />
       </SelectTrigger>
       <SelectContent className='bg-background border-border'>
@@ -18,7 +18,7 @@ const CustomSelect = ({ value, onChange, options }) => {
           const optLabel = typeof option === "string" ? option : option.label;
 
           return (
-            <SelectItem key={idx} value={optValue} className='text-white'>
+            <SelectItem key={idx} value={optValue} className='text-primary'>
               {optLabel}
             </SelectItem>
           );

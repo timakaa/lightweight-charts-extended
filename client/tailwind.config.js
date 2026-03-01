@@ -6,8 +6,8 @@ export default {
     extend: {
       colors: {
         modal: {
-          DEFAULT: "hsl(var(--background))",
-          border: "hsl(var(--border))",
+          DEFAULT: "#ff0000",
+          border: "#ff0000",
         },
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",

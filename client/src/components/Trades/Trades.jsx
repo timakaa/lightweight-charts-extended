@@ -49,7 +49,7 @@ const Trades = memo(
 
     if (isLoading && page === 1) {
       return (
-        <div className='border-t-[4px] cursor-default z-10 h-[350px] border-t-[#2E2E2E] bg-modal text-white p-4 overflow-auto'>
+        <div className='border-t-[4px] cursor-default z-10 h-[350px] border-t-[#2E2E2E] bg-background text-primary p-4 overflow-auto'>
           <div className='flex justify-center items-center h-full'>
             <span className='text-gray-400'>Loading trades...</span>
           </div>
@@ -59,7 +59,7 @@ const Trades = memo(
 
     if (error) {
       return (
-        <div className='border-t-[4px] cursor-default z-10 h-[350px] border-t-[#2E2E2E] bg-modal text-white p-4 overflow-auto'>
+        <div className='border-t-[4px] cursor-default z-10 h-[350px] border-t-[#2E2E2E] bg-background text-primary p-4 overflow-auto'>
           <div className='flex justify-center items-center h-full'>
             <span className='text-red-400'>Error loading trades</span>
           </div>
@@ -68,7 +68,7 @@ const Trades = memo(
     }
 
     return (
-      <div className='border-t-[4px] cursor-default z-10 h-[350px] border-t-[#2E2E2E] bg-modal text-white p-4 overflow-auto'>
+      <div className='border-t-[4px] cursor-default z-10 h-[350px] border-t-[#2E2E2E] bg-background text-primary p-4 overflow-auto'>
         <div className='flex justify-between items-center mb-3'>
           <div className='flex items-center gap-2'>
             <h2 className='text-base font-bold tracking-wide'>Trade History</h2>
@@ -141,19 +141,19 @@ const Trades = memo(
                 <div className='grid grid-cols-2 gap-x-4 gap-y-1 mt-1.5 text-xs text-gray-400'>
                   <div className='flex justify-between'>
                     <span>Entry</span>
-                    <span className='font-mono text-white'>
+                    <span className='font-mono text-primary'>
                       ${trade.entry_price.toFixed(2)}
                     </span>
                   </div>
                   <div className='flex justify-between'>
                     <span>Exit</span>
-                    <span className='font-mono text-white'>
+                    <span className='font-mono text-primary'>
                       ${trade.exit_price.toFixed(2)}
                     </span>
                   </div>
                   <div className='flex justify-between'>
                     <span>Date</span>
-                    <span className='text-white'>
+                    <span className='text-primary'>
                       {trade.entry_time
                         ? new Date(trade.entry_time).toLocaleString(undefined, {
                             year: "numeric",
@@ -168,7 +168,7 @@ const Trades = memo(
                   </div>
                   <div className='flex justify-between'>
                     <span>Size</span>
-                    <span className='text-white'>{trade.size}</span>
+                    <span className='text-primary'>{trade.size}</span>
                   </div>
                 </div>
               </div>

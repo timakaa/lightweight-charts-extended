@@ -36,7 +36,7 @@ export const TickerModalRow = ({ ticker, onClick, isBacktest }) => {
 
   return (
     <div
-      className={`grid grid-cols-4 gap-4 p-4 text-sm text-white border-b border-[#2E2E2E] hover:bg-[#2E2E2E] ${
+      className={`grid grid-cols-4 gap-4 p-4 text-sm text-primary border-b border-[#2E2E2E] hover:bg-[#2E2E2E] ${
         isActive ? "bg-[#2E2E2E]" : ""
       } cursor-pointer transition-colors`}
       onClick={onClick}

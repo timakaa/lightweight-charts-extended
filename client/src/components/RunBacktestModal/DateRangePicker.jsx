@@ -32,7 +32,7 @@ const DateRangePicker = ({ startDate, endDate, onDateChange }) => {
         <Button
           variant='outline'
           className={cn(
-            "w-full justify-start px-3 font-normal text-left bg-background text-white",
+            "w-full justify-start px-3 font-normal text-left bg-background text-primary",
           )}
         >
           <svg

@@ -2,7 +2,7 @@ const BalanceCards = ({ initialBalance, finalBalance }) => {
   const getFinalBalanceColor = () => {
     if (finalBalance > initialBalance) return "text-green-500";
     if (finalBalance < initialBalance) return "text-red-500";
-    return "text-white";
+    return "text-primary";
   };
 
   return (

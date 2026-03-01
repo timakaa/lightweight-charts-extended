@@ -40,12 +40,12 @@ const RunBacktestModalContent = ({ onClose, onSubmit }) => {
   return (
     <div className='flex flex-col h-full'>
       {/* Header */}
-      <div className='p-4 border-b border-modal-border'>
+      <div className='p-4 border-b border-border'>
         <div className='flex justify-between items-center'>
-          <h2 className='text-xl font-bold text-white'>Run Backtest</h2>
+          <h2 className='text-xl font-bold text-primary'>Run Backtest</h2>
           <button
             onClick={onClose}
-            className='text-gray-400 hover:text-white transition-colors'
+            className='text-primary/70 hover:text-primary transition-colors'
           >
             ✕
           </button>
@@ -69,12 +69,12 @@ const RunBacktestModalContent = ({ onClose, onSubmit }) => {
       />
 
       {/* Footer */}
-      <div className='p-4 border-t border-modal-border flex justify-end gap-3'>
+      <div className='p-4 border-t border-border flex justify-end gap-3'>
         <Button
           type='button'
           variant='ghost'
           onClick={onClose}
-          className='text-gray-300 hover:text-white'
+          className='text-primary'
         >
           Cancel
         </Button>

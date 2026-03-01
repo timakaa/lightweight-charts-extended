@@ -6,7 +6,7 @@ const StrategyFields = ({ strategyRelatedFields }) => {
     strategyRelatedFields[0]?.title && strategyRelatedFields[0]?.fields;
 
   const renderField = (field, index) => {
-    let colorClass = "text-white";
+    let colorClass = "text-primary";
     if (field.color === "green") {
       colorClass = "text-green-500";
     } else if (field.color === "red") {

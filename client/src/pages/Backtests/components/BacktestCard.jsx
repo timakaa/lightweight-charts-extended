@@ -9,7 +9,7 @@ const BacktestCard = ({ backtest, onClick }) => {
     const numericValue = parseFloat(value);
     if (numericValue > 0) return "text-green-500";
     if (numericValue < 0) return "text-red-500";
-    return "text-white";
+    return "text-primary";
   };
 
   const formatDate = (timestamp) => {
@@ -55,7 +55,7 @@ const BacktestCard = ({ backtest, onClick }) => {
         `}
       </style>
       <div className='flex justify-between items-center mb-2'>
-        <span className='text-white font-medium'>{backtest.title}</span>
+        <span className='text-primary font-medium'>{backtest.title}</span>
         <div className='flex items-center gap-2'>
           <span className={getProfitLossColor(backtest.total_pnl_percentage)}>
             {backtest.total_pnl_percentage.toFixed(2)}%

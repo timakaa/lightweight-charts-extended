@@ -11,7 +11,7 @@ const BacktestSidebar = () => {
 
   if (isLoading) {
     return (
-      <div className='fixed z-50 border-l-[4px] cursor-default top-0 right-0 w-[400px] h-full bg-modal text-white border-[#2E2E2E] flex flex-col items-center justify-center'>
+      <div className='fixed z-50 border-l-[4px] cursor-default top-0 right-0 w-[400px] h-full bg-background text-primary border-[#2E2E2E] flex flex-col items-center justify-center'>
         <span className='text-gray-400 text-lg'>Loading stats...</span>
       </div>
     );
@@ -19,7 +19,7 @@ const BacktestSidebar = () => {
 
   if (error) {
     return (
-      <div className='fixed z-50 border-l-[4px] cursor-default top-0 right-0 w-[400px] h-full bg-modal text-white border-[#2E2E2E] flex flex-col items-center justify-center'>
+      <div className='fixed z-50 border-l-[4px] cursor-default top-0 right-0 w-[400px] h-full bg-background text-primary border-[#2E2E2E] flex flex-col items-center justify-center'>
         <span className='text-red-400 text-lg'>Error loading stats</span>
       </div>
     );
@@ -29,7 +29,7 @@ const BacktestSidebar = () => {
   const finalBalance = stats?.final_balance ?? 0;
 
   return (
-    <div className='border-l-[4px] cursor-default h-full bg-modal text-white border-[#2E2E2E] flex flex-col overflow-auto'>
+    <div className='border-l-[4px] cursor-default h-full bg-background text-primary border-[#2E2E2E] flex flex-col overflow-auto'>
       <h2 className='mx-5 mt-5 font-bold text-2xl py-2.5 border-[#1f2024]'>
         Backtest Results
       </h2>

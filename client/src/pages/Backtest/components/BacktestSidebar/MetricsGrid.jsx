@@ -208,7 +208,7 @@ const MetricsGrid = ({ stats }) => {
       return (
         <div className='flex items-center gap-1'>
           <span className='text-green-500'>{first}</span>
-          <span className='text-white'>/</span>
+          <span className='text-primary'>/</span>
           <span className='text-red-500'>{second}</span>
         </div>
       );

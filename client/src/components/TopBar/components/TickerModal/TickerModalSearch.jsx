@@ -14,7 +14,7 @@ export const TickerModalSearch = ({ search, onChange }) => {
         placeholder='Search symbols...'
         value={search}
         onChange={handleInputChange}
-        className='bg-background border-border text-white'
+        className='bg-background border-border text-primary'
         autoFocus
       />
     </div>

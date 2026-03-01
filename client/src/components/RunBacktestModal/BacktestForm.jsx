@@ -28,7 +28,7 @@ const BacktestForm = ({
       <div className='space-y-4'>
         {/* Strategy */}
         <div>
-          <label className='block text-sm font-medium text-gray-300 mb-2'>
+          <label className='block text-sm font-medium text-primary/80 mb-2'>
             Strategy
           </label>
           <CustomSelect
@@ -40,7 +40,7 @@ const BacktestForm = ({
 
         {/* Symbol */}
         <div>
-          <label className='block text-sm font-medium text-gray-300 mb-2'>
+          <label className='block text-sm font-medium text-primary/80 mb-2'>
             Symbol
           </label>
           <Input
@@ -48,13 +48,13 @@ const BacktestForm = ({
             value={symbol}
             onChange={(e) => setSymbol(e.target.value.toUpperCase())}
             placeholder='BTCUSDT'
-            className='bg-background border-border text-white'
+            className='bg-background border-border text-primary'
           />
         </div>
 
         {/* Timeframe */}
         <div>
-          <label className='block text-sm font-medium text-gray-300 mb-2'>
+          <label className='block text-sm font-medium text-primary/80 mb-2'>
             Timeframe
           </label>
           <CustomSelect
@@ -66,7 +66,7 @@ const BacktestForm = ({
 
         {/* Date Range */}
         <div>
-          <label className='block text-sm font-medium text-gray-300 mb-2'>
+          <label className='block text-sm font-medium text-primary/80 mb-2'>
             Date Range
           </label>
           <DateRangePicker
@@ -78,7 +78,7 @@ const BacktestForm = ({
 
         {/* Presets */}
         <div>
-          <label className='block text-sm font-medium text-gray-300 mb-2'>
+          <label className='block text-sm font-medium text-primary/80 mb-2'>
             Quick Presets
           </label>
           <div className='flex flex-wrap gap-2'>
@@ -89,7 +89,7 @@ const BacktestForm = ({
                 variant='outline'
                 size='sm'
                 onClick={() => onPresetClick(preset)}
-                className='bg-background border-border text-gray-300 hover:text-white hover:bg-accent'
+                className='bg-background border-border text-primary/80 hover:text-primary hover:bg-accent'
               >
                 {preset.label}
               </Button>
