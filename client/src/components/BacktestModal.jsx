@@ -62,8 +62,8 @@ const BacktestModalContent = ({ onClose }) => {
   };
 
   return (
-    <div className='flex flex-col h-full'>
-      <div className='p-4 border-b border-modal-border'>
+    <div className='flex flex-col h-full max-h-[80vh]'>
+      <div className='p-4 border-b border-modal-border flex-shrink-0'>
         <div className='flex justify-between items-center mb-4'>
           <h2 className='text-xl font-bold text-white'>Backtests</h2>
           <button
@@ -83,7 +83,7 @@ const BacktestModalContent = ({ onClose }) => {
         />
       </div>
 
-      <div className='flex-1 overflow-y-auto p-4'>
+      <div className='flex-1 overflow-y-auto p-4 min-h-0'>
         {isLoading && page === 1 ? (
           <div className='flex items-center justify-center p-8'>
             <div className='text-white'>Loading...</div>
@@ -138,7 +138,7 @@ const BacktestModal = ({ isOpen, onClose }) => {
       className='fixed cursor-default inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[999]'
       onClick={handleBackdropClick}
     >
-      <div className='bg-modal rounded-lg w-[500px] h-[550px] flex flex-col'>
+      <div className='bg-modal rounded-lg w-[500px] max-h-[80vh] flex flex-col'>
         <BacktestModalContent onClose={onClose} />
       </div>
     </div>

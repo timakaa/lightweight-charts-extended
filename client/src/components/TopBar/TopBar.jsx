@@ -4,6 +4,7 @@ import Find from "@icons/Find";
 import { useChartStore } from "@store/chart";
 import TimeframeSelector from "./components/TimeframeSelector";
 import BacktestModal from "@components/BacktestModal";
+import RunBacktestModal from "@components/RunBacktestModal/RunBacktestModal";
 import TimeframeModal from "./components/TimeframeModal";
 import TickerModal from "./components/TickerModal/TickerModal";
 import { useTimeframeModal } from "./hooks/useTimeframeModal";
@@ -16,6 +17,7 @@ const TopBar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isBacktestModalOpen, setIsBacktestModalOpen] = useState(false);
+  const [isRunBacktestModalOpen, setIsRunBacktestModalOpen] = useState(false);
   const ticker = useChartStore((state) => state.ticker);
   const setTicker = useChartStore((state) => state.setTicker);
   const timeframe = useChartStore((state) => state.timeframe);
@@ -88,17 +90,34 @@ const TopBar = () => {
           <div className='mx-1 flex justify-center items-center'>
             <div className='h-[22px] w-[1px] bg-[#4A4A4A]'></div>
           </div>
-          <button
-            onClick={() => setIsBacktestModalOpen(true)}
-            className='flex justify-center items-center p-2 hover:bg-[#2E2E2E] duration-100 rounded-md text-sm font-[600]'
-          >
-            Backtests
-          </button>
+          <div className='flex items-center'>
+            <button
+              onClick={() => setIsBacktestModalOpen(true)}
+              className='flex justify-center items-center p-2 hover:bg-[#2E2E2E] duration-100 rounded-md text-sm font-[600]'
+            >
+              Backtests
+            </button>
+            <button
+              onClick={() => setIsRunBacktestModalOpen(true)}
+              className='flex justify-center items-center p-2 ml-1 bg-blue-600 hover:bg-blue-700 duration-100 rounded-md text-sm font-[600]'
+            >
+              Run Backtest
+            </button>
+          </div>
         </>
       </div>
       <BacktestModal
         isOpen={isBacktestModalOpen}
         onClose={() => setIsBacktestModalOpen(false)}
+      />
+      <RunBacktestModal
+        isOpen={isRunBacktestModalOpen}
+        onClose={() => setIsRunBacktestModalOpen(false)}
+        onSubmit={(config) => {
+          console.log("Backtest config:", config);
+          // TODO: Call API to run backtest
+          setIsRunBacktestModalOpen(false);
+        }}
       />
       <TimeframeModal
         isOpen={timeframeModal.isModalOpen}
