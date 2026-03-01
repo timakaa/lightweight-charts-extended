@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import BacktestCard from "../pages/Backtests/components/BacktestCard";
 import { useBacktestsSummarized } from "../hooks/backtests/useBacktests";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const BacktestModalContent = ({ onClose }) => {
   const navigate = useNavigate();
@@ -63,23 +65,25 @@ const BacktestModalContent = ({ onClose }) => {
 
   return (
     <div className='flex flex-col h-full max-h-[80vh]'>
-      <div className='p-4 border-b border-modal-border flex-shrink-0'>
+      <div className='p-4 border-b border-border flex-shrink-0'>
         <div className='flex justify-between items-center mb-4'>
           <h2 className='text-xl font-bold text-white'>Backtests</h2>
-          <button
+          <Button
+            variant='ghost'
+            size='icon'
             onClick={onClose}
-            className='text-gray-400 hover:text-white transition-colors'
+            className='text-gray-400 hover:text-white h-8 w-8'
           >
             ✕
-          </button>
+          </Button>
         </div>
-        <input
+        <Input
           ref={inputRef}
           type='text'
           placeholder='Search backtests...'
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className='w-full px-3 py-2 bg-modal text-white rounded-md border border-modal-border focus:outline-none focus:border-blue-500'
+          className='bg-background border-border text-white'
         />
       </div>
 
@@ -135,10 +139,10 @@ const BacktestModal = ({ isOpen, onClose }) => {
 
   return (
     <div
-      className='fixed cursor-default inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[999]'
+      className='fixed cursor-default inset-0 bg-background/50 flex items-center justify-center z-[999]'
       onClick={handleBackdropClick}
     >
-      <div className='bg-modal rounded-lg w-[500px] max-h-[80vh] flex flex-col'>
+      <div className='bg-background border border-border rounded-lg w-[500px] max-h-[80vh] flex flex-col'>
         <BacktestModalContent onClose={onClose} />
       </div>
     </div>

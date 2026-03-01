@@ -67,7 +67,7 @@ const TickerModalContent = ({ onClose, onSelectTicker, initialLetter }) => {
   };
 
   return (
-    <div className='bg-modal rounded-lg w-[600px] max-h-[80vh] flex flex-col'>
+    <div className='bg-background border border-border rounded-lg w-[600px] max-h-[80vh] flex flex-col'>
       <TickerModalHeader onClose={onClose} />
       <TickerModalSearch search={searchInput} onChange={setSearchInput} />
       <TickerModalSort
@@ -121,7 +121,7 @@ const TickerModal = ({ isOpen, onClose, onSelectTicker, initialLetter }) => {
 
   return (
     <div
-      className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'
+      className='fixed cursor-default inset-0 bg-background/50 flex items-center justify-center z-50'
       onClick={handleBackdropClick}
     >
       <TickerModalContent
