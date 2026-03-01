@@ -19,7 +19,7 @@ const ChartImages = ({ chartImages }) => {
           {chartImages.map((imageKey, index) => (
             <div
               key={index}
-              className='bg-[#0d0e10] rounded-lg border border-[#1f2024] overflow-hidden cursor-pointer hover:border-[#2a2e39] transition-colors'
+              className='rounded-lg border border-border overflow-hidden cursor-pointer hover:border-[#2a2e39] transition-colors'
               onClick={() =>
                 setSelectedImage({
                   url: getImageUrl(imageKey),

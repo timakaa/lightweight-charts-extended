@@ -71,7 +71,7 @@ const TopBar = () => {
               ← Return to Chart
             </button>
             <div className='mx-1 flex justify-center items-center'>
-              <div className='h-[22px] w-[1px] bg-[#4A4A4A]'></div>
+              <div className='h-[22px] w-[1px] bg-foreground/20'></div>
             </div>
           </>
         )}
@@ -87,12 +87,12 @@ const TopBar = () => {
           </span>
         </button>
         <div className='mx-1 flex justify-center items-center'>
-          <div className='h-[22px] w-[1px] bg-[#4A4A4A]'></div>
+          <div className='h-[22px] w-[1px] bg-foreground/20'></div>
         </div>
         <TimeframeSelector />
         <>
           <div className='mx-1 flex justify-center items-center'>
-            <div className='h-[22px] w-[1px] bg-[#4A4A4A]'></div>
+            <div className='h-[22px] w-[1px] bg-foreground/20'></div>
           </div>
           <div className='flex items-center gap-1'>
             <Button

@@ -74,10 +74,8 @@ const TimeframeModal = ({
             type='text'
             value={inputValue}
             onChange={(e) => onInputChange(e.target.value)}
-            className={`w-full px-3 py-3 text-lg text-center bg-background border-2 rounded-lg text-primary focus:outline-none transition-all duration-200 ${
-              isValid
-                ? "border-[#4A90E2] focus:border-[#5BA0F2]"
-                : "border-red-500 focus:border-red-400"
+            className={`w-full px-3 py-3 text-lg text-center bg-background border-2 rounded-lg text-primary transition-colors outline-none duration-200 ${
+              isValid ? "border-[#4A90E2]" : "border-red-500"
             }`}
             placeholder=''
           />

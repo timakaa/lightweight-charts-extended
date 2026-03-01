@@ -35,7 +35,7 @@ const BacktestCard = ({ backtest, onClick }) => {
   return (
     <div
       onClick={handleCardClick}
-      className={`bg-[#0D0E10] w-full p-4 rounded-lg border transition-colors cursor-pointer relative ${
+      className={`bg-background w-full p-4 rounded-lg border transition-colors cursor-pointer relative ${
         isActive
           ? "border-blue-500 ring-2 ring-blue-500 bg-blue-500/20"
           : "border-[#2a2e39] hover:border-[#3a3f4c]"

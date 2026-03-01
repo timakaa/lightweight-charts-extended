@@ -51,7 +51,7 @@ const OptionsDropdown = ({ backtest }) => {
   return (
     <>
       <Menu as='div' className='relative z-50' data-menu='true'>
-        <MenuButton className='p-1 hover:bg-[#1e222d] rounded-full transition-colors'>
+        <MenuButton className='p-1 hover:bg-foreground/20 rounded-sm transition-colors'>
           <svg
             xmlns='http://www.w3.org/2000/svg'
             className='h-4 w-4 text-gray-500'
@@ -70,15 +70,15 @@ const OptionsDropdown = ({ backtest }) => {
           leaveFrom='transform opacity-100 scale-100'
           leaveTo='transform opacity-0 scale-95'
         >
-          <MenuItems className='absolute right-0 mt-2 w-32 origin-top-right rounded-md bg-[#131722] shadow-lg ring-1 ring-[#1e222d] focus:outline-none z-10'>
+          <MenuItems className='absolute right-0 mt-2 w-32 origin-top-right rounded-md bg-background shadow-lg ring-1 ring-border focus:outline-none z-10'>
             <div>
               <MenuItem>
                 {({ active }) => (
                   <button
                     onClick={onEdit}
                     className={`${
-                      active ? "bg-[#1e222d]" : ""
-                    } flex w-full items-center px-3 py-1.5 text-base text-gray-300 hover:bg-[#1e222d] rounded-t-md gap-2`}
+                      active ? "bg-foreground" : ""
+                    } flex w-full items-center px-3 py-1.5 text-base text-primary hover:bg-foreground/5 rounded-t-md gap-2`}
                   >
                     <Edit width={14} height={14} />
                     Edit
@@ -90,8 +90,8 @@ const OptionsDropdown = ({ backtest }) => {
                   <button
                     onClick={onDelete}
                     className={`${
-                      active ? "bg-[#1e222d]" : ""
-                    } flex w-full items-center px-2 py-1.5 text-base text-red-500 hover:bg-[#1e222d] rounded-b-md gap-1`}
+                      active ? "bg-foreground" : ""
+                    } flex w-full items-center px-2 py-1.5 text-base text-red-500 hover:bg-foreground/5 rounded-b-md gap-1`}
                   >
                     <Trash width={20} height={20} />
                     Delete

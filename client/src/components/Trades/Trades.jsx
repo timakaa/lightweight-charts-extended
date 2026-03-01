@@ -49,9 +49,9 @@ const Trades = memo(
 
     if (isLoading && page === 1) {
       return (
-        <div className='border-t-[4px] cursor-default z-10 h-[350px] border-t-[#2E2E2E] bg-background text-primary p-4 overflow-auto'>
+        <div className='border-t-[4px] cursor-default z-10 h-[350px] border-t-border bg-background text-foreground p-4 overflow-auto'>
           <div className='flex justify-center items-center h-full'>
-            <span className='text-gray-400'>Loading trades...</span>
+            <span className='text-muted-foreground'>Loading trades...</span>
           </div>
         </div>
       );
@@ -59,27 +59,27 @@ const Trades = memo(
 
     if (error) {
       return (
-        <div className='border-t-[4px] cursor-default z-10 h-[350px] border-t-[#2E2E2E] bg-background text-primary p-4 overflow-auto'>
+        <div className='border-t-[4px] cursor-default z-10 h-[350px] border-t-border bg-background text-foreground p-4 overflow-auto'>
           <div className='flex justify-center items-center h-full'>
-            <span className='text-red-400'>Error loading trades</span>
+            <span className='text-destructive'>Error loading trades</span>
           </div>
         </div>
       );
     }
 
     return (
-      <div className='border-t-[4px] cursor-default z-10 h-[350px] border-t-[#2E2E2E] bg-background text-primary p-4 overflow-auto'>
+      <div className='border-t-[4px] cursor-default z-10 h-[350px] border-t-border bg-background text-foreground p-4 overflow-auto'>
         <div className='flex justify-between items-center mb-3'>
           <div className='flex items-center gap-2'>
             <h2 className='text-base font-bold tracking-wide'>Trade History</h2>
             {isLoadingForTrade && (
-              <div className='flex items-center gap-1 text-blue-400 text-xs'>
-                <div className='animate-spin w-3 h-3 border border-blue-400 border-t-transparent rounded-full'></div>
+              <div className='flex items-center gap-1 text-primary text-xs'>
+                <div className='animate-spin w-3 h-3 border border-primary border-t-transparent rounded-full'></div>
                 Loading chart data...
               </div>
             )}
           </div>
-          <span className='text-xs text-gray-400'>
+          <span className='text-xs text-muted-foreground'>
             {data?.pagination?.total_count || trades.length} trades
           </span>
         </div>
@@ -97,10 +97,12 @@ const Trades = memo(
                 className={`rounded p-2 transition-all duration-200 ${
                   isLoadingForTrade
                     ? isLoadingThisTrade
-                      ? "cursor-wait bg-blue-900/30 border border-blue-500/50"
-                      : "cursor-not-allowed bg-gray-800/50 opacity-60"
-                    : `cursor-pointer hover:bg-[#1e1c1c] hover:shadow-md ${
-                        (trade.pnl || 0) >= 0 ? "bg-[#131b17]" : "bg-[#221515]"
+                      ? "cursor-wait bg-primary/20 border border-primary/50"
+                      : "cursor-not-allowed bg-muted/50 opacity-60"
+                    : `cursor-pointer hover:shadow-md ${
+                        (trade.pnl || 0) >= 0
+                          ? "bg-success/20 border border-success/30 hover:bg-success/30 hover:border-success/50"
+                          : "bg-error/20 border border-error/30 hover:bg-error/30 hover:border-error/50"
                       }`
                 }`}
                 title={
@@ -116,44 +118,40 @@ const Trades = memo(
                     <span
                       className={`text-xs px-1.5 py-0.5 rounded ${
                         trade.trade_type.toUpperCase() === "LONG"
-                          ? "bg-green-900/50 text-green-400"
-                          : "bg-red-900/50 text-red-400"
+                          ? "bg-success/30 text-success-foreground"
+                          : "bg-error/30 text-error-foreground"
                       }`}
                     >
                       {trade.trade_type.toUpperCase()}
                     </span>
-                    <h3 className='text-xs font-medium'>
+                    <h3 className='text-xs text-foreground font-medium'>
                       {trade.symbol}{" "}
-                      <span className='text-gray-400'>
-                        #{data?.pagination?.total_count - index}
-                      </span>
+                      <span>#{data?.pagination?.total_count - index}</span>
                     </h3>
                   </div>
                   <span
-                    className={`text-xs font-mono ${
-                      (trade.pnl || 0) >= 0 ? "text-green-400" : "text-red-400"
-                    }`}
+                    className={`text-xs font-mono font-semibold text-primary`}
                   >
                     ${(trade.pnl || 0).toFixed(2)}
                   </span>
                 </div>
 
-                <div className='grid grid-cols-2 gap-x-4 gap-y-1 mt-1.5 text-xs text-gray-400'>
+                <div className='grid grid-cols-2 gap-x-4 gap-y-1 mt-1.5 text-xs text-foreground'>
                   <div className='flex justify-between'>
-                    <span>Entry</span>
-                    <span className='font-mono text-primary'>
+                    <span className='text-muted-foreground'>Entry</span>
+                    <span className='font-mono text-foreground'>
                       ${trade.entry_price.toFixed(2)}
                     </span>
                   </div>
                   <div className='flex justify-between'>
-                    <span>Exit</span>
-                    <span className='font-mono text-primary'>
+                    <span className='text-muted-foreground'>Exit</span>
+                    <span className='font-mono text-foreground'>
                       ${trade.exit_price.toFixed(2)}
                     </span>
                   </div>
                   <div className='flex justify-between'>
-                    <span>Date</span>
-                    <span className='text-primary'>
+                    <span className='text-muted-foreground'>Date</span>
+                    <span className='text-foreground'>
                       {trade.entry_time
                         ? new Date(trade.entry_time).toLocaleString(undefined, {
                             year: "numeric",
@@ -167,8 +165,8 @@ const Trades = memo(
                     </span>
                   </div>
                   <div className='flex justify-between'>
-                    <span>Size</span>
-                    <span className='text-primary'>{trade.size}</span>
+                    <span className='text-muted-foreground'>Size</span>
+                    <span className='text-foreground'>{trade.size}</span>
                   </div>
                 </div>
               </div>
@@ -181,7 +179,7 @@ const Trades = memo(
             className='h-10 flex justify-center items-center mt-4'
           >
             {isFetching && (
-              <div className='text-gray-400 text-sm'>
+              <div className='text-muted-foreground text-sm'>
                 Loading more trades...
               </div>
             )}

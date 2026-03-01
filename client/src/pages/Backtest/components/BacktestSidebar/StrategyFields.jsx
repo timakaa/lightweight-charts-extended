@@ -16,7 +16,7 @@ const StrategyFields = ({ strategyRelatedFields }) => {
     return (
       <div
         key={index}
-        className='p-3 bg-[#0d0e10] rounded-lg border border-[#1f2024] hover:border-[#2a2e39] transition-colors'
+        className='p-3 bg-background rounded-lg border border-border hover:border-foreground/20 transition-colors'
       >
         <div className='text-gray-500 text-sm mb-1'>{field.label}</div>
         <div className={`text-lg font-medium ${colorClass}`}>{field.value}</div>
