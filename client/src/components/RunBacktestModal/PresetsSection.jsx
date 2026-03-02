@@ -85,33 +85,35 @@ const PresetsSection = ({ timeframe, startDate, endDate, onPresetClick }) => {
         </Button>
       </div>
 
-      <div className='grid grid-cols-2 gap-2'>
+      <div>
         {presetsLoading ? (
           <div className='text-sm text-muted-foreground'>
             Loading presets...
           </div>
         ) : presetsData?.presets?.length > 0 ? (
-          presetsData.presets.map((preset) => (
-            <div key={preset.id} className='relative'>
-              <Button
-                type='button'
-                variant='outline'
-                size='sm'
-                onClick={() => onPresetClick(preset)}
-                disabled={isDeleting}
-                className='bg-background border-border text-primary/80 hover:text-primary hover:bg-accent pr-8'
-              >
-                {preset.name}
-              </Button>
-              <button
-                type='button'
-                onClick={(e) => handleDeletePreset(preset.id, e)}
-                className='absolute right-1 top-1/2 -translate-y-1/2 p-1 text-error'
-              >
-                <Trash2 className='h-3 w-3' />
-              </button>
-            </div>
-          ))
+          <div className='grid grid-cols-2 gap-2'>
+            {presetsData.presets.map((preset) => (
+              <div key={preset.id} className='relative'>
+                <Button
+                  type='button'
+                  variant='outline'
+                  size='sm'
+                  onClick={() => onPresetClick(preset)}
+                  disabled={isDeleting}
+                  className='bg-background border-border text-primary/80 hover:text-primary hover:bg-accent'
+                >
+                  {preset.name}
+                  <div
+                    type='button'
+                    onClick={(e) => handleDeletePreset(preset.id, e)}
+                    className='text-error'
+                  >
+                    <Trash2 />
+                  </div>
+                </Button>
+              </div>
+            ))}
+          </div>
         ) : (
           <div className='text-sm text-muted-foreground'>
             No presets yet. Save one to get started!
