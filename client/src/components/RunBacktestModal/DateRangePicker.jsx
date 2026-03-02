@@ -15,6 +15,14 @@ const DateRangePicker = ({ startDate, endDate, onDateChange }) => {
     to: endDate ? new Date(endDate) : undefined,
   });
 
+  // Sync internal state with props when they change externally (e.g., from presets)
+  useEffect(() => {
+    setDate({
+      from: startDate ? new Date(startDate) : undefined,
+      to: endDate ? new Date(endDate) : undefined,
+    });
+  }, [startDate, endDate]);
+
   useEffect(() => {
     if (date?.from) {
       onDateChange({

@@ -9,23 +9,6 @@ const RunBacktestModalContent = ({ onClose, onSubmit }) => {
   const [startDate, setStartDate] = useState("2024-01-01");
   const [endDate, setEndDate] = useState("2025-01-01");
 
-  const handlePresetClick = (preset) => {
-    setSymbol(preset.symbol);
-    setTimeframe(preset.timeframe);
-
-    if (preset.months) {
-      const end = new Date();
-      const start = new Date();
-      start.setMonth(start.getMonth() - preset.months);
-
-      setStartDate(start.toISOString().split("T")[0]);
-      setEndDate(end.toISOString().split("T")[0]);
-    } else {
-      setStartDate(preset.start);
-      setEndDate(preset.end);
-    }
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit({
@@ -38,7 +21,7 @@ const RunBacktestModalContent = ({ onClose, onSubmit }) => {
   };
 
   return (
-    <div className='flex flex-col h-full'>
+    <div className='flex flex-col h-full max-h-[80vh]'>
       {/* Header */}
       <div className='p-4 border-b border-border'>
         <div className='flex justify-between items-center'>
@@ -66,7 +49,6 @@ const RunBacktestModalContent = ({ onClose, onSubmit }) => {
         setStartDate={setStartDate}
         endDate={endDate}
         setEndDate={setEndDate}
-        onPresetClick={handlePresetClick}
         onSubmit={handleSubmit}
       />
 
