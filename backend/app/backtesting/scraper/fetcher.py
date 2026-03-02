@@ -12,7 +12,7 @@ from .config import Timeframe, TimeframeType, RESET_COLOR
 from .processor import process_timeframe
 
 # Add app directory to path to import market_cache
-app_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../app"))
+app_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
 if app_dir not in sys.path:
     sys.path.insert(0, app_dir)
 
