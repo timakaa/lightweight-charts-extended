@@ -82,7 +82,7 @@ const TickerModalContent = ({ onClose, onSelectTicker, initialLetter }) => {
       >
         {isLoading && page === 1 ? (
           <div className='flex items-center justify-center p-8'>
-            <div className='text-gray-400'>Loading tickers...</div>
+            <div className='text-primary/70'>Loading tickers...</div>
           </div>
         ) : (
           <>

@@ -53,7 +53,7 @@ export const TickerModalRow = ({ ticker, onClick, isBacktest }) => {
       </div>
       <div className='text-right'>${formatPrice(ticker.last)}</div>
       <div className='text-right'>{formatPercentage(ticker.percentage)}</div>
-      <div className='text-right text-gray-400'>
+      <div className='text-right text-primary/70'>
         {formatVolume(ticker.volume)}
       </div>
     </div>

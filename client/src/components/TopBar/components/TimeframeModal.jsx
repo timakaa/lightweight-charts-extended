@@ -83,7 +83,7 @@ const TimeframeModal = ({
 
         <div className='text-center'>
           <div
-            className={`text-sm ${isValid ? "text-gray-300" : "text-red-400"}`}
+            className={`text-sm ${isValid ? "text-primary/70" : "text-red-400"}`}
           >
             {inputValue && isValid && previewTimeframe
               ? getReadableTimeframe(previewTimeframe)

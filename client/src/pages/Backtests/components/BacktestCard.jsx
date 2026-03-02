@@ -37,8 +37,8 @@ const BacktestCard = ({ backtest, onClick }) => {
       onClick={handleCardClick}
       className={`bg-background w-full p-4 rounded-lg border transition-colors cursor-pointer relative ${
         isActive
-          ? "border-blue-500 ring-2 ring-blue-500 bg-blue-500/20"
-          : "border-[#2a2e39] hover:border-[#3a3f4c]"
+          ? "border-blue-500 ring-1 ring-blue-500/80 bg-blue-300/20"
+          : "border-border hover:border-foreground/20"
       }`}
     >
       <style>
@@ -64,7 +64,7 @@ const BacktestCard = ({ backtest, onClick }) => {
         </div>
       </div>
       <div className='flex justify-between items-center'>
-        <span className='text-sm text-gray-400'>
+        <span className='text-sm text-primary/70'>
           {formatDate(backtest.created_at)}
         </span>
         {backtest.is_live && (

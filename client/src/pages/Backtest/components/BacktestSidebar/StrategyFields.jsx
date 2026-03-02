@@ -18,7 +18,7 @@ const StrategyFields = ({ strategyRelatedFields }) => {
         key={index}
         className='p-3 bg-background rounded-lg border border-border hover:border-foreground/20 transition-colors'
       >
-        <div className='text-gray-500 text-sm mb-1'>{field.label}</div>
+        <div className='text-primary/60 text-sm mb-1'>{field.label}</div>
         <div className={`text-lg font-medium ${colorClass}`}>{field.value}</div>
       </div>
     );
@@ -26,7 +26,7 @@ const StrategyFields = ({ strategyRelatedFields }) => {
 
   return (
     <div>
-      <h2 className='mx-5 font-bold text-2xl py-2.5 border-[#1f2024]'>
+      <h2 className='mx-5 font-bold text-2xl py-2.5'>
         Strategy Related Fields
       </h2>
       <div className='mx-5 mt-2'>
@@ -34,7 +34,7 @@ const StrategyFields = ({ strategyRelatedFields }) => {
           // New subsection format
           strategyRelatedFields.map((section, sectionIndex) => (
             <div key={sectionIndex} className='mb-5'>
-              <h3 className='text-md font-semibold mb-3 text-gray-400'>
+              <h3 className='text-md font-semibold mb-3 text-primary/70'>
                 {section.title}
               </h3>
               <div className='grid grid-cols-2 gap-3'>

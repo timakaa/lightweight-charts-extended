@@ -7,7 +7,7 @@ const NotFound404 = () => {
     <div className='h-screen w-screen flex items-center justify-center bg-background'>
       <div className='text-center'>
         <h1 className='text-4xl font-bold text-primary mb-4'>404</h1>
-        <p className='text-xl text-gray-300 mb-6'>Backtest not found</p>
+        <p className='text-xl text-primary mb-6'>Backtest not found</p>
         <button
           onClick={() => navigate("/")}
           to='/'

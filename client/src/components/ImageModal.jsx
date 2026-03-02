@@ -34,7 +34,7 @@ const ImageModal = ({ isOpen, onClose, imageUrl, altText }) => {
     >
       <button
         onClick={onClose}
-        className='absolute top-4 right-4 text-primary text-4xl hover:text-gray-300 transition-colors z-10'
+        className='absolute top-4 right-4 text-primary text-4xl hover:text-primary/70 transition-colors z-10'
         aria-label='Close'
       >
         ×

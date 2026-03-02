@@ -61,7 +61,7 @@ const TopBar = () => {
 
   return (
     <>
-      <div className='relative cursor-default bg-background border-b-4 border-[#2E2E2E] px-1 py-1 flex text-primary z-50'>
+      <div className='relative cursor-default bg-background border-b-4 border-border px-1 py-1 flex text-primary z-50'>
         {isBacktestPage && (
           <>
             <button

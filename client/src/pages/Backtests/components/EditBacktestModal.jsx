@@ -20,7 +20,7 @@ const EditBacktestModalContent = ({ onClose, onSave, initialTitle }) => {
           <h2 className='text-xl font-bold text-primary'>Edit Backtest</h2>
           <button
             onClick={onClose}
-            className='text-gray-400 hover:text-primary transition-colors'
+            className='text-primary/70 hover:text-primary transition-colors'
           >
             ✕
           </button>

@@ -72,7 +72,7 @@ const BacktestModalContent = ({ onClose }) => {
             variant='ghost'
             size='icon'
             onClick={onClose}
-            className='text-gray-400 hover:text-primary h-8 w-8'
+            className='text-primary/70 hover:text-primary h-8 w-8'
           >
             ✕
           </Button>

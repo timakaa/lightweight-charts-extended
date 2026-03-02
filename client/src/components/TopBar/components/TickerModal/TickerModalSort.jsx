@@ -18,7 +18,7 @@ export const TickerModalSort = ({ sortBy, sortOrder, onSort }) => (
         className={
           sortBy === key
             ? "bg-primary text-primary-foreground"
-            : "bg-background border-border text-gray-300 hover:bg-accent hover:text-primary"
+            : "bg-background border-border text-primary/70 hover:bg-accent hover:text-primary"
         }
       >
         {label}

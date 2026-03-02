@@ -19,7 +19,7 @@ const BacktestList = ({ backtests, isLoading, hasNextPage, onLoadMore }) => {
 
   if (backtests.length === 0 && !isLoading) {
     return (
-      <div className='flex flex-col items-center justify-center py-12 text-gray-400'>
+      <div className='flex flex-col items-center justify-center py-12 text-primary/70'>
         <svg
           xmlns='http://www.w3.org/2000/svg'
           className='h-16 w-16 mb-4'

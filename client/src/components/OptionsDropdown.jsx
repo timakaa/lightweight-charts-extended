@@ -54,7 +54,7 @@ const OptionsDropdown = ({ backtest }) => {
         <MenuButton className='p-1 hover:bg-foreground/20 rounded-sm transition-colors'>
           <svg
             xmlns='http://www.w3.org/2000/svg'
-            className='h-4 w-4 text-gray-500'
+            className='h-4 w-4 text-primary/60'
             viewBox='0 0 20 20'
             fill='currentColor'
           >

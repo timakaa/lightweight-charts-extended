@@ -12,14 +12,12 @@ const ChartImages = ({ chartImages }) => {
   return (
     <>
       <div className='mb-6'>
-        <h2 className='mx-5 font-bold text-2xl py-2.5 border-[#1f2024]'>
-          Charts
-        </h2>
+        <h2 className='mx-5 font-bold text-2xl py-2.5'>Charts</h2>
         <div className='mx-5 mt-2 space-y-3'>
           {chartImages.map((imageKey, index) => (
             <div
               key={index}
-              className='rounded-lg border border-border overflow-hidden cursor-pointer hover:border-[#2a2e39] transition-colors'
+              className='rounded-lg border border-border overflow-hidden cursor-pointer transition-colors'
               onClick={() =>
                 setSelectedImage({
                   url: getImageUrl(imageKey),
@@ -39,7 +37,7 @@ const ChartImages = ({ chartImages }) => {
             </div>
           ))}
         </div>
-        <hr className='border-[#1f2024] my-5' />
+        <hr className='border-border my-5' />
       </div>
 
       <ImageModal

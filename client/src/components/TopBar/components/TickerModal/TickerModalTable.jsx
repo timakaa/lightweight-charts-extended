@@ -11,7 +11,7 @@ export const TickerModalTable = ({ tickers, onSelectTicker }) => {
   return (
     <div>
       {/* Table Header */}
-      <div className='grid grid-cols-4 gap-4 p-4 text-sm text-gray-400 border-b border-[#2E2E2E] font-medium'>
+      <div className='grid grid-cols-4 gap-4 p-4 text-sm text-primary/70 border-b border-border font-medium'>
         <div>Symbol</div>
         <div className='text-right'>Price</div>
         <div className='text-right'>Change</div>
