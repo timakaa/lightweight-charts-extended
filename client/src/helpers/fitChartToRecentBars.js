@@ -9,6 +9,16 @@ export function fitChartToRecentBars(
   rightOffset = 10,
 ) {
   if (!chart || !series || !candleData || !candleData.length) return;
+
+  // Check if series is still valid (not removed)
+  try {
+    const priceScale = series.priceScale();
+    if (!priceScale) return;
+  } catch {
+    // Series was removed, skip
+    return;
+  }
+
   // Sort candles by time ascending
   const sortedCandles = [...candleData].sort((a, b) => a.time - b.time);
   // Only count real candles (with open property)
@@ -24,15 +34,24 @@ export function fitChartToRecentBars(
       interval = realCandles[1].time - realCandles[0].time;
     }
     // Ensure price scale is set to autoscale
-    if (series.priceScale && series.priceScale().applyOptions) {
-      series.priceScale().applyOptions({ autoScale: true });
+    try {
+      const priceScale = series.priceScale();
+      if (priceScale && priceScale.applyOptions) {
+        priceScale.applyOptions({ autoScale: true });
+      }
+    } catch {
+      // Ignore if series was removed
     }
     // Set visible time range to last 200 bars
-    chart
-      .timeScale()
-      .setVisibleRange(
-        { from: firstReal.time, to: lastReal.time + rightOffset * interval },
-        { animation: false },
-      );
+    try {
+      chart
+        .timeScale()
+        .setVisibleRange(
+          { from: firstReal.time, to: lastReal.time + rightOffset * interval },
+          { animation: false },
+        );
+    } catch {
+      // Ignore if chart was removed
+    }
   }
 }

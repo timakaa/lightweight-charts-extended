@@ -8,22 +8,9 @@ export const useSeriesManagement = (chart, symbol, timeframe) => {
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
-  useEffect(() => {
-    chartMountedRef.current = true;
-    if (!chart) return;
-
-    // Remove existing series
-    if (series) {
-      try {
-        chart.removeSeries(series);
-      } catch {
-        // Ignore errors if already removed
-      }
-      setSeries(null);
-    }
-
-    // Theme-based colors
-    const colors = isDark
+  // Helper function to get theme-based colors
+  const getColors = (isDark) => {
+    return isDark
       ? {
           // Dark theme - white/gray
           upColor: "#fff",
@@ -42,9 +29,28 @@ export const useSeriesManagement = (chart, symbol, timeframe) => {
           wickDownColor: "#ef5350",
           wickUpColor: "#26a69a",
         };
+  };
 
-    // Create new series
-    const candlestickSeries = chart.addSeries(CandlestickSeries, colors);
+  // Effect 1: Create/recreate series only when chart, symbol, or timeframe changes
+  useEffect(() => {
+    chartMountedRef.current = true;
+    if (!chart) return;
+
+    // Remove existing series
+    if (series) {
+      try {
+        chart.removeSeries(series);
+      } catch {
+        // Ignore errors if already removed
+      }
+      setSeries(null);
+    }
+
+    // Create new series with current theme colors
+    const candlestickSeries = chart.addSeries(
+      CandlestickSeries,
+      getColors(isDark),
+    );
 
     setSeries(candlestickSeries);
 
@@ -58,7 +64,18 @@ export const useSeriesManagement = (chart, symbol, timeframe) => {
         }
       }
     };
-  }, [chart, symbol, timeframe, isDark]);
+  }, [chart, symbol, timeframe]);
+
+  // Effect 2: Update colors when theme changes (without recreating series)
+  useEffect(() => {
+    if (!series) return;
+
+    try {
+      series.applyOptions(getColors(isDark));
+    } catch {
+      // Ignore if series was removed
+    }
+  }, [isDark, series]);
 
   return series;
 };
