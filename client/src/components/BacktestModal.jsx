@@ -58,9 +58,12 @@ const BacktestModalContent = ({ onClose }) => {
   });
 
   const handleBacktestSelect = (backtest) => {
-    const { id } = backtest;
+    const { id, symbols } = backtest;
+    // Get the first symbol from the backtest (normalized format: BTCUSDT)
+    const ticker = symbols?.[0]?.ticker;
     onClose();
-    navigate(`/backtest/${id}`);
+    // Navigate with ticker as query parameter (consistent with TopBar)
+    navigate(`/backtest/${id}${ticker ? `?ticker=${ticker}` : ""}`);
   };
 
   return (

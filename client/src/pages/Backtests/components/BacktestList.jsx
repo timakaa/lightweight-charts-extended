@@ -6,8 +6,12 @@ import { useInfiniteScroll } from "@hooks/useInfiniteScroll";
 const BacktestList = ({ backtests, isLoading, hasNextPage, onLoadMore }) => {
   const navigate = useNavigate();
 
-  const handleBacktestClick = (backtestId) => {
-    navigate(`/backtest/${backtestId}`);
+  const handleBacktestClick = (backtest) => {
+    const { id, symbols } = backtest;
+    // Get the first symbol from the backtest (normalized format: BTCUSDT)
+    const ticker = symbols?.[0]?.ticker;
+    // Navigate with ticker as query parameter (consistent with TopBar)
+    navigate(`/backtest/${id}${ticker ? `?ticker=${ticker}` : ""}`);
   };
 
   const { loaderRef } = useInfiniteScroll({
@@ -47,7 +51,7 @@ const BacktestList = ({ backtests, isLoading, hasNextPage, onLoadMore }) => {
           <BacktestCard
             key={backtest.id}
             backtest={backtest}
-            onClick={() => handleBacktestClick(backtest.id)}
+            onClick={() => handleBacktestClick(backtest)}
           />
         ))}
       </div>

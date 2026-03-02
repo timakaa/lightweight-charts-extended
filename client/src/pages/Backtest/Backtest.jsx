@@ -3,13 +3,15 @@ import TopBar from "@components/TopBar/TopBar";
 import Sidebar from "@components/Sidebar/Sidebar";
 import Trades from "@components/Trades/Trades";
 import BacktestSidebar from "./components/BacktestSidebar/BacktestSidebar";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { useBacktestDrawings } from "@hooks/backtests/useBacktests";
 import { useState } from "react";
 import NotFound404 from "@components/404/404";
 
 const Backtest = () => {
   const { backtestId } = useParams();
+  const [searchParams] = useSearchParams();
+  const ticker = searchParams.get("ticker") || "BTCUSDT"; // Read ticker from URL (consistent with TopBar)
   const { data: backtestDrawings, error } = useBacktestDrawings(backtestId);
   const [chartData, setChartData] = useState(null);
 
@@ -27,7 +29,11 @@ const Backtest = () => {
           {chartData && <Sidebar {...chartData.drawingTools} />}
           <div className='flex-1 flex flex-col overflow-hidden'>
             <div className='flex-1 overflow-hidden'>
-              <Chart drawings={backtestDrawings} onChartReady={setChartData} />
+              <Chart
+                drawings={backtestDrawings}
+                onChartReady={setChartData}
+                symbol={ticker}
+              />
             </div>
             {chartData && (
               <Trades
