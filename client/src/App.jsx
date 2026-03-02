@@ -28,7 +28,7 @@ function App() {
           <Route
             path='/'
             element={
-              <div className='fixed inset-0 flex flex-col bg-black overflow-hidden'>
+              <div className='fixed inset-0 flex flex-col bg-background overflow-hidden'>
                 <TopBar />
                 <div className='flex-1 flex overflow-hidden'>
                   {drawingTools && <Sidebar {...drawingTools} />}

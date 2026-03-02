@@ -1,13 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useLocalStorage } from "./useLocalStorage";
 
 export const useTheme = () => {
-  const [theme, setTheme] = useState(() => {
-    // Check localStorage first, then default to 'dark'
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("theme") || "dark";
-    }
-    return "dark";
-  });
+  const [theme, setTheme] = useLocalStorage("theme", "dark");
 
   useEffect(() => {
     const root = document.documentElement;
@@ -17,9 +12,6 @@ export const useTheme = () => {
 
     // Add the current theme
     root.classList.add(theme);
-
-    // Save to localStorage
-    localStorage.setItem("theme", theme);
   }, [theme]);
 
   const toggleTheme = () => {

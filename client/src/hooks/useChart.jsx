@@ -1,20 +1,29 @@
 import { useEffect, useState } from "react";
 import { createChart, CrosshairMode } from "lightweight-charts";
+import { useTheme } from "./useTheme";
 
 export const useChart = (chartContainerRef) => {
   const [chart, setChart] = useState(null);
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   useEffect(() => {
     if (!chartContainerRef.current) {
       return;
     }
 
+    // Get theme-based colors
+    const backgroundColor = isDark ? "#000" : "#fff";
+    const textColor = isDark
+      ? "rgba(255, 255, 255, 0.9)"
+      : "rgba(0, 0, 0, 0.9)";
+
     const chartInstance = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
       height: chartContainerRef.current.clientHeight,
       layout: {
-        background: { color: "#000" },
-        textColor: "rgba(255, 255, 255, 0.9)",
+        background: { color: backgroundColor },
+        textColor: textColor,
       },
       grid: {
         vertLines: { color: "#33415800" },
@@ -86,6 +95,23 @@ export const useChart = (chartContainerRef) => {
       setChart(null);
     };
   }, [chartContainerRef]);
+
+  // Update chart colors when theme changes
+  useEffect(() => {
+    if (!chart) return;
+
+    const backgroundColor = isDark ? "#000" : "#fff";
+    const textColor = isDark
+      ? "rgba(255, 255, 255, 0.9)"
+      : "rgba(0, 0, 0, 0.9)";
+
+    chart.applyOptions({
+      layout: {
+        background: { color: backgroundColor },
+        textColor: textColor,
+      },
+    });
+  }, [theme, chart, isDark]);
 
   return chart;
 };
