@@ -1,6 +1,8 @@
 import ccxt.async_support as ccxt_async
 import ccxt
 import asyncio
+import sys
+import os
 from datetime import datetime
 from typing import Any, List, Union, Dict
 from tqdm import tqdm
@@ -8,7 +10,13 @@ from colorama import Fore
 
 from .config import Timeframe, TimeframeType, RESET_COLOR
 from .processor import process_timeframe
-from .cache import get_cached_markets, save_markets_cache
+
+# Add app directory to path to import market_cache
+app_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../app"))
+if app_dir not in sys.path:
+    sys.path.insert(0, app_dir)
+
+from utils.market_cache import get_market_info
 
 
 async def fetch_ohlcv_chunk(
@@ -122,35 +130,11 @@ async def fetch_and_save_historical_data(params_obj: Dict[str, Any]) -> None:
     )
 
     try:
-        # Check if we have cached markets for this exchange
-        cached_markets = get_cached_markets(exchange_id)
+        # Use the shared market cache utility
+        market = get_market_info(exchange_id, symbol)
         
-        # Create sync exchange
-        sync_exchange = getattr(ccxt, exchange_id)()
-        
-        if cached_markets:
-            print(f"{Fore.GREEN}Using cached markets for {exchange_id}{RESET_COLOR}")
-            # Set markets directly from cache, skip load_markets()
-            sync_exchange.markets = cached_markets
-            sync_exchange.markets_by_id = {m['id']: m for m in cached_markets.values() if 'id' in m}
-            sync_exchange.symbols = list(cached_markets.keys())
-            
-            # Look up market by ID (e.g., BTCUSDT -> market data)
-            market: Dict[str, Any] = sync_exchange.markets_by_id.get(symbol)
-            if not market:
-                raise ValueError(f"Market {symbol} not found in cache")
-        else:
-            print(f"{Fore.YELLOW}Loading markets from exchange (this may take a moment)...{RESET_COLOR}")
-            await exchange.load_markets()
-            
-            # Load markets on sync exchange (this is the slow part we want to cache)
-            sync_exchange.load_markets()
-            
-            # Cache the sync exchange's markets dictionary
-            save_markets_cache(exchange_id, sync_exchange.markets)
-            
-            # Use .market() method which handles symbol resolution
-            market: Dict[str, Any] = sync_exchange.market(symbol)
+        if not market:
+            raise ValueError(f"Market {symbol} not found")
 
         # Get min_date if available (perpetuals have it, spot markets don't)
         min_date = None

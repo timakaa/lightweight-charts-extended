@@ -69,11 +69,6 @@ async def run_backtest(request: RunBacktestRequest, background_tasks: Background
         raise HTTPException(status_code=500, detail=f"Error starting backtest: {str(e)}")
 
 
-@router.post("/backtest")
-def create_backtest(backtest_data: dict):
-    return backtest_service.create_backtest(backtest_data)
-
-
 @router.get("/backtest/summarized")
 def get_all_backtests_summarized(
     page: int = Query(1, ge=1, description="Page number"),
@@ -195,19 +190,4 @@ def get_strategies(
             "has_prev": page > 1,
         }
     }
-
-
-@router.get("/strategies/{strategy_name}")
-def get_strategy_details(strategy_name: str):
-    """
-    Get detailed information about a specific strategy
-    """
-    try:
-        info = get_strategy_info(strategy_name)
-        return info
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error getting strategy info: {str(e)}")
-
 

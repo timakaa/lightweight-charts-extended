@@ -57,7 +57,8 @@ const AsyncStrategySelect = ({ value, onChange }) => {
       items={allStrategies}
       isLoading={isLoading && page === 1}
       isFetching={isFetching}
-      onSearch={setSearchInput}
+      searchInput={searchInput}
+      setSearchInput={setSearchInput}
       onLoadMore={handleLoadMore}
       renderItem={renderStrategyItem}
       getItemKey={(strategy) => strategy.name}

@@ -75,7 +75,8 @@ const AsyncSymbolSelect = ({ value, onChange }) => {
       items={allTickers}
       isLoading={isLoading && page === 1}
       isFetching={isFetching}
-      onSearch={(search) => setSearchInput(search.toUpperCase())}
+      searchInput={searchInput}
+      setSearchInput={(search) => setSearchInput(search.toUpperCase())}
       onLoadMore={handleLoadMore}
       renderItem={renderTickerItem}
       getItemKey={(ticker) => ticker.symbol}

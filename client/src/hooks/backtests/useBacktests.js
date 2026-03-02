@@ -31,30 +31,6 @@ export const useBacktestsSummarized = (page, pageSize, search) => {
   });
 };
 
-const createBacktest = async (backtestData) => {
-  const response = await fetch(`${API_BASE_URL}/backtest`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(backtestData),
-  });
-  if (!response.ok) {
-    throw new Error("Network response was not ok");
-  }
-  return response.json();
-};
-
-export const useCreateBacktest = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: createBacktest,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["backtestsSummarized"] });
-    },
-  });
-};
-
 const deleteBacktest = async (backtestId) => {
   const response = await fetch(`${API_BASE_URL}/backtest/${backtestId}`, {
     method: "DELETE",

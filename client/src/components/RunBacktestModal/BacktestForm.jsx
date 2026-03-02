@@ -5,6 +5,7 @@ import AsyncStrategySelect from "./AsyncStrategySelect";
 import PresetsSection from "./PresetsSection";
 import { TIMEFRAMES } from "./constants";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { useSymbolDateRange } from "@hooks/useSymbolDateRange";
 
 const BacktestForm = ({
   strategy,
@@ -19,6 +20,8 @@ const BacktestForm = ({
   setEndDate,
   onSubmit,
 }) => {
+  const { data: dateRangeData } = useSymbolDateRange(symbol);
+
   const handleDateChange = ({ start, end }) => {
     setStartDate(start);
     setEndDate(end);
@@ -66,11 +69,18 @@ const BacktestForm = ({
           <div>
             <label className='block text-sm font-medium text-primary/80 mb-2'>
               Date Range
+              {dateRangeData?.min_date && (
+                <span className='text-xs text-muted-foreground ml-2'>
+                  (Available from {dateRangeData.min_date})
+                </span>
+              )}
             </label>
             <DateRangePicker
               startDate={startDate}
               endDate={endDate}
               onDateChange={handleDateChange}
+              minDate={dateRangeData?.min_date}
+              maxDate={dateRangeData?.max_date}
             />
           </div>
 

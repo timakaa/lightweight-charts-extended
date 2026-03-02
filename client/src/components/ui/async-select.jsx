@@ -6,21 +6,6 @@ import { Search, Loader2 } from "lucide-react";
 
 /**
  * Reusable async select component with search and pagination
- *
- * @param {Object} props
- * @param {string} props.value - Selected value
- * @param {Function} props.onChange - Callback when value changes
- * @param {string} props.placeholder - Placeholder text for button
- * @param {string} props.searchPlaceholder - Placeholder text for search input
- * @param {Array} props.items - Array of items to display
- * @param {boolean} props.isLoading - Loading state for initial load
- * @param {boolean} props.isFetching - Loading state for pagination
- * @param {Function} props.onSearch - Callback when search input changes
- * @param {Function} props.onLoadMore - Callback to load more items
- * @param {Function} props.renderItem - Function to render each item (item, isSelected) => ReactNode
- * @param {Function} props.getItemKey - Function to get unique key for item
- * @param {Function} props.getItemValue - Function to get value from item for selection
- * @param {Function} props.getItemDisplay - Optional function to get display text from item (defaults to getItemValue)
  */
 const AsyncSelect = ({
   value,
@@ -30,7 +15,8 @@ const AsyncSelect = ({
   items = [],
   isLoading = false,
   isFetching = false,
-  onSearch,
+  searchInput,
+  setSearchInput,
   onLoadMore,
   renderItem,
   getItemKey,
@@ -38,10 +24,32 @@ const AsyncSelect = ({
   getItemDisplay,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [searchInput, setSearchInput] = useState("");
   const [dropdownPosition, setDropdownPosition] = useState(null);
+  const [selectedDisplayText, setSelectedDisplayText] = useState("");
   const buttonRef = useRef(null);
   const scrollRef = useRef(null);
+
+  // Update display text when value or items change
+  useEffect(() => {
+    if (!value) {
+      setSelectedDisplayText("");
+      return;
+    }
+
+    const selectedItem = items.find((item) => {
+      const itemValue = getItemValue ? getItemValue(item) : item;
+      return itemValue === value;
+    });
+
+    if (selectedItem) {
+      const displayText = getItemDisplay
+        ? getItemDisplay(selectedItem)
+        : getItemValue
+          ? getItemValue(selectedItem)
+          : selectedItem;
+      setSelectedDisplayText(displayText);
+    }
+  }, [value, items, getItemValue, getItemDisplay]);
 
   // Calculate dropdown position when opened
   useEffect(() => {
@@ -61,7 +69,6 @@ const AsyncSelect = ({
   const handleSearchChange = (e) => {
     const newValue = e.target.value;
     setSearchInput(newValue);
-    onSearch?.(newValue);
   };
 
   // Handle scroll for pagination
@@ -91,21 +98,7 @@ const AsyncSelect = ({
   // Get display text for selected value
   const getDisplayText = () => {
     if (!value) return placeholder;
-
-    // Find the selected item
-    const selectedItem = items.find((item) => {
-      const itemValue = getItemValue ? getItemValue(item) : item;
-      return itemValue === value;
-    });
-
-    if (!selectedItem) return value;
-
-    // Use getItemDisplay if provided, otherwise fall back to getItemValue
-    if (getItemDisplay) {
-      return getItemDisplay(selectedItem);
-    }
-
-    return getItemValue ? getItemValue(selectedItem) : selectedItem;
+    return selectedDisplayText || value;
   };
 
   // Close dropdown

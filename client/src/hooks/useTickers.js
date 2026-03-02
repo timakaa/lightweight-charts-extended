@@ -80,15 +80,3 @@ export const useTickers = ({
     refetchIntervalInBackground: true,
   });
 };
-
-// Hook for specific ticker
-export const useTicker = (symbol, enabled = true) => {
-  return useQuery({
-    queryKey: ["ticker", symbol],
-    queryFn: () => fetchTicker(symbol),
-    enabled: enabled && !!symbol,
-    staleTime: 10000, // 10 seconds for individual tickers
-    refetchInterval: 30000, // Refetch every 30 seconds
-    refetchIntervalInBackground: true,
-  });
-};

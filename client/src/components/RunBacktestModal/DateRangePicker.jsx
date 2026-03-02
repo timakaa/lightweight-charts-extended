@@ -9,7 +9,13 @@ import {
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
-const DateRangePicker = ({ startDate, endDate, onDateChange }) => {
+const DateRangePicker = ({
+  startDate,
+  endDate,
+  onDateChange,
+  minDate,
+  maxDate,
+}) => {
   const [date, setDate] = useState({
     from: startDate ? new Date(startDate) : undefined,
     to: endDate ? new Date(endDate) : undefined,
@@ -33,6 +39,10 @@ const DateRangePicker = ({ startDate, endDate, onDateChange }) => {
       });
     }
   }, [date]);
+
+  // Convert min/max dates to Date objects
+  const fromDate = minDate ? new Date(minDate) : undefined;
+  const toDate = maxDate ? new Date(maxDate) : new Date();
 
   return (
     <Popover>
@@ -80,6 +90,13 @@ const DateRangePicker = ({ startDate, endDate, onDateChange }) => {
           selected={date}
           onSelect={setDate}
           numberOfMonths={2}
+          fromDate={fromDate}
+          toDate={toDate}
+          disabled={(date) => {
+            if (fromDate && date < fromDate) return true;
+            if (toDate && date > toDate) return true;
+            return false;
+          }}
         />
       </PopoverContent>
     </Popover>

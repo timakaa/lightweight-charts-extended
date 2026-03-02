@@ -62,9 +62,33 @@ class ExchangeService:
                 [], page, page_size, search, quote_currency, sort_by, sort_order
             )
 
-    async def get_ticker(self, symbol: str) -> Dict[str, Any]:
-        """Get specific ticker data"""
-        return await self.ticker_handler.get_ticker(symbol)
+    async def get_symbol_date_range(self, symbol: str) -> Dict[str, Any]:
+        """Get available date range for a symbol"""
+        from datetime import datetime
+        from app.utils.market_cache import get_market_info
+        
+        exchange_id = "bybit"
+        
+        # Get market info using the shared utility
+        market = get_market_info(exchange_id, symbol)
+        
+        if not market:
+            return None
+        
+        # Get creation date if available
+        min_date = None
+        if market.get("created"):
+            min_date = datetime.fromtimestamp(market["created"] / 1000).isoformat()
+        
+        # Current date and time as max (ISO 8601 format)
+        max_date = datetime.now().isoformat()
+        
+        return {
+            "symbol": symbol,
+            "min_date": min_date,
+            "max_date": max_date,
+            "market_type": market.get("type"),
+        }
 
     async def get_candlesticks_paginated(
         self,
