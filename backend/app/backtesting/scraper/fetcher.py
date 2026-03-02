@@ -126,7 +126,7 @@ async def fetch_and_save_historical_data(params_obj: Dict[str, Any]) -> None:
         timeframes = [timeframes]
 
     exchange = getattr(ccxt_async, exchange_id)(
-        {"enableRateLimit": True, "options": {"defaultType": "spot"}}
+        {"enableRateLimit": True, "options": {"defaultType": "swap"}}
     )
 
     try:

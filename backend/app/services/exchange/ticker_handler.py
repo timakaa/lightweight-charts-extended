@@ -2,6 +2,7 @@ import asyncio
 from typing import List, Dict, Any, Optional
 from .cache import ExchangeCache
 from app.utils.pagination import Paginator
+from app.utils.symbol_utils import normalize_symbol_for_display
 
 
 class TickerHandler:
@@ -40,12 +41,32 @@ class TickerHandler:
         """Format raw ticker data"""
         formatted = []
         for symbol, ticker in tickers.items():
+            # Skip dated futures contracts (e.g., BTC/USDT:USDT-260424)
+            # Only keep perpetual swaps (e.g., BTC/USDT:USDT)
+            if ":" in symbol:
+                parts = symbol.split(":")
+                if len(parts) == 2 and "-" in parts[1]:
+                    # This is a dated futures contract, skip it
+                    continue
+            
             base = ticker.get("base")
             quote = ticker.get("quote")
 
+            # Normalize symbol format: BTC/USDT:USDT -> BTC/USDT
+            normalized_symbol = normalize_symbol_for_display(symbol)
+
             # Parse from symbol if base/quote are None
             if base is None or quote is None:
-                if "/" in symbol:
+                # Handle perpetual format: BTC/USDT:USDT
+                if ":" in symbol:
+                    parts = symbol.split(":")
+                    if len(parts) == 2 and "/" in parts[0]:
+                        base_quote = parts[0].split("/")
+                        if len(base_quote) == 2:
+                            base = base_quote[0]
+                            quote = base_quote[1]
+                # Handle spot format: BTC/USDT
+                elif "/" in symbol:
                     parts = symbol.split("/")
                     if len(parts) == 2:
                         base = parts[0]
@@ -53,7 +74,7 @@ class TickerHandler:
 
             formatted.append(
                 {
-                    "symbol": symbol,
+                    "symbol": normalized_symbol,
                     "base": base,
                     "quote": quote,
                     "last": ticker.get("last"),

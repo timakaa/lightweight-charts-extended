@@ -10,7 +10,7 @@ class ExchangeService:
 
     def __init__(self):
         self.exchange = ccxt.bybit(
-            {"enableRateLimit": True, "options": {"defaultType": "spot"}}
+            {"enableRateLimit": True, "options": {"defaultType": "swap"}}
         )
         self._markets_loaded = False
         self._markets_lock = asyncio.Lock()
@@ -66,11 +66,15 @@ class ExchangeService:
         """Get available date range for a symbol"""
         from datetime import datetime
         from app.utils.market_cache import get_market_info
+        from app.utils.symbol_utils import normalize_symbol_for_api
         
         exchange_id = "bybit"
         
-        # Get market info using the shared utility
-        market = get_market_info(exchange_id, symbol)
+        # Convert frontend format to backend format (BTC/USDT -> BTC/USDT:USDT)
+        api_symbol = normalize_symbol_for_api(symbol, market_type="swap")
+        
+        # Get market info using the API format
+        market = get_market_info(exchange_id, api_symbol)
         
         if not market:
             return None
@@ -84,7 +88,7 @@ class ExchangeService:
         max_date = datetime.now().isoformat()
         
         return {
-            "symbol": symbol,
+            "symbol": symbol,  # Return the frontend format
             "min_date": min_date,
             "max_date": max_date,
             "market_type": market.get("type"),

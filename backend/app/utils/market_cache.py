@@ -75,21 +75,33 @@ def get_market_info(exchange_id: str, symbol: str) -> Optional[Dict[str, Any]]:
     
     Args:
         exchange_id: Exchange identifier (e.g., "bybit")
-        symbol: Trading symbol (e.g., "BTCUSDT" or "BTC/USDT")
+        symbol: Trading symbol (e.g., "BTCUSDT", "BTC/USDT", or "BTC/USDT:USDT")
     
     Returns:
         Market dictionary or None if not found
     """
     sync_exchange = load_markets_with_cache(exchange_id)
     
-    # Clean symbol (remove slash if present)
+    # Try original symbol first
+    market = sync_exchange.markets.get(symbol)
+    if market:
+        return market
+    
+    # Clean symbol (remove slash)
     clean_symbol = symbol.replace("/", "").upper()
     
     # Try to find market by ID
     market = sync_exchange.markets_by_id.get(clean_symbol)
+    if market:
+        return market
     
-    if not market:
-        # Try with original symbol format
-        market = sync_exchange.markets.get(symbol)
+    # Try with :USDT suffix for perpetuals
+    if ":" not in symbol and "/" in symbol:
+        parts = symbol.split("/")
+        if len(parts) == 2:
+            perpetual_symbol = f"{symbol}:{parts[1]}"
+            market = sync_exchange.markets.get(perpetual_symbol)
+            if market:
+                return market
     
-    return market
+    return None

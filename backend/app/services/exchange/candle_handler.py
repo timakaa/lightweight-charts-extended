@@ -3,6 +3,7 @@ import threading
 from typing import Dict, Any, Optional
 from app.models.backtest_symbol import BacktestSymbol
 from app.db.database import get_db
+from app.utils.symbol_utils import normalize_symbol_for_api
 from .cache import ExchangeCache
 
 
@@ -27,14 +28,6 @@ class CandleHandler:
 
     def __init__(self, exchange):
         self.exchange = exchange
-
-    def normalize_symbol(self, symbol: str) -> str:
-        """Normalize symbol format"""
-        if "/" not in symbol:
-            symbol = symbol.upper()
-            if symbol.endswith("USDT"):
-                symbol = symbol[:-4] + "/USDT"
-        return symbol
 
     def normalize_timeframe(self, timeframe: str) -> str:
         """Normalize timeframe format"""
@@ -93,7 +86,7 @@ class CandleHandler:
         Uses cache for oldest candle if available, otherwise starts background fetch.
         If backtest_id is provided, restricts to backtest date range.
         """
-        symbol = self.normalize_symbol(symbol)
+        symbol = normalize_symbol_for_api(symbol)
         timeframe = self.normalize_timeframe(timeframe)
         tf_ms = self.TIMEFRAME_MS.get(timeframe, 60 * 1000)
 

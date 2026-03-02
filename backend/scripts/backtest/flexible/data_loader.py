@@ -19,7 +19,7 @@ def load_multi_timeframe_data(
     Load data for multiple timeframes from CSV files
     
     Args:
-        symbol: Trading symbol (e.g., "BTCUSDT")
+        symbol: Trading symbol (e.g., "BTCUSDT" or "BTC/USDT")
         timeframes: List of timeframes (e.g., ["1h", "4h"])
         charts_dir: Directory containing chart data
         start_date: Optional start date for filtering (YYYY-MM-DD format)
@@ -28,6 +28,20 @@ def load_multi_timeframe_data(
     Returns:
         Dictionary mapping timeframe to DataFrame, or None if data not found
     """
+    import sys
+    import os
+    
+    # Add utils to path
+    app_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../app"))
+    if app_dir not in sys.path:
+        sys.path.insert(0, app_dir)
+    
+    from utils.symbol_utils import normalize_symbol_for_api
+    
+    # Convert to API format if needed (BTC/USDT -> BTC/USDT:USDT for perpetuals)
+    # Then remove slashes and colons for filename (BTC/USDT:USDT -> BTCUSDT)
+    api_symbol = normalize_symbol_for_api(symbol, market_type="swap")
+    
     data_dict = {}
     
     # Convert date strings to datetime if provided
@@ -40,7 +54,7 @@ def load_multi_timeframe_data(
         data_loaded = False
         
         for exchange in exchanges:
-            filename = f"{symbol}-{timeframe}-{exchange}.csv"
+            filename = f"{api_symbol}-{timeframe}-{exchange}.csv"
             filepath = os.path.join(charts_dir, filename)
             
             if os.path.exists(filepath):
