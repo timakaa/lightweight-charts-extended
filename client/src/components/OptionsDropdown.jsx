@@ -1,11 +1,4 @@
-import { Fragment, useState } from "react";
-import {
-  Menu,
-  Transition,
-  MenuButton,
-  MenuItem,
-  MenuItems,
-} from "@headlessui/react";
+import { useState } from "react";
 import Trash from "@icons/Trash";
 import Edit from "@icons/Edit";
 import {
@@ -14,6 +7,13 @@ import {
 } from "../hooks/backtests/useBacktests";
 import { useNavigate, useParams } from "react-router-dom";
 import EditBacktestModal from "../pages/Backtests/components/EditBacktestModal";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreHorizontal } from "lucide-react";
 
 const OptionsDropdown = ({ backtest }) => {
   const navigate = useNavigate();
@@ -22,7 +22,8 @@ const OptionsDropdown = ({ backtest }) => {
   const { mutate: updateBacktest } = useUpdateBacktest();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  const onEdit = () => {
+  const onEdit = (e) => {
+    e.stopPropagation();
     setIsEditModalOpen(true);
   };
 
@@ -37,7 +38,8 @@ const OptionsDropdown = ({ backtest }) => {
     );
   };
 
-  const onDelete = () => {
+  const onDelete = (e) => {
+    e.stopPropagation();
     deleteBacktest(backtest.id, {
       onSuccess: () => {
         // Only navigate back if we're deleting the currently viewed backtest
@@ -50,58 +52,33 @@ const OptionsDropdown = ({ backtest }) => {
 
   return (
     <>
-      <Menu as='div' className='relative z-50' data-menu='true'>
-        <MenuButton className='p-1 hover:bg-foreground/20 rounded-sm transition-colors'>
-          <svg
-            xmlns='http://www.w3.org/2000/svg'
-            className='h-4 w-4 text-primary/60'
-            viewBox='0 0 20 20'
-            fill='currentColor'
-          >
-            <path d='M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z' />
-          </svg>
-        </MenuButton>
-        <Transition
-          as={Fragment}
-          enter='transition ease-out duration-100'
-          enterFrom='transform opacity-0 scale-95'
-          enterTo='transform opacity-100 scale-100'
-          leave='transition ease-in duration-75'
-          leaveFrom='transform opacity-100 scale-100'
-          leaveTo='transform opacity-0 scale-95'
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          className='p-1 hover:bg-accent rounded-sm transition-colors focus:outline-none'
+          onClick={(e) => e.stopPropagation()}
         >
-          <MenuItems className='absolute right-0 mt-2 w-32 origin-top-right rounded-md bg-background shadow-lg ring-1 ring-border focus:outline-none z-10'>
-            <div>
-              <MenuItem>
-                {({ active }) => (
-                  <button
-                    onClick={onEdit}
-                    className={`${
-                      active ? "bg-foreground" : ""
-                    } flex w-full items-center px-3 py-1.5 text-base text-primary hover:bg-foreground/5 rounded-t-md gap-2`}
-                  >
-                    <Edit width={14} height={14} />
-                    Edit
-                  </button>
-                )}
-              </MenuItem>
-              <MenuItem>
-                {({ active }) => (
-                  <button
-                    onClick={onDelete}
-                    className={`${
-                      active ? "bg-foreground" : ""
-                    } flex w-full items-center px-2 py-1.5 text-base text-red-500 hover:bg-foreground/5 rounded-b-md gap-1`}
-                  >
-                    <Trash width={20} height={20} />
-                    Delete
-                  </button>
-                )}
-              </MenuItem>
+          <MoreHorizontal className='h-4 w-4 text-muted-foreground' />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align='end'
+          className='w-32 bg-background border-border'
+          onClick={(e) => e.stopPropagation()}
+        >
+          <DropdownMenuItem
+            onClick={onEdit}
+            className='flex items-center gap-2 cursor-pointer text-foreground hover:bg-accent'
+          >
+            <Edit width={14} height={14} />
+            Edit
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={onDelete} className='cursor-pointer'>
+            <div className='text-error flex items-center gap-1'>
+              <Trash width={20} height={20} />
+              Delete
             </div>
-          </MenuItems>
-        </Transition>
-      </Menu>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       <EditBacktestModal
         isOpen={isEditModalOpen}

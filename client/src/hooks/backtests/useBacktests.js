@@ -50,7 +50,7 @@ export const useCreateBacktest = () => {
   return useMutation({
     mutationFn: createBacktest,
     onSuccess: () => {
-      queryClient.invalidateQueries("backtestsSummarized");
+      queryClient.invalidateQueries({ queryKey: ["backtestsSummarized"] });
     },
   });
 };
@@ -70,7 +70,7 @@ export const useDeleteBacktest = () => {
   return useMutation({
     mutationFn: deleteBacktest,
     onSuccess: () => {
-      queryClient.invalidateQueries("backtestsSummarized");
+      queryClient.invalidateQueries({ queryKey: ["backtestsSummarized"] });
     },
   });
 };
@@ -94,7 +94,7 @@ export const useUpdateBacktest = () => {
   return useMutation({
     mutationFn: updateBacktest,
     onSuccess: () => {
-      queryClient.invalidateQueries("backtestsSummarized");
+      queryClient.invalidateQueries({ queryKey: ["backtestsSummarized"] });
     },
   });
 };
