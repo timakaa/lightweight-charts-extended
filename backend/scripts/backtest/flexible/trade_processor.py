@@ -3,8 +3,17 @@ Trade Processing Module
 Processes backtest trades and calculates metrics
 """
 
+import sys
+import os
 import pandas as pd
 from typing import Dict, Any, List, Tuple
+
+# Add app directory to path
+app_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../app"))
+if app_dir not in sys.path:
+    sys.path.insert(0, app_dir)
+
+from utils.symbol_utils import symbol_to_filename
 
 
 def process_trades(
@@ -17,12 +26,15 @@ def process_trades(
     
     Args:
         trades_df: DataFrame of trades from backtesting library
-        symbol: Trading symbol
+        symbol: Trading symbol (will be normalized to DB format)
         strategy_params: Strategy parameters for SL/TP calculation
         
     Returns:
         Tuple of (trades_list, profitable_trades, loss_trades, long_trades, short_trades, pnl_list)
     """
+    # Normalize symbol to DB format: BTC/USDT:USDT -> BTCUSDT
+    normalized_symbol = symbol_to_filename(symbol)
+    
     trades_list = []
     profitable_trades = 0
     loss_trades = 0
@@ -60,7 +72,7 @@ def process_trades(
             calculated_take_profit = entry_price * (1 - (stop_loss_pct * risk_reward))
 
         trade_info = {
-            "symbol": symbol,
+            "symbol": normalized_symbol,  # Use normalized symbol for DB
             "entry_time": trade.EntryTime.tz_localize("UTC").isoformat(),
             "exit_time": trade.ExitTime.tz_localize("UTC").isoformat(),
             "entry_price": entry_price,

@@ -4,8 +4,17 @@ Constructs the final results dictionary with all metrics
 """
 
 import json
+import sys
+import os
 import pandas as pd
 from typing import Dict, Any, List, Optional
+
+# Add app directory to path
+app_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../app"))
+if app_dir not in sys.path:
+    sys.path.insert(0, app_dir)
+
+from utils.symbol_utils import symbol_to_filename, normalize_symbol_for_display
 
 
 def calculate_additional_metrics(
@@ -94,8 +103,11 @@ def build_results_dict(
     """
     total_trades = len(trades_list)
     
+    # Normalize symbol for display: BTC/USDT:USDT -> BTC/USDT
+    display_symbol = normalize_symbol_for_display(symbol)
+    
     results = {
-        "title": f"{strategy_instance.name} - {symbol}",
+        "title": f"{strategy_instance.name} - {display_symbol}",
         "strategy_name": strategy_instance.config.name,
         "strategy_config": strategy_instance.config.to_dict(),
         "trades": trades_list,
@@ -133,7 +145,7 @@ def build_results_dict(
         "is_live": False,  # Always False for backtests
         "symbols": [
             {
-                "ticker": symbol,
+                "ticker": symbol_to_filename(symbol),  # Convert to DB format: BTC/USDT:USDT -> BTCUSDT
                 "start_date": main_data.index[0].tz_localize("UTC").isoformat(),
                 "end_date": main_data.index[-1].tz_localize("UTC").isoformat(),
             }

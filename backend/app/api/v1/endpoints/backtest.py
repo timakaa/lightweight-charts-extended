@@ -5,8 +5,10 @@ from app.core.storage import storage
 from app.backtesting.strategies import list_strategies, get_strategy_info
 from typing import Optional, Dict, Any, List
 from pydantic import BaseModel, Field
+from app.utils.symbol_utils import normalize_symbol_for_api
 import sys
 import os
+
 
 # Add scripts directory to path for flexible backtest imports
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -44,7 +46,7 @@ async def run_backtest(request: RunBacktestRequest, background_tasks: Background
         timeframes = [request.timeframe]
 
         # Remove "/" from symbol (e.g., BTC/USDT -> BTCUSDT)
-        symbol = request.symbol.replace("/", "")
+        symbol = normalize_symbol_for_api(request.symbol)
         
         # Run the backtest in the background
         background_tasks.add_task(

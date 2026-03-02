@@ -6,6 +6,7 @@ import json
 import os
 from datetime import datetime
 from typing import Dict, Any, Optional
+from app.utils.symbol_utils import normalize_symbol_for_api
 import ccxt
 
 
@@ -88,11 +89,20 @@ def get_market_info(exchange_id: str, symbol: str) -> Optional[Dict[str, Any]]:
         return market
     
     # Clean symbol (remove slash)
-    clean_symbol = symbol.replace("/", "").upper()
+    clean_symbol = normalize_symbol_for_api(symbol)
     
     # Try to find market by ID
     market = sync_exchange.markets_by_id.get(clean_symbol)
     if market:
+        # markets_by_id can return a list if multiple markets share the same ID
+        # Prefer swap/perpetual over spot when available
+        if isinstance(market, list):
+            # Look for swap/perpetual first
+            for m in market:
+                if m.get('swap') or m.get('type') == 'swap':
+                    return m
+            # Fall back to first market if no swap found
+            return market[0]
         return market
     
     # Try with :USDT suffix for perpetuals

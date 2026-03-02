@@ -3,7 +3,7 @@ import threading
 from typing import Dict, Any, Optional
 from app.models.backtest_symbol import BacktestSymbol
 from app.db.database import get_db
-from app.utils.symbol_utils import normalize_symbol_for_api
+from app.utils.symbol_utils import normalize_symbol_for_api, symbol_to_filename
 from .cache import ExchangeCache
 
 
@@ -41,13 +41,16 @@ class CandleHandler:
         self, backtest_id: int, symbol: str
     ) -> tuple[Optional[int], Optional[int]]:
         """Get date range from backtest symbol"""
+        # Convert symbol to DB format: SOL/USDT:USDT -> SOLUSDT
+        db_symbol = symbol_to_filename(symbol)
+        
         db = next(get_db())
         try:
             bsymbol = (
                 db.query(BacktestSymbol)
                 .filter(
                     BacktestSymbol.backtest_id == backtest_id,
-                    BacktestSymbol.ticker.ilike(symbol.replace("/", "")),
+                    BacktestSymbol.ticker.ilike(db_symbol),
                 )
                 .first()
             )
@@ -150,9 +153,10 @@ class CandleHandler:
         fetch_limit = start_idx - end_idx + 1
         fetch_since = oldest_ts + end_idx * tf_ms
 
+        # Use the properly formatted symbol (already normalized)
         candles = await asyncio.to_thread(
             self.exchange.fetch_ohlcv,
-            symbol.replace("/", ""),
+            symbol,
             timeframe,
             fetch_since,
             fetch_limit,
@@ -194,10 +198,10 @@ class CandleHandler:
             daemon=True,
         ).start()
 
-        # Fetch newest candles for this page
+        # Fetch newest candles for this page (use properly formatted symbol)
         candles = await asyncio.to_thread(
             self.exchange.fetch_ohlcv,
-            symbol.replace("/", ""),
+            symbol,
             timeframe,
             None,
             page_size,

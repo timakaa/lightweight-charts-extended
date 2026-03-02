@@ -3,6 +3,7 @@ import pandas as pd
 import asyncio
 from datetime import datetime
 from typing import Any, List, Dict, Optional, Union
+import sys
 
 from .config import (
     Timeframe,
@@ -12,6 +13,13 @@ from .config import (
     WARNING_LABEL,
     RESET_COLOR,
 )
+
+# Add app directory to path to import symbol_utils
+app_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
+if app_dir not in sys.path:
+    sys.path.insert(0, app_dir)
+
+from utils.symbol_utils import symbol_to_filename
 
 
 async def process_timeframe(
@@ -28,7 +36,9 @@ async def process_timeframe(
     else:
         timeframe_value: TimeframeType = timeframe
 
-    filename: str = f"{symbol}-{timeframe_value}-{exchange.id}.csv"
+    # Sanitize symbol for filename: BTC/USDT:USDT -> BTCUSDT
+    safe_symbol = symbol_to_filename(symbol)
+    filename: str = f"{safe_symbol}-{timeframe_value}-{exchange.id}.csv"
 
     if not os.path.exists(CHARTS_DIR):
         os.makedirs(CHARTS_DIR)

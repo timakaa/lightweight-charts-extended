@@ -15,7 +15,7 @@ sys.path.insert(0, project_root)
 from app.db.database import Base, engine
 from flexible.cli import parse_and_handle_args
 from flexible.strategy_loader import load_and_validate_strategy
-from flexible.data_loader import load_multi_timeframe_data
+from flexible.data_loader import load_multi_timeframe_data, check_and_scrape_data
 from flexible.backtest_runner import run_backtest
 from flexible.trade_processor import process_trades, calculate_trading_days, calculate_value_at_risk
 from flexible.drawing_creator import create_trade_drawings, create_strategy_drawings
@@ -58,8 +58,17 @@ def run_flexible_backtest(
     if strategy_instance is None:
         return None
     
-    # Load multi-timeframe data
+    # Check if data exists and scrape if needed
     charts_dir = os.path.join(project_root, "charts")
+    if start_date and end_date:
+        data_available = check_and_scrape_data(
+            symbol, timeframes, start_date, end_date, charts_dir
+        )
+        if not data_available:
+            print("❌ Failed to obtain required data")
+            return None
+    
+    # Load multi-timeframe data
     data_dict = load_multi_timeframe_data(
         symbol, 
         timeframes, 

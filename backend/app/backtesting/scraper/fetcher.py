@@ -17,6 +17,7 @@ if app_dir not in sys.path:
     sys.path.insert(0, app_dir)
 
 from utils.market_cache import get_market_info
+from utils.symbol_utils import normalize_symbol_for_api
 
 
 async def fetch_ohlcv_chunk(
@@ -116,7 +117,7 @@ async def fetch_data_for_range(
 
 async def fetch_and_save_historical_data(params_obj: Dict[str, Any]) -> None:
     """Fetch and save historical data for all timeframes"""
-    symbol: str = params_obj["symbol"].upper()
+    symbol: str = normalize_symbol_for_api(params_obj["symbol"])
     timeframes: Union[Timeframe, List[Timeframe]] = params_obj["timeframe"]
     start_date: str = params_obj["start_date"]
     end_date: str = params_obj["end_date"]

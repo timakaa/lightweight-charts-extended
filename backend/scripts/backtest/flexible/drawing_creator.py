@@ -3,7 +3,16 @@ Drawing Creation Module
 Creates visualization drawings for trades and strategy elements
 """
 
+import sys
+import os
 from typing import List, Dict, Any
+
+# Add app directory to path
+app_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../app"))
+if app_dir not in sys.path:
+    sys.path.insert(0, app_dir)
+
+from utils.symbol_utils import symbol_to_filename
 
 
 def create_trade_drawings(trades_list: List[Dict], symbol: str) -> List[Dict]:
@@ -12,11 +21,14 @@ def create_trade_drawings(trades_list: List[Dict], symbol: str) -> List[Dict]:
     
     Args:
         trades_list: List of processed trades
-        symbol: Trading symbol
+        symbol: Trading symbol (will be normalized to DB format)
         
     Returns:
         List of drawing objects
     """
+    # Normalize symbol to DB format: BTC/USDT:USDT -> BTCUSDT
+    normalized_symbol = symbol_to_filename(symbol)
+    
     drawings = []
     
     print(f"📊 Creating drawings for {len(trades_list)} trades")
@@ -25,7 +37,7 @@ def create_trade_drawings(trades_list: List[Dict], symbol: str) -> List[Dict]:
             drawing = {
                 "type": "long_position",
                 "id": f"trade_{i}",
-                "ticker": symbol,
+                "ticker": normalized_symbol,  # Use normalized symbol
                 "startTime": trade["entry_time"],
                 "endTime": trade["exit_time"],
                 "entryPrice": trade["entry_price"],
@@ -48,7 +60,7 @@ def create_trade_drawings(trades_list: List[Dict], symbol: str) -> List[Dict]:
             drawing = {
                 "type": "short_position",
                 "id": f"trade_{i}",
-                "ticker": symbol,
+                "ticker": normalized_symbol,  # Use normalized symbol
                 "startTime": trade["entry_time"],
                 "endTime": trade["exit_time"],
                 "entryPrice": trade["entry_price"],
@@ -84,12 +96,15 @@ def create_strategy_drawings(
     Args:
         strategy_instance: Strategy instance
         backtest_instance: Backtest instance
-        symbol: Trading symbol
+        symbol: Trading symbol (will be normalized to DB format)
         existing_drawings: Existing drawings to append to
         
     Returns:
         Combined list of drawings
     """
+    # Normalize symbol to DB format: BTC/USDT:USDT -> BTCUSDT
+    normalized_symbol = symbol_to_filename(symbol)
+    
     drawings = existing_drawings.copy()
     
     try:
@@ -118,7 +133,7 @@ def create_strategy_drawings(
         if levels and len(levels) > 0:
             print(f"✅ Processing {len(levels)} strategy elements")
             for level in levels:
-                drawing = _create_level_drawing(level, symbol, len(drawings))
+                drawing = _create_level_drawing(level, normalized_symbol, len(drawings))  # Use normalized symbol
                 if drawing:
                     drawings.append(drawing)
                     _print_drawing_info(level, drawing)
