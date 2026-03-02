@@ -1,5 +1,6 @@
 import CustomSelect from "./CustomSelect";
 import DateRangePicker from "./DateRangePicker";
+import AsyncSymbolSelect from "./AsyncSymbolSelect";
 import { STRATEGIES, TIMEFRAMES, DATE_PRESETS } from "./constants";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -43,13 +44,7 @@ const BacktestForm = ({
           <label className='block text-sm font-medium text-primary/80 mb-2'>
             Symbol
           </label>
-          <Input
-            type='text'
-            value={symbol}
-            onChange={(e) => setSymbol(e.target.value.toUpperCase())}
-            placeholder='BTCUSDT'
-            className='bg-background border-border text-primary'
-          />
+          <AsyncSymbolSelect value={symbol} onChange={setSymbol} />
         </div>
 
         {/* Timeframe */}

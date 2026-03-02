@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useDebounce } from "@hooks/useDebounce";
-import { useTickers } from "../../hooks/useTickers";
+import { useTickers } from "@hooks/useTickers";
 import { TickerModalHeader } from "./TickerModalHeader";
 import { TickerModalSearch } from "./TickerModalSearch";
 import { TickerModalSort } from "./TickerModalSort";

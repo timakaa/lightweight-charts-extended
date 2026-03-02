@@ -1,21 +1,21 @@
 export const DATE_PRESETS = [
   {
     label: "2022-2023 (1h)",
-    symbol: "BTCUSDT",
+    symbol: "BTC/USDT",
     timeframe: "1h",
     start: "2022-01-01",
     end: "2023-01-01",
   },
   {
     label: "2023-2024 (1h)",
-    symbol: "BTCUSDT",
+    symbol: "BTC/USDT",
     timeframe: "1h",
     start: "2023-01-01",
     end: "2024-01-01",
   },
   {
     label: "Last 6 months (4h)",
-    symbol: "BTCUSDT",
+    symbol: "BTC/USDT",
     timeframe: "4h",
     start: null,
     end: null,
@@ -23,7 +23,7 @@ export const DATE_PRESETS = [
   },
   {
     label: "Last 3 months (1h)",
-    symbol: "BTCUSDT",
+    symbol: "BTC/USDT",
     timeframe: "1h",
     start: null,
     end: null,
@@ -31,7 +31,7 @@ export const DATE_PRESETS = [
   },
   {
     label: "Last year (1d)",
-    symbol: "BTCUSDT",
+    symbol: "BTC/USDT",
     timeframe: "1d",
     start: null,
     end: null,
