@@ -10,7 +10,7 @@ import ccxt
 
 
 # Cache directory at project root level
-CACHE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.cache"))
+CACHE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../charts/.cache"))
 os.makedirs(CACHE_DIR, exist_ok=True)
 
 
