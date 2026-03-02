@@ -20,6 +20,7 @@ import { Search, Loader2 } from "lucide-react";
  * @param {Function} props.renderItem - Function to render each item (item, isSelected) => ReactNode
  * @param {Function} props.getItemKey - Function to get unique key for item
  * @param {Function} props.getItemValue - Function to get value from item for selection
+ * @param {Function} props.getItemDisplay - Optional function to get display text from item (defaults to getItemValue)
  */
 const AsyncSelect = ({
   value,
@@ -34,6 +35,7 @@ const AsyncSelect = ({
   renderItem,
   getItemKey,
   getItemValue,
+  getItemDisplay,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchInput, setSearchInput] = useState("");
@@ -84,6 +86,26 @@ const AsyncSelect = ({
     onChange(itemValue);
     setIsOpen(false);
     setSearchInput("");
+  };
+
+  // Get display text for selected value
+  const getDisplayText = () => {
+    if (!value) return placeholder;
+
+    // Find the selected item
+    const selectedItem = items.find((item) => {
+      const itemValue = getItemValue ? getItemValue(item) : item;
+      return itemValue === value;
+    });
+
+    if (!selectedItem) return value;
+
+    // Use getItemDisplay if provided, otherwise fall back to getItemValue
+    if (getItemDisplay) {
+      return getItemDisplay(selectedItem);
+    }
+
+    return getItemValue ? getItemValue(selectedItem) : selectedItem;
   };
 
   // Close dropdown
@@ -177,7 +199,7 @@ const AsyncSelect = ({
         onClick={() => setIsOpen(!isOpen)}
         className='w-full justify-between bg-background border-border text-foreground hover:bg-accent'
       >
-        <span>{value || placeholder}</span>
+        <span>{getDisplayText()}</span>
         <Search className='h-4 w-4 opacity-50' />
       </Button>
       {dropdownContent}

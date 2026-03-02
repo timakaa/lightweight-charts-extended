@@ -1,7 +1,8 @@
 import CustomSelect from "./CustomSelect";
 import DateRangePicker from "./DateRangePicker";
 import AsyncSymbolSelect from "./AsyncSymbolSelect";
-import { STRATEGIES, TIMEFRAMES, DATE_PRESETS } from "./constants";
+import AsyncStrategySelect from "./AsyncStrategySelect";
+import { TIMEFRAMES, DATE_PRESETS } from "./constants";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -32,11 +33,7 @@ const BacktestForm = ({
           <label className='block text-sm font-medium text-primary/80 mb-2'>
             Strategy
           </label>
-          <CustomSelect
-            value={strategy}
-            onChange={setStrategy}
-            options={STRATEGIES}
-          />
+          <AsyncStrategySelect value={strategy} onChange={setStrategy} />
         </div>
 
         {/* Symbol */}

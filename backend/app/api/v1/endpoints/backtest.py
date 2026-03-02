@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import Response
 from app.services.backtest_service import backtest_service
 from app.core.storage import storage
+from app.backtesting.strategies import list_strategies, get_strategy_info
 from typing import Optional
 from pydantic import BaseModel, Field
 
@@ -97,4 +98,62 @@ def get_backtest_image(image_key: str):
         return Response(content=image_data, media_type="image/png")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching image: {str(e)}")
+
+
+@router.get("/strategies")
+def get_strategies(
+    page: int = Query(1, ge=1, description="Page number"),
+    page_size: int = Query(10, ge=1, le=100, description="Number of items per page"),
+    search: Optional[str] = Query(None, description="Search term for strategy names or descriptions"),
+):
+    """
+    Get all available strategies with pagination and search
+    """
+    all_strategies = list_strategies()
+    
+    # Apply search filter if provided
+    if search:
+        search_lower = search.lower()
+        all_strategies = list(filter(
+            lambda s: (
+                search_lower in s["name"].lower() or
+                search_lower in s["display_name"].lower() or
+                search_lower in s["description"].lower()
+            ),
+            all_strategies
+        ))
+    
+    # Calculate pagination
+    total_count = len(all_strategies)
+    start_idx = (page - 1) * page_size
+    end_idx = start_idx + page_size
+    
+    strategies_page = all_strategies[start_idx:end_idx]
+    
+    return {
+        "strategies": strategies_page,
+        "pagination": {
+            "page": page,
+            "page_size": page_size,
+            "total_count": total_count,
+            "total_pages": (total_count + page_size - 1) // page_size,
+            "has_next": end_idx < total_count,
+            "has_prev": page > 1,
+        }
+    }
+
+
+@router.get("/strategies/{strategy_name}")
+def get_strategy_details(strategy_name: str):
+    """
+    Get detailed information about a specific strategy
+    """
+    try:
+        info = get_strategy_info(strategy_name)
+        return info
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error getting strategy info: {str(e)}")
+
 

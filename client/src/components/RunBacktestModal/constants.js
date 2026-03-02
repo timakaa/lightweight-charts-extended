@@ -39,9 +39,4 @@ export const DATE_PRESETS = [
   },
 ];
 
-export const STRATEGIES = [
-  { value: "simple_ma_cross", label: "Simple MA Cross" },
-  { value: "dca", label: "DCA Strategy" },
-];
-
 export const TIMEFRAMES = ["1m", "5m", "15m", "30m", "1h", "4h", "1d", "1w"];

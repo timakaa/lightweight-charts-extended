@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 
 const RunBacktestModalContent = ({ onClose, onSubmit }) => {
   const [strategy, setStrategy] = useState("simple_ma_cross");
-  const [symbol, setSymbol] = useState("BTCUSDT");
+  const [symbol, setSymbol] = useState("BTC/USDT");
   const [timeframe, setTimeframe] = useState("1h");
   const [startDate, setStartDate] = useState("2024-01-01");
   const [endDate, setEndDate] = useState("2025-01-01");
