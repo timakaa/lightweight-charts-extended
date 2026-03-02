@@ -42,13 +42,15 @@ const RunBacktestModalContent = ({ onClose, onSubmit }) => {
       {/* Header */}
       <div className='p-4 border-b border-border'>
         <div className='flex justify-between items-center'>
-          <h2 className='text-xl font-bold text-primary'>Run Backtest</h2>
-          <button
+          <h2 className='text-primary text-lg font-semibold'>Run Backtest</h2>
+          <Button
+            variant='ghost'
+            size='icon'
             onClick={onClose}
-            className='text-primary/70 hover:text-primary transition-colors'
+            className='text-primary/70 hover:text-primary h-8 w-8'
           >
             ✕
-          </button>
+          </Button>
         </div>
       </div>
 

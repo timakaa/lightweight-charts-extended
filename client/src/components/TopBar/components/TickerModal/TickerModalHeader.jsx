@@ -10,7 +10,7 @@ export const TickerModalHeader = ({ onClose }) => (
       onClick={onClose}
       className='text-primary/70 hover:text-primary h-8 w-8'
     >
-      ×
+      ✕
     </Button>
   </div>
 );
