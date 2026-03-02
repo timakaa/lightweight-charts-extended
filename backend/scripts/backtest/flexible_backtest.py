@@ -33,7 +33,9 @@ def run_flexible_backtest(
     parameters: Dict[str, Any],
     timeframes: List[str],
     cash: float = 1000000,
-    save_to_db: bool = False
+    save_to_db: bool = False,
+    start_date: str = None,
+    end_date: str = None
 ) -> Dict[str, Any]:
     """Run backtest with flexible strategy and parameters"""
     
@@ -44,6 +46,8 @@ def run_flexible_backtest(
     print(f"Timeframes: {', '.join(timeframes)}")
     print(f"Parameters: {json.dumps(parameters, indent=2)}")
     print(f"Initial Cash: ${cash:,.2f}")
+    if start_date and end_date:
+        print(f"Date Range: {start_date} to {end_date}")
     print(f"Save to DB: {save_to_db}")
     print("=" * 60)
     
@@ -56,7 +60,13 @@ def run_flexible_backtest(
     
     # Load multi-timeframe data
     charts_dir = os.path.join(project_root, "charts")
-    data_dict = load_multi_timeframe_data(symbol, timeframes, charts_dir)
+    data_dict = load_multi_timeframe_data(
+        symbol, 
+        timeframes, 
+        charts_dir,
+        start_date=start_date,
+        end_date=end_date
+    )
     if data_dict is None:
         return None
     

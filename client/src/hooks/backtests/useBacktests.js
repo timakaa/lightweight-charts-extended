@@ -93,8 +93,13 @@ export const useUpdateBacktest = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: updateBacktest,
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
+      // Invalidate the list
       queryClient.invalidateQueries({ queryKey: ["backtestsSummarized"] });
+      // Invalidate the specific backtest stats
+      queryClient.invalidateQueries({
+        queryKey: ["backtestStats", variables.id],
+      });
     },
   });
 };

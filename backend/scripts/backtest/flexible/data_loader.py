@@ -11,7 +11,9 @@ from typing import Dict, List
 def load_multi_timeframe_data(
     symbol: str, 
     timeframes: List[str], 
-    charts_dir: str
+    charts_dir: str,
+    start_date: str = None,
+    end_date: str = None
 ) -> Dict[str, pd.DataFrame]:
     """
     Load data for multiple timeframes from CSV files
@@ -20,11 +22,17 @@ def load_multi_timeframe_data(
         symbol: Trading symbol (e.g., "BTCUSDT")
         timeframes: List of timeframes (e.g., ["1h", "4h"])
         charts_dir: Directory containing chart data
+        start_date: Optional start date for filtering (YYYY-MM-DD format)
+        end_date: Optional end date for filtering (YYYY-MM-DD format)
         
     Returns:
         Dictionary mapping timeframe to DataFrame, or None if data not found
     """
     data_dict = {}
+    
+    # Convert date strings to datetime if provided
+    start_dt = pd.to_datetime(start_date) if start_date else None
+    end_dt = pd.to_datetime(end_date) if end_date else None
     
     for timeframe in timeframes:
         # Try different exchange suffixes
@@ -42,9 +50,24 @@ def load_multi_timeframe_data(
                     data.index = pd.to_datetime(data.index)
                     data = data.sort_index().drop_duplicates()
                     
+                    # Filter by date range if provided
+                    if start_dt and end_dt:
+                        original_len = len(data)
+                        data = data[(data.index >= start_dt) & (data.index <= end_dt)]
+                        filtered_len = len(data)
+                        
+                        if filtered_len == 0:
+                            print(f"❌ No data available for {symbol} {timeframe} in date range {start_date} to {end_date}")
+                            return None
+                        
+                        print(f"📁 Loaded {timeframe} data from {filepath}")
+                        print(f"📅 Filtered: {original_len} -> {filtered_len} bars")
+                        print(f"📈 Range: {data.index[0]} to {data.index[-1]}")
+                    else:
+                        print(f"📁 Loaded {timeframe} data from {filepath}")
+                        print(f"📈 Range: {data.index[0]} to {data.index[-1]} ({len(data)} bars)")
+                    
                     data_dict[timeframe] = data
-                    print(f"📁 Loaded {timeframe} data from {filepath}")
-                    print(f"📈 Range: {data.index[0]} to {data.index[-1]} ({len(data)} bars)")
                     data_loaded = True
                     break
                     

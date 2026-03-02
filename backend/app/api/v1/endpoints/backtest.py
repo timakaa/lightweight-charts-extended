@@ -1,10 +1,19 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
 from fastapi.responses import Response
 from app.services.backtest_service import backtest_service
 from app.core.storage import storage
 from app.backtesting.strategies import list_strategies, get_strategy_info
-from typing import Optional
+from typing import Optional, Dict, Any, List
 from pydantic import BaseModel, Field
+import sys
+import os
+
+# Add scripts directory to path for flexible backtest imports
+current_dir = os.path.dirname(os.path.abspath(__file__))
+scripts_dir = os.path.abspath(os.path.join(current_dir, "../../../../scripts/backtest"))
+sys.path.insert(0, scripts_dir)
+
+from flexible_backtest import run_flexible_backtest
 
 router = APIRouter()
 
@@ -13,6 +22,51 @@ class BacktestUpdate(BaseModel):
     title: str = Field(
         min_length=1, max_length=100, description="New title for the backtest"
     )
+
+
+class RunBacktestRequest(BaseModel):
+    strategy: str = Field(..., description="Strategy name")
+    symbol: str = Field(..., description="Trading symbol (e.g., BTCUSDT)")
+    timeframe: str = Field(..., description="Timeframe (e.g., 1h, 4h, 1d)")
+    start_date: str = Field(..., description="Start date in YYYY-MM-DD format")
+    end_date: str = Field(..., description="End date in YYYY-MM-DD format")
+    parameters: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Strategy parameters")
+    cash: Optional[float] = Field(default=1000000, description="Initial cash amount")
+
+
+@router.post("/backtest/run")
+async def run_backtest(request: RunBacktestRequest, background_tasks: BackgroundTasks):
+    """
+    Run a backtest with the specified parameters in the background
+    """
+    try:
+        # Convert timeframe to list (flexible_backtest expects a list)
+        timeframes = [request.timeframe]
+
+        # Remove "/" from symbol (e.g., BTC/USDT -> BTCUSDT)
+        symbol = request.symbol.replace("/", "")
+        
+        # Run the backtest in the background
+        background_tasks.add_task(
+            run_flexible_backtest,
+            strategy_name=request.strategy,
+            symbol=symbol,
+            parameters=request.parameters,
+            timeframes=timeframes,
+            cash=request.cash,
+            save_to_db=True,
+            start_date=request.start_date,
+            end_date=request.end_date
+        )
+        
+        return {
+            "success": True,
+            "message": "Backtest started successfully. It will appear in the list once completed.",
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error starting backtest: {str(e)}")
 
 
 @router.post("/backtest")

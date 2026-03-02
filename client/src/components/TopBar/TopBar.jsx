@@ -130,11 +130,6 @@ const TopBar = () => {
       <RunBacktestModal
         isOpen={isRunBacktestModalOpen}
         onClose={() => setIsRunBacktestModalOpen(false)}
-        onSubmit={(config) => {
-          console.log("Backtest config:", config);
-          // TODO: Call API to run backtest
-          setIsRunBacktestModalOpen(false);
-        }}
       />
       <TimeframeModal
         isOpen={timeframeModal.isModalOpen}

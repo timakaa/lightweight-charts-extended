@@ -1,23 +1,44 @@
 import { useState } from "react";
 import BacktestForm from "./BacktestForm";
 import { Button } from "@/components/ui/button";
+import { useRunBacktest } from "@hooks/backtests/useRunBacktest";
+import { Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-const RunBacktestModalContent = ({ onClose, onSubmit }) => {
+const RunBacktestModalContent = ({ onClose }) => {
+  const navigate = useNavigate();
   const [strategy, setStrategy] = useState("simple_ma_cross");
   const [symbol, setSymbol] = useState("BTC/USDT");
   const [timeframe, setTimeframe] = useState("1h");
   const [startDate, setStartDate] = useState("2024-01-01");
   const [endDate, setEndDate] = useState("2025-01-01");
 
+  const { mutate: runBacktest, isPending } = useRunBacktest();
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit({
-      strategy,
-      symbol,
-      timeframe,
-      startDate,
-      endDate,
-    });
+
+    runBacktest(
+      {
+        strategy,
+        symbol,
+        timeframe,
+        start_date: startDate,
+        end_date: endDate,
+        parameters: {}, // Empty parameters for now, can be extended later
+      },
+      {
+        onSuccess: (data) => {
+          onClose();
+          // Show success message - backtest is running in background
+          alert(data.message || "Backtest started successfully!");
+        },
+        onError: (error) => {
+          console.error("Error running backtest:", error);
+          alert(error.message || "Failed to run backtest. Please try again.");
+        },
+      },
+    );
   };
 
   return (
@@ -58,22 +79,38 @@ const RunBacktestModalContent = ({ onClose, onSubmit }) => {
           type='button'
           variant='ghost'
           onClick={onClose}
+          disabled={isPending}
           className='text-primary'
         >
           Cancel
         </Button>
         <Button
           onClick={handleSubmit}
+          disabled={
+            isPending ||
+            !strategy ||
+            !symbol ||
+            !timeframe ||
+            !startDate ||
+            !endDate
+          }
           className='bg-primary text-primary-foreground hover:bg-primary/90'
         >
-          Run Backtest
+          {isPending ? (
+            <>
+              <Loader2 className='h-4 w-4 animate-spin mr-2' />
+              Running...
+            </>
+          ) : (
+            "Run Backtest"
+          )}
         </Button>
       </div>
     </div>
   );
 };
 
-const RunBacktestModal = ({ isOpen, onClose, onSubmit }) => {
+const RunBacktestModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   const handleBackdropClick = (e) => {
@@ -88,7 +125,7 @@ const RunBacktestModal = ({ isOpen, onClose, onSubmit }) => {
       onClick={handleBackdropClick}
     >
       <div className='bg-background border border-border rounded-lg w-[500px] max-h-[80vh] flex flex-col'>
-        <RunBacktestModalContent onClose={onClose} onSubmit={onSubmit} />
+        <RunBacktestModalContent onClose={onClose} />
       </div>
     </div>
   );
