@@ -10,25 +10,14 @@ export const useChart = (chartContainerRef) => {
   const { chartTheme, applyDefaults } = useChartTheme();
   const prevThemeRef = useRef(theme);
 
-  // Helper function to get opacity (0 if disabled, otherwise the set value)
-  const getOpacity = (enabled, opacity) => {
-    return enabled ? (opacity ?? 100) : 0;
-  };
-
   // Extract primitive values for dependency tracking
   const { canvas } = chartTheme;
   const backgroundColor = canvas.backgroundColor;
-  const backgroundOpacity = getOpacity(
-    canvas.backgroundEnabled,
-    canvas.backgroundOpacity,
-  );
+  const backgroundOpacity = canvas.backgroundOpacity ?? 100;
   const gridColor = canvas.gridColor;
-  const gridOpacity = getOpacity(canvas.gridEnabled, canvas.gridOpacity);
+  const gridOpacity = canvas.gridOpacity ?? 100;
   const crosshairColor = canvas.crosshairColor;
-  const crosshairOpacity = getOpacity(
-    canvas.crosshairEnabled,
-    canvas.crosshairOpacity,
-  );
+  const crosshairOpacity = canvas.crosshairOpacity ?? 100;
   const textColor = chartTheme.scales.textColor;
 
   // Convert hex + opacity to rgba

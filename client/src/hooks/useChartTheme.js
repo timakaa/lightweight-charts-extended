@@ -23,19 +23,15 @@ const DARK_CHART_THEME = {
   },
   // Canvas colors
   canvas: {
-    backgroundEnabled: true,
     backgroundColor: "#000000",
     backgroundOpacity: 100,
-    gridEnabled: true,
     gridColor: "#363c4e",
     gridOpacity: 100,
-    crosshairEnabled: true,
     crosshairColor: "#9598a1",
     crosshairOpacity: 100,
   },
   // Scales colors
   scales: {
-    textEnabled: true,
     textColor: "#b2b5be",
     textSize: "12",
   },
@@ -62,19 +58,15 @@ const LIGHT_CHART_THEME = {
   },
   // Canvas colors
   canvas: {
-    backgroundEnabled: true,
     backgroundColor: "#ffffff",
     backgroundOpacity: 100,
-    gridEnabled: true,
     gridColor: "#d1d4dc",
     gridOpacity: 100,
-    crosshairEnabled: true,
     crosshairColor: "#758696",
     crosshairOpacity: 100,
   },
   // Scales colors
   scales: {
-    textEnabled: true,
     textColor: "#4a5568",
     textSize: "12",
   },

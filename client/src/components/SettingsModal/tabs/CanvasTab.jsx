@@ -1,4 +1,3 @@
-import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
@@ -27,17 +26,7 @@ export function CanvasTab({
         <div className='space-y-4'>
           {/* Background */}
           <div className='flex items-center gap-4'>
-            <Checkbox
-              id='canvas-background'
-              checked={chartTheme.canvas.backgroundEnabled}
-              onCheckedChange={(checked) =>
-                updateCanvasColors({ backgroundEnabled: checked })
-              }
-            />
-            <Label
-              htmlFor='canvas-background'
-              className='text-primary w-32 cursor-pointer'
-            >
+            <Label htmlFor='canvas-background' className='text-primary w-32'>
               Background
             </Label>
             <ColorPicker
@@ -54,17 +43,7 @@ export function CanvasTab({
 
           {/* Grid lines */}
           <div className='flex items-center gap-4'>
-            <Checkbox
-              id='canvas-grid'
-              checked={chartTheme.canvas.gridEnabled}
-              onCheckedChange={(checked) =>
-                updateCanvasColors({ gridEnabled: checked })
-              }
-            />
-            <Label
-              htmlFor='canvas-grid'
-              className='text-primary w-32 cursor-pointer'
-            >
+            <Label htmlFor='canvas-grid' className='text-primary w-32'>
               Grid lines
             </Label>
             <ColorPicker
@@ -79,17 +58,7 @@ export function CanvasTab({
 
           {/* Crosshair */}
           <div className='flex items-center gap-4'>
-            <Checkbox
-              id='canvas-crosshair'
-              checked={chartTheme.canvas.crosshairEnabled}
-              onCheckedChange={(checked) =>
-                updateCanvasColors({ crosshairEnabled: checked })
-              }
-            />
-            <Label
-              htmlFor='canvas-crosshair'
-              className='text-primary w-32 cursor-pointer'
-            >
+            <Label htmlFor='canvas-crosshair' className='text-primary w-32'>
               Crosshair
             </Label>
             <ColorPicker
@@ -114,17 +83,7 @@ export function CanvasTab({
         <div className='space-y-4'>
           {/* Text */}
           <div className='flex items-center gap-4'>
-            <Checkbox
-              id='scales-text'
-              checked={chartTheme.scales.textEnabled}
-              onCheckedChange={(checked) =>
-                updateScalesColors({ textEnabled: checked })
-              }
-            />
-            <Label
-              htmlFor='scales-text'
-              className='text-primary w-32 cursor-pointer'
-            >
+            <Label htmlFor='scales-text' className='text-primary w-32'>
               Text
             </Label>
             <ColorPicker
