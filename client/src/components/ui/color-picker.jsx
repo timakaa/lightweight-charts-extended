@@ -50,14 +50,8 @@ export function ColorPicker({ value, onChange, className }) {
             <RecentColors
               colors={recentColors}
               onColorSelect={handlePresetClick}
+              onAddColor={() => setShowCustomPicker(true)}
             />
-            <Button
-              variant='outline'
-              className='w-full'
-              onClick={() => setShowCustomPicker(true)}
-            >
-              + Add custom color
-            </Button>
           </div>
         ) : (
           <CustomColorPicker
