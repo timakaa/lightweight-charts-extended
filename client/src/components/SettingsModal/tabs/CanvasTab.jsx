@@ -70,6 +70,10 @@ export function CanvasTab({
             <ColorPicker
               value={chartTheme.canvas.gridColor}
               onChange={(color) => updateCanvasColors({ gridColor: color })}
+              opacity={chartTheme.canvas.gridOpacity ?? 100}
+              onOpacityChange={(opacity) =>
+                updateCanvasColors({ gridOpacity: opacity })
+              }
             />
           </div>
 
@@ -92,6 +96,10 @@ export function CanvasTab({
               value={chartTheme.canvas.crosshairColor}
               onChange={(color) =>
                 updateCanvasColors({ crosshairColor: color })
+              }
+              opacity={chartTheme.canvas.crosshairOpacity ?? 100}
+              onOpacityChange={(opacity) =>
+                updateCanvasColors({ crosshairOpacity: opacity })
               }
             />
           </div>
