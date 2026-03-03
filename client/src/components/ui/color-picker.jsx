@@ -8,9 +8,16 @@ import {
 import { PresetColorGrid } from "./color-picker/PresetColorGrid";
 import { CustomColorPicker } from "./color-picker/CustomColorPicker";
 import { RecentColors } from "./color-picker/RecentColors";
+import { OpacitySlider } from "./color-picker/OpacitySlider";
 import { useRecentColors } from "@/hooks/useRecentColors";
 
-export function ColorPicker({ value, onChange, className }) {
+export function ColorPicker({
+  value,
+  onChange,
+  className,
+  opacity = 100,
+  onOpacityChange,
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const [showCustomPicker, setShowCustomPicker] = useState(false);
   const { recentColors, addRecentColor } = useRecentColors();
@@ -52,6 +59,9 @@ export function ColorPicker({ value, onChange, className }) {
               onColorSelect={handlePresetClick}
               onAddColor={() => setShowCustomPicker(true)}
             />
+            {onOpacityChange && (
+              <OpacitySlider opacity={opacity} onChange={onOpacityChange} />
+            )}
           </div>
         ) : (
           <CustomColorPicker
