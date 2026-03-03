@@ -182,13 +182,6 @@ class TickerHandler:
 
         return tickers
 
-    def paginate(
-        self, items: List[Any], page: int, page_size: int
-    ) -> tuple[List[Any], Dict[str, Any]]:
-        """Paginate a list of items (deprecated - use Paginator directly)"""
-        paginated_items, pagination_info = Paginator.paginate(items, page, page_size)
-        return paginated_items, pagination_info.to_dict()
-
     def build_ticker_response(
         self,
         tickers: List[Dict[str, Any]],

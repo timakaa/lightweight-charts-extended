@@ -78,12 +78,7 @@ def get_all_backtests_summarized(
     search: Optional[str] = Query(None, description="Search term for backtest titles"),
 ):
     return backtest_service.get_backtests_paginated(page=page, page_size=page_size, search=search)
-
-
-@router.get("/backtest")
-def get_all_backtests():
-    return backtest_service.get_all_backtests()
-
+    
 
 @router.delete("/backtest/{backtest_id}")
 def delete_backtest(backtest_id: int):

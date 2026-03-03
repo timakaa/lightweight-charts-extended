@@ -109,18 +109,43 @@ class BacktestRepository:
             .first()
         )
 
-    def get_all(self) -> List[BacktestResult]:
-        """Get all backtests"""
-        return self.db.query(BacktestResult).all()
 
-    def get_all_with_filter(self, search: Optional[str] = None) -> List[BacktestResult]:
-        """Get all backtests with optional search filter"""
+    def get_all_paginated(
+        self, page: int = 1, page_size: int = 10, search: Optional[str] = None
+    ) -> tuple[List[BacktestResult], dict]:
+        """Get all backtests with pagination and optional search"""
         query = self.db.query(BacktestResult)
         
+        # Apply search filter
         if search:
-            query = query.filter(BacktestResult.title.ilike(f"%{search}%"))
+            search_filter = f"%{search}%"
+            query = query.filter(BacktestResult.title.ilike(search_filter))
         
-        return query.order_by(BacktestResult.id.desc()).all()
+        # Order by most recent first
+        query = query.order_by(BacktestResult.id.desc())
+        
+        # Get total count
+        total_count = query.count()
+        
+        # Apply pagination
+        offset = (page - 1) * page_size
+        backtests = query.offset(offset).limit(page_size).all()
+        
+        # Calculate pagination info
+        total_pages = (total_count + page_size - 1) // page_size
+        has_next = page < total_pages
+        has_prev = page > 1
+        
+        pagination = {
+            "page": page,
+            "page_size": page_size,
+            "total_count": total_count,
+            "total_pages": total_pages,
+            "has_next": has_next,
+            "has_prev": has_prev,
+        }
+        
+        return backtests, pagination
 
     def get_trades_by_backtest_id(self, backtest_id: int) -> List[Trade]:
         """Get all trades for a backtest"""

@@ -6,7 +6,6 @@ from typing import Optional, Dict, Any, List
 from app.db.database import get_db
 from app.repositories.backtest_repository import BacktestRepository
 from app.services.backtest import BacktestSerializer, BacktestCache
-from app.utils.pagination import Paginator
 
 
 class BacktestService:
@@ -91,12 +90,7 @@ class BacktestService:
             BacktestCache.set_detail(backtest_id, result)
         
         return result
-
-    def get_all_backtests(self) -> List[Dict[str, Any]]:
-        """Get all backtests (full details)"""
-        backtests = self.repository.get_all()
-        serialized = [BacktestSerializer.serialize_backtest(bt) for bt in backtests]
-        return [item for item in serialized if item is not None]
+        
 
     def get_backtests_paginated(
         self, page: int = 1, page_size: int = 10, search: Optional[str] = None
@@ -107,8 +101,10 @@ class BacktestService:
         if cached:
             return cached
 
-        # Fetch from database
-        backtests = self.repository.get_all_with_filter(search)
+        # Fetch from database with SQL-level pagination
+        backtests, pagination = self.repository.get_all_paginated(
+            page=page, page_size=page_size, search=search
+        )
 
         # Serialize summaries
         summaries = [
@@ -116,13 +112,11 @@ class BacktestService:
             for backtest in backtests
         ]
 
-        # Paginate
-        response = Paginator.create_response(
-            items=summaries,
-            page=page,
-            page_size=page_size,
-            items_key="backtests",
-        )
+        # Create response
+        response = {
+            "backtests": summaries,
+            "pagination": pagination,
+        }
 
         # Cache the response
         BacktestCache.set_list(page, page_size, response, search)
