@@ -8,30 +8,39 @@ export const useSeriesManagement = (chart, symbol, timeframe) => {
   const chartMountedRef = useRef(true);
   const { chartTheme } = useChartTheme();
 
+  // Helper function to get opacity (0 if disabled, otherwise the set value)
+  const getOpacity = (enabled, opacity) => {
+    return enabled ? (opacity ?? 100) : 0;
+  };
+
   // Helper function to get candle colors from chartTheme with opacity
   const getCandleColors = () => {
-    const bodyUpOpacity = chartTheme.candles.bodyUpOpacity ?? 100;
-    const bodyDownOpacity = chartTheme.candles.bodyDownOpacity ?? 100;
-    const borderUpOpacity = chartTheme.candles.borderUpOpacity ?? 100;
-    const borderDownOpacity = chartTheme.candles.borderDownOpacity ?? 100;
-    const wickUpOpacity = chartTheme.candles.wickUpOpacity ?? 100;
-    const wickDownOpacity = chartTheme.candles.wickDownOpacity ?? 100;
+    const { candles } = chartTheme;
 
     return {
-      upColor: hexToRgba(chartTheme.candles.bodyUpColor, bodyUpOpacity),
-      downColor: hexToRgba(chartTheme.candles.bodyDownColor, bodyDownOpacity),
+      upColor: hexToRgba(
+        candles.bodyUpColor,
+        getOpacity(candles.bodyEnabled, candles.bodyUpOpacity),
+      ),
+      downColor: hexToRgba(
+        candles.bodyDownColor,
+        getOpacity(candles.bodyEnabled, candles.bodyDownOpacity),
+      ),
       borderUpColor: hexToRgba(
-        chartTheme.candles.borderUpColor,
-        borderUpOpacity,
+        candles.borderUpColor,
+        getOpacity(candles.borderEnabled, candles.borderUpOpacity),
       ),
       borderDownColor: hexToRgba(
-        chartTheme.candles.borderDownColor,
-        borderDownOpacity,
+        candles.borderDownColor,
+        getOpacity(candles.borderEnabled, candles.borderDownOpacity),
       ),
-      wickUpColor: hexToRgba(chartTheme.candles.wickUpColor, wickUpOpacity),
+      wickUpColor: hexToRgba(
+        candles.wickUpColor,
+        getOpacity(candles.wickEnabled, candles.wickUpOpacity),
+      ),
       wickDownColor: hexToRgba(
-        chartTheme.candles.wickDownColor,
-        wickDownOpacity,
+        candles.wickDownColor,
+        getOpacity(candles.wickEnabled, candles.wickDownOpacity),
       ),
     };
   };

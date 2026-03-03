@@ -27,10 +27,13 @@ const DEFAULT_CHART_THEME = {
     backgroundOpacity: 100,
     gridEnabled: true,
     gridColor: "#363c4e",
+    gridOpacity: 100,
     crosshairEnabled: true,
     crosshairColor: "#9598a1",
+    crosshairOpacity: 100,
     watermarkEnabled: true,
     watermarkColor: "#ffffff",
+    watermarkOpacity: 100,
   },
   // Scales colors
   scales: {

@@ -11,15 +11,31 @@ export const useChart = (chartContainerRef) => {
     useChartTheme();
   const prevThemeRef = useRef(theme);
 
+  // Helper function to get opacity (0 if disabled, otherwise the set value)
+  const getOpacity = (enabled, opacity) => {
+    return enabled ? (opacity ?? 100) : 0;
+  };
+
   // Extract primitive values for dependency tracking
-  const backgroundColor = chartTheme.canvas.backgroundColor;
-  const backgroundOpacity = chartTheme.canvas.backgroundOpacity ?? 100;
+  const { canvas } = chartTheme;
+  const backgroundColor = canvas.backgroundColor;
+  const backgroundOpacity = getOpacity(
+    canvas.backgroundEnabled,
+    canvas.backgroundOpacity,
+  );
+  const gridColor = canvas.gridColor;
+  const gridOpacity = getOpacity(canvas.gridEnabled, canvas.gridOpacity);
+  const crosshairColor = canvas.crosshairColor;
+  const crosshairOpacity = getOpacity(
+    canvas.crosshairEnabled,
+    canvas.crosshairOpacity,
+  );
   const textColor = chartTheme.scales.textColor;
-  const gridColor = chartTheme.canvas.gridColor;
-  const crosshairColor = chartTheme.canvas.crosshairColor;
 
   // Convert hex + opacity to rgba
   const backgroundColorRgba = hexToRgba(backgroundColor, backgroundOpacity);
+  const gridColorRgba = hexToRgba(gridColor, gridOpacity);
+  const crosshairColorRgba = hexToRgba(crosshairColor, crosshairOpacity);
 
   // Update theme defaults ONLY when theme actually changes
   useEffect(() => {
@@ -67,16 +83,16 @@ export const useChart = (chartContainerRef) => {
         textColor: textColor,
       },
       grid: {
-        vertLines: { color: gridColor },
-        horzLines: { color: gridColor },
+        vertLines: { color: gridColorRgba },
+        horzLines: { color: gridColorRgba },
       },
       crosshair: {
         mode: CrosshairMode.Normal,
         vertLine: {
-          color: crosshairColor,
+          color: crosshairColorRgba,
         },
         horzLine: {
-          color: crosshairColor,
+          color: crosshairColorRgba,
         },
       },
       timeScale: {
@@ -159,22 +175,28 @@ export const useChart = (chartContainerRef) => {
           textColor: textColor,
         },
         grid: {
-          vertLines: { color: gridColor },
-          horzLines: { color: gridColor },
+          vertLines: { color: gridColorRgba },
+          horzLines: { color: gridColorRgba },
         },
         crosshair: {
           vertLine: {
-            color: crosshairColor,
+            color: crosshairColorRgba,
           },
           horzLine: {
-            color: crosshairColor,
+            color: crosshairColorRgba,
           },
         },
       });
     } catch (error) {
       console.error("Error applying chart options:", error);
     }
-  }, [chart, backgroundColorRgba, textColor, gridColor, crosshairColor]);
+  }, [
+    chart,
+    backgroundColorRgba,
+    textColor,
+    gridColorRgba,
+    crosshairColorRgba,
+  ]);
 
   return chart;
 };
