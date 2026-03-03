@@ -7,11 +7,12 @@ import { useParams, useSearchParams } from "react-router-dom";
 import { useBacktestDrawings } from "@hooks/backtests/useBacktests";
 import { useState } from "react";
 import NotFound404 from "@components/404/404";
+import { normalizeSymbol } from "@/helpers/symbol";
 
 const Backtest = () => {
   const { backtestId } = useParams();
   const [searchParams] = useSearchParams();
-  const ticker = searchParams.get("ticker") || "BTCUSDT"; // Read ticker from URL (consistent with TopBar)
+  const ticker = normalizeSymbol(searchParams.get("ticker")) || "BTC/USDT"; // Read ticker from URL (consistent with TopBar)
   const { data: backtestDrawings, error } = useBacktestDrawings(backtestId);
   const [chartData, setChartData] = useState(null);
 
