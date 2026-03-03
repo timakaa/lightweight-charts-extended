@@ -19,27 +19,23 @@ export const useChart = (chartContainerRef) => {
   useEffect(() => {
     if (theme === "dark") {
       updateCanvasColors({ backgroundColor: "#000000" });
-      queueMicrotask(() => {
-        updateCandleColors({
-          bodyUpColor: "#26a69a",
-          bodyDownColor: "#ef5350",
-          borderUpColor: "#26a69a",
-          borderDownColor: "#ef5350",
-          wickUpColor: "#26a69a",
-          wickDownColor: "#ef5350",
-        });
+      updateCandleColors({
+        bodyUpColor: "#26a69a",
+        bodyDownColor: "#ef5350",
+        borderUpColor: "#26a69a",
+        borderDownColor: "#ef5350",
+        wickUpColor: "#26a69a",
+        wickDownColor: "#ef5350",
       });
     } else {
       updateCanvasColors({ backgroundColor: "#ffffff" });
-      queueMicrotask(() => {
-        updateCandleColors({
-          bodyUpColor: "#22c55e",
-          bodyDownColor: "#ef4444",
-          borderUpColor: "#22c55e",
-          borderDownColor: "#ef4444",
-          wickUpColor: "#22c55e",
-          wickDownColor: "#ef4444",
-        });
+      updateCandleColors({
+        bodyUpColor: "#22c55e",
+        bodyDownColor: "#ef4444",
+        borderUpColor: "#22c55e",
+        borderDownColor: "#ef4444",
+        wickUpColor: "#22c55e",
+        wickDownColor: "#ef4444",
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
