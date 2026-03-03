@@ -5,13 +5,14 @@ import { useChartStore } from "@store/chart";
 import TimeframeSelector from "./components/TimeframeSelector";
 import BacktestModal from "@components/BacktestModal";
 import RunBacktestModal from "@components/RunBacktestModal/RunBacktestModal";
+import SettingsModal from "@components/SettingsModal/SettingsModal";
 import TimeframeModal from "./components/TimeframeModal";
 import TickerModal from "./components/TickerModal/TickerModal";
 import { useTimeframeModal } from "./hooks/useTimeframeModal";
 import { useTickerModal } from "./hooks/useTickerModal";
 import { useTheme } from "@hooks/useTheme";
 import { Button } from "@components/ui/button";
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun, Settings } from "lucide-react";
 
 const DEFAULT_TICKER = "SOL/USDT";
 const DEFAULT_TIMEFRAME = "1h";
@@ -21,6 +22,7 @@ const TopBar = () => {
   const navigate = useNavigate();
   const [isBacktestModalOpen, setIsBacktestModalOpen] = useState(false);
   const [isRunBacktestModalOpen, setIsRunBacktestModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const ticker = useChartStore((state) => state.ticker);
   const setTicker = useChartStore((state) => state.setTicker);
   const timeframe = useChartStore((state) => state.timeframe);
@@ -110,6 +112,15 @@ const TopBar = () => {
             <Button
               variant='ghost'
               size='icon'
+              onClick={() => setIsSettingsModalOpen(true)}
+              className='h-9 w-9 text-primary'
+              title='Chart settings'
+            >
+              <Settings className='h-4 w-4' />
+            </Button>
+            <Button
+              variant='ghost'
+              size='icon'
               onClick={toggleTheme}
               className='h-9 w-9 text-primary'
               title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
@@ -130,6 +141,10 @@ const TopBar = () => {
       <RunBacktestModal
         isOpen={isRunBacktestModalOpen}
         onClose={() => setIsRunBacktestModalOpen(false)}
+      />
+      <SettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
       />
       <TimeframeModal
         isOpen={timeframeModal.isModalOpen}
