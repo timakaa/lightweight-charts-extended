@@ -48,15 +48,15 @@ async def get_all_tickers():
         raise HTTPException(status_code=500, detail=f"Error fetching tickers: {str(e)}")
 
 
-@router.get("/{symbol}")
-async def get_ticker(symbol: str):
-    """Get specific ticker data"""
+@router.get("/date-range")
+async def get_symbol_date_range(symbol: str = Query(..., description="Trading symbol")):
+    """Get available date range for a symbol"""
     try:
-        ticker = await exchange_service.get_ticker(symbol)
-        if not ticker:
-            raise HTTPException(status_code=404, detail=f"Ticker {symbol} not found")
-        return ticker
+        date_range = await exchange_service.get_symbol_date_range(symbol)
+        if not date_range:
+            raise HTTPException(status_code=404, detail=f"Symbol {symbol} not found")
+        return date_range
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching ticker: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error fetching symbol date range: {str(e)}")

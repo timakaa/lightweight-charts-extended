@@ -176,12 +176,17 @@ dev-shell-frontend: ## 🔧 Open shell in frontend dev container
 
 scrape: ## 📊 Scrape data for specified symbol and timeframe
 	@echo "$(CYAN)📊 Scraping $(SYMBOL) $(TIMEFRAME) data from $(EXCHANGE)...$(RESET)"
-	@docker compose exec backend python app/backtesting/ccxt_scrapping.py \
+	@docker compose exec backend python scripts/scraper/ccxt_scraper.py \
 		--symbol $(SYMBOL) \
 		--timeframe $(TIMEFRAME) \
 		--exchange $(EXCHANGE) \
 		--start $(START_DATE) \
 		--end $(END_DATE)
+
+clear-cache: ## 📊 Clear market data cache
+	@echo "$(CYAN)🧹 Clearing market data cache...$(RESET)"
+	@docker compose exec backend rm -rf /app/app/backtesting/scraper/.cache
+	@echo "$(GREEN)✅ Cache cleared!$(RESET)"
 
 
 

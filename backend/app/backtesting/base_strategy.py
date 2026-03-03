@@ -33,12 +33,13 @@ class StrategyConfig:
 class BaseBacktestStrategy(ABC):
     """Abstract base class for all backtesting strategies"""
 
-    def __init__(self, config: StrategyConfig):
+    def __init__(self, config: StrategyConfig, save_charts: bool = False):
         self.config = config
         self.name = config.name
         self.description = config.description
         self.parameters = config.parameters
         self.timeframes = config.timeframes
+        self.save_charts = save_charts
 
     @abstractmethod
     def create_strategy_class(self, data_dict: Dict[str, pd.DataFrame]) -> type:
@@ -73,9 +74,18 @@ class BaseBacktestStrategy(ABC):
             "parameter_schema": self.get_parameter_schema()
         }
     
-    def get_custom_metrics(self) -> Dict[str, Any]:
-        """Get custom metrics calculated during strategy creation"""
-        return getattr(self, '_dca_metrics', {})
+    def get_metrics_overrides(self) -> Dict[str, Any]:
+        """
+        Override specific metrics that can't be calculated from trades
+        
+        Strategies can override any metric in stats by returning a dict with:
+        - Key: metric name as it appears in stats (e.g., 'Capital Deployed [$]', 'Win Rate [%]')
+        - Value: the override value
+        
+        Returns:
+            Dict with metric overrides, empty dict if no overrides needed
+        """
+        return {}
     
     def get_strategy_related_fields(self) -> List[Dict[str, Any]]:
         """
@@ -96,6 +106,22 @@ class BaseBacktestStrategy(ABC):
             Or for backward compatibility, a flat list of fields:
             [{"label": "Field Name", "value": "Field Value"}]
         """
+        return []
+
+    def generate_charts(self, backtest_id: int) -> List[str]:
+        """
+        Generate charts for this backtest and upload to MinIO
+        Called after backtest completes, only if save_charts=True
+        Override this method in subclasses to generate custom charts
+        
+        Args:
+            backtest_id: ID of the backtest for naming files
+            
+        Returns:
+            List of MinIO object keys (e.g., ["backtest_123_balance.png"])
+        """
+        # By default, no charts
+        # Subclasses override to generate and upload their charts
         return []
 
     def get_parameter_schema(self) -> Dict[str, Any]:
@@ -137,6 +163,7 @@ class MultiTimeframeStrategy(Strategy):
         super().__init__()
         self.data_dict = {}
         self.indicators = {}
+        self.balance_history = []  # Track balance at each candle
 
     def set_data(self, data_dict: Dict[str, pd.DataFrame]):
         """Set multiple timeframe data"""

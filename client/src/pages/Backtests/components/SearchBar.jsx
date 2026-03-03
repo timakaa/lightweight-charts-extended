@@ -6,7 +6,7 @@ const SearchBar = ({ value, onChange }) => (
     placeholder='Search backtests...'
     value={value}
     onChange={(e) => onChange(e.target.value)}
-    className='px-4 py-2 rounded-lg bg-modal border border-modal-border text-white focus:outline-none focus:border-blue-500 w-64'
+    className='px-4 py-2 rounded-lg bg-background border border-border text-primary focus:outline-none focus:border-blue-500 w-64'
   />
 );
 

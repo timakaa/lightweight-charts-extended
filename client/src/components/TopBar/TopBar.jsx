@@ -4,10 +4,15 @@ import Find from "@icons/Find";
 import { useChartStore } from "@store/chart";
 import TimeframeSelector from "./components/TimeframeSelector";
 import BacktestModal from "@components/BacktestModal";
+import RunBacktestModal from "@components/RunBacktestModal/RunBacktestModal";
+import SettingsModal from "@components/SettingsModal/SettingsModal";
 import TimeframeModal from "./components/TimeframeModal";
 import TickerModal from "./components/TickerModal/TickerModal";
 import { useTimeframeModal } from "./hooks/useTimeframeModal";
 import { useTickerModal } from "./hooks/useTickerModal";
+import { useTheme } from "@hooks/useTheme";
+import { Button } from "@components/ui/button";
+import { Moon, Sun, Settings } from "lucide-react";
 
 const DEFAULT_TICKER = "SOL/USDT";
 const DEFAULT_TIMEFRAME = "1h";
@@ -16,6 +21,8 @@ const TopBar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isBacktestModalOpen, setIsBacktestModalOpen] = useState(false);
+  const [isRunBacktestModalOpen, setIsRunBacktestModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const ticker = useChartStore((state) => state.ticker);
   const setTicker = useChartStore((state) => state.setTicker);
   const timeframe = useChartStore((state) => state.timeframe);
@@ -23,6 +30,7 @@ const TopBar = () => {
 
   const timeframeModal = useTimeframeModal();
   const tickerModal = useTickerModal();
+  const { theme, toggleTheme } = useTheme();
 
   const isBacktestPage = location.pathname.startsWith("/backtest");
 
@@ -55,23 +63,23 @@ const TopBar = () => {
 
   return (
     <>
-      <div className='relative cursor-default bg-modal border-b-4 border-[#2E2E2E] px-1 py-1 flex text-white z-50'>
+      <div className='relative cursor-default bg-background border-b-4 border-border px-1 py-1 flex text-primary z-50'>
         {isBacktestPage && (
           <>
             <button
               onClick={() => navigate("/")}
-              className='flex justify-center items-center p-2 hover:bg-[#2E2E2E] duration-100 rounded-md text-sm font-[600]'
+              className='flex justify-center items-center p-2 hover:bg-foreground/10 duration-100 rounded-md text-sm font-[600]'
             >
               ← Return to Chart
             </button>
             <div className='mx-1 flex justify-center items-center'>
-              <div className='h-[22px] w-[1px] bg-[#4A4A4A]'></div>
+              <div className='h-[22px] w-[1px] bg-foreground/20'></div>
             </div>
           </>
         )}
         <button
           onClick={tickerModal.openModal}
-          className='flex justify-center items-center p-2 hover:bg-[#2E2E2E] duration-100 gap-x-1 rounded-md text-sm font-[600] max-w-[100px]'
+          className='flex justify-center items-center p-2 hover:bg-foreground/10 duration-100 gap-x-1 rounded-md text-sm font-[600]'
         >
           <div className='flex-shrink-0'>
             <Find />
@@ -81,24 +89,62 @@ const TopBar = () => {
           </span>
         </button>
         <div className='mx-1 flex justify-center items-center'>
-          <div className='h-[22px] w-[1px] bg-[#4A4A4A]'></div>
+          <div className='h-[22px] w-[1px] bg-foreground/20'></div>
         </div>
         <TimeframeSelector />
         <>
           <div className='mx-1 flex justify-center items-center'>
-            <div className='h-[22px] w-[1px] bg-[#4A4A4A]'></div>
+            <div className='h-[22px] w-[1px] bg-foreground/20'></div>
           </div>
-          <button
-            onClick={() => setIsBacktestModalOpen(true)}
-            className='flex justify-center items-center p-2 hover:bg-[#2E2E2E] duration-100 rounded-md text-sm font-[600]'
-          >
-            Backtests
-          </button>
+          <div className='flex items-center gap-1'>
+            <Button
+              onClick={() => setIsBacktestModalOpen(true)}
+              className='flex justify-center items-center p-2 bg-transparent text-primary hover:bg-foreground/10 duration-100 rounded-md text-sm font-[600]'
+            >
+              Backtests
+            </Button>
+            <Button
+              onClick={() => setIsRunBacktestModalOpen(true)}
+              className='bg-primary text-primary-foreground hover:bg-primary/90'
+            >
+              Run Backtest
+            </Button>
+            <Button
+              variant='ghost'
+              size='icon'
+              onClick={() => setIsSettingsModalOpen(true)}
+              className='h-9 w-9 text-primary'
+              title='Chart settings'
+            >
+              <Settings className='h-4 w-4' />
+            </Button>
+            <Button
+              variant='ghost'
+              size='icon'
+              onClick={toggleTheme}
+              className='h-9 w-9 text-primary'
+              title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+            >
+              {theme === "dark" ? (
+                <Sun className='h-4 w-4' />
+              ) : (
+                <Moon className='h-4 w-4' />
+              )}
+            </Button>
+          </div>
         </>
       </div>
       <BacktestModal
         isOpen={isBacktestModalOpen}
         onClose={() => setIsBacktestModalOpen(false)}
+      />
+      <RunBacktestModal
+        isOpen={isRunBacktestModalOpen}
+        onClose={() => setIsRunBacktestModalOpen(false)}
+      />
+      <SettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
       />
       <TimeframeModal
         isOpen={timeframeModal.isModalOpen}

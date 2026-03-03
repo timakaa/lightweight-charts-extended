@@ -1,5 +1,6 @@
 import { useRef, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import { useChartStore } from "@store/chart";
 import { useSelectedLineStore } from "@store/selectedLine";
 import { useSelectedBoxStore } from "@store/selectedBox";
 import { fitChartToRecentBars } from "@helpers/fitChartToRecentBars";
@@ -8,9 +9,17 @@ import { useDrawingTools } from "./hooks/useDrawingTools";
 import { useDrawingSync } from "./hooks/useDrawingSync";
 import ChartContainer from "./components/ChartContainer";
 
-const Chart = ({ drawings, onChartReady }) => {
+const Chart = ({ drawings, onChartReady, symbol }) => {
   const chartContainerRef = useRef();
   const { backtestId } = useParams();
+  const setTicker = useChartStore((s) => s.setTicker);
+
+  // Set the symbol in the store when it changes
+  useEffect(() => {
+    if (symbol) {
+      setTicker(symbol);
+    }
+  }, [symbol, setTicker]);
 
   const { chart, candlestickSeries, candleData, chartDataInfo } =
     useChartSetup(chartContainerRef);

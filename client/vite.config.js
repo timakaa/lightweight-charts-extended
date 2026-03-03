@@ -9,6 +9,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
+      "@": "/src",
       "@hooks": "/src/hooks",
       "@components": "/src/components",
       "@icons": "/src/icons",
@@ -16,6 +17,7 @@ export default defineConfig({
       "@helpers": "/src/helpers",
       "@drawing-tools": "/src/drawing-tools",
       "@config": "/src/config",
+      "@pages": "/src/pages",
     },
   },
 });

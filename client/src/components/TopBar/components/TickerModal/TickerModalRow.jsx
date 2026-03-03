@@ -36,8 +36,8 @@ export const TickerModalRow = ({ ticker, onClick, isBacktest }) => {
 
   return (
     <div
-      className={`grid grid-cols-4 gap-4 p-4 text-sm text-white border-b border-[#2E2E2E] hover:bg-[#2E2E2E] ${
-        isActive ? "bg-[#2E2E2E]" : ""
+      className={`grid grid-cols-4 gap-4 p-4 text-sm text-primary border-b border-border hover:bg-border ${
+        isActive ? "bg-border" : ""
       } cursor-pointer transition-colors`}
       onClick={onClick}
     >
@@ -53,7 +53,7 @@ export const TickerModalRow = ({ ticker, onClick, isBacktest }) => {
       </div>
       <div className='text-right'>${formatPrice(ticker.last)}</div>
       <div className='text-right'>{formatPercentage(ticker.percentage)}</div>
-      <div className='text-right text-gray-400'>
+      <div className='text-right text-primary/70'>
         {formatVolume(ticker.volume)}
       </div>
     </div>

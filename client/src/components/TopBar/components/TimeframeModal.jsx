@@ -61,10 +61,10 @@ const TimeframeModal = ({
       onClick={onClose}
     >
       <div
-        className='bg-modal border border-modal-border rounded-lg p-6 w-[350px]'
+        className='bg-background border border-border rounded-lg p-6 w-[350px]'
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className='text-white text-lg font-medium mb-4 text-center'>
+        <h2 className='text-primary text-lg font-medium mb-4 text-center'>
           Change interval
         </h2>
 
@@ -74,10 +74,8 @@ const TimeframeModal = ({
             type='text'
             value={inputValue}
             onChange={(e) => onInputChange(e.target.value)}
-            className={`w-full px-3 py-3 text-lg text-center bg-modal border-2 rounded-lg text-white focus:outline-none transition-all duration-200 ${
-              isValid
-                ? "border-[#4A90E2] focus:border-[#5BA0F2]"
-                : "border-red-500 focus:border-red-400"
+            className={`w-full px-3 py-3 text-lg text-center bg-background border-2 rounded-lg text-primary transition-colors outline-none duration-200 ${
+              isValid ? "border-[#4A90E2]" : "border-red-500"
             }`}
             placeholder=''
           />
@@ -85,7 +83,7 @@ const TimeframeModal = ({
 
         <div className='text-center'>
           <div
-            className={`text-sm ${isValid ? "text-gray-300" : "text-red-400"}`}
+            className={`text-sm ${isValid ? "text-primary/70" : "text-red-400"}`}
           >
             {inputValue && isValid && previewTimeframe
               ? getReadableTimeframe(previewTimeframe)

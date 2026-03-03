@@ -1,4 +1,33 @@
 services:
+  redis:
+    container_name: "redis-dev"
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+
+  minio:
+    container_name: "minio-dev"
+    image: minio/minio:latest
+    ports:
+      - "9000:9000" # API
+      - "9001:9001" # Web UI
+    volumes:
+      - minio_data:/data
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin123
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
   backend:
     container_name: "backend-dev"
     build:
@@ -11,6 +40,15 @@ services:
     volumes:
       - ./backend:/app
       - backend_data:/app/data
+    depends_on:
+      - redis
+      - minio
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin123
+      - MINIO_SECURE=false
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     restart: unless-stopped
 
@@ -34,3 +72,5 @@ services:
 
 volumes:
   backend_data:
+  redis_data:
+  minio_data:

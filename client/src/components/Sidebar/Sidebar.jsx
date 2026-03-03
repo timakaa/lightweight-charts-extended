@@ -48,15 +48,15 @@ const Sidebar = ({
   };
 
   return (
-    <div className='relative w-16 cursor-default bg-modal border-r-4 border-[#2E2E2E] flex flex-col items-center pt-5 z-50'>
+    <div className='relative w-16 cursor-default bg-background border-r-4 border-border flex flex-col items-center pt-5 z-50'>
       <button
         onClick={() => setCurrentTool(TOOL_CROSSHAIR)}
         className={`mb-2 w-10 h-10 text-xl rounded-lg border-none cursor-pointer flex items-center justify-center transition-all
           ${
             currentTool === TOOL_CROSSHAIR
-              ? "bg-blue-700 outline outline-2 outline-blue-300"
-              : "bg-transparent hover:bg-zinc-700"
-          } text-white`}
+              ? "bg-foreground text-primary-foreground ring-2 ring-foreground/50"
+              : "bg-transparent hover:bg-foreground/20"
+          } text-primary`}
         title='Crosshair'
       >
         <Crosshair />
@@ -66,9 +66,9 @@ const Sidebar = ({
         className={`mb-2 w-10 h-10 text-xl rounded-lg border-none cursor-pointer flex items-center justify-center transition-all
           ${
             currentTool === TOOL_LINE
-              ? "bg-blue-700 outline outline-2 outline-blue-300"
-              : "bg-transparent hover:bg-zinc-700"
-          } text-white`}
+              ? "bg-foreground text-primary-foreground ring-2 ring-foreground/50"
+              : "bg-transparent hover:bg-foreground/20"
+          } text-primary`}
         title='Line'
       >
         <Line />
@@ -78,9 +78,9 @@ const Sidebar = ({
         className={`mb-2 w-10 h-10 text-xl rounded-lg border-none cursor-pointer flex items-center justify-center transition-all
           ${
             currentTool === TOOL_BOX
-              ? "bg-blue-700 outline outline-2 outline-blue-300"
-              : "bg-transparent hover:bg-zinc-700"
-          } text-white`}
+              ? "bg-foreground text-primary-foreground ring-2 ring-foreground/50"
+              : "bg-transparent hover:bg-foreground/20"
+          } text-primary`}
         title='Box'
       >
         <Box />
@@ -90,9 +90,9 @@ const Sidebar = ({
         className={`mb-2 w-10 h-10 text-xl rounded-lg border-none cursor-pointer flex items-center justify-center transition-all
           ${
             currentTool === TOOL_LONG_POSITION
-              ? "bg-blue-700 outline outline-2 outline-blue-300"
-              : "bg-transparent hover:bg-zinc-700"
-          } text-white`}
+              ? "bg-foreground text-primary-foreground ring-2 ring-foreground/50"
+              : "bg-transparent hover:bg-foreground/20"
+          } text-primary`}
         title='Long Position'
       >
         <LongPosition />
@@ -102,9 +102,9 @@ const Sidebar = ({
         className={`mb-2 w-10 h-10 text-xl rounded-lg border-none cursor-pointer flex items-center justify-center transition-all
           ${
             currentTool === TOOL_SHORT_POSITION
-              ? "bg-blue-700 outline outline-2 outline-blue-300"
-              : "bg-transparent hover:bg-zinc-700"
-          } text-white`}
+              ? "bg-foreground text-primary-foreground ring-2 ring-foreground/50"
+              : "bg-transparent hover:bg-foreground/20"
+          } text-primary`}
         title='Short Position'
       >
         <ShortPosition />
@@ -114,9 +114,9 @@ const Sidebar = ({
         className={`mb-2 w-10 h-10 text-xl rounded-lg border-none cursor-pointer flex items-center justify-center transition-all
           ${
             currentTool === TOOL_FIB_RETRACEMENT
-              ? "bg-blue-700 outline outline-2 outline-blue-300"
-              : "bg-transparent hover:bg-zinc-700"
-          } text-white`}
+              ? "bg-foreground text-primary-foreground ring-2 ring-foreground/50"
+              : "bg-transparent hover:bg-foreground/20"
+          } text-primary`}
         title='Short Position'
       >
         <FibRetracement />
@@ -126,9 +126,9 @@ const Sidebar = ({
         className={`mb-2 w-10 h-10 text-xl rounded-lg border-none cursor-pointer flex items-center justify-center transition-all
           ${
             currentTool === TOOL_RULER
-              ? "bg-blue-700 outline outline-2 outline-blue-300"
-              : "bg-transparent hover:bg-zinc-700"
-          } text-white`}
+              ? "bg-foreground text-primary-foreground ring-2 ring-foreground/50"
+              : "bg-transparent hover:bg-foreground/20"
+          } text-primary`}
         title='Box'
       >
         <Ruler />
@@ -136,7 +136,7 @@ const Sidebar = ({
       <button
         onClick={() => handleDeleteAll()}
         className={`mb-2 w-10 h-10 text-xl rounded-lg border-none cursor-pointer flex items-center justify-center transition-all
-          ${"bg-transparent hover:bg-zinc-700"} text-white`}
+          ${"bg-transparent hover:bg-foreground/20"} text-primary`}
         title='Trash'
       >
         <Trash />

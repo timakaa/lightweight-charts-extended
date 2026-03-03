@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import React, { useState, useRef, useEffect } from "react";
 
 const EditBacktestModalContent = ({ onClose, onSave, initialTitle }) => {
@@ -15,12 +16,12 @@ const EditBacktestModalContent = ({ onClose, onSave, initialTitle }) => {
 
   return (
     <div className='flex flex-col h-full' onClick={(e) => e.stopPropagation()}>
-      <div className='p-4 border-b border-modal-border'>
+      <div className='p-4 border border-border rounded-lg'>
         <div className='flex justify-between items-center mb-4'>
-          <h2 className='text-xl font-bold text-white'>Edit Backtest</h2>
+          <h2 className='text-xl font-bold text-primary'>Edit Backtest</h2>
           <button
             onClick={onClose}
-            className='text-gray-400 hover:text-white transition-colors'
+            className='text-primary/70 hover:text-primary transition-colors'
           >
             ✕
           </button>
@@ -32,18 +33,14 @@ const EditBacktestModalContent = ({ onClose, onSave, initialTitle }) => {
               type='text'
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className='w-full px-3 py-2 bg-modal text-white rounded-md border border-modal-border focus:outline-none focus:border-blue-500'
+              className='w-full px-3 py-2 bg-background text-primary rounded-md border border-border focus:outline-none focus:border-blue-500'
               placeholder='Enter backtest title'
             />
           </div>
           <div className='flex justify-end gap-3'>
-            <button
-              type='submit'
-              className='px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors'
-              disabled={!title.trim()}
-            >
+            <Button type='submit' disabled={!title.trim()}>
               Save Changes
-            </button>
+            </Button>
           </div>
         </form>
       </div>
@@ -63,10 +60,10 @@ const EditBacktestModal = ({ isOpen, onClose, onSave, initialTitle }) => {
 
   return (
     <div
-      className='fixed cursor-default inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[999]'
+      className='fixed cursor-default inset-0 bg-background/30 flex items-center justify-center z-[999]'
       onClick={handleBackdropClick}
     >
-      <div className='bg-modal rounded-lg w-[400px] flex flex-col'>
+      <div className='bg-background rounded-lg w-[400px] flex flex-col'>
         <EditBacktestModalContent
           onClose={onClose}
           onSave={onSave}

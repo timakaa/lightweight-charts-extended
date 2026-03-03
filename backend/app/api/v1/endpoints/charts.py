@@ -2,7 +2,7 @@
 from fastapi import APIRouter, HTTPException, Query
 from app.services.chart_service import chart_service
 from app.services.exchange_service import exchange_service
-from app.helpers.generate_id import generate_id
+from app.utils import generate_id
 
 router = APIRouter()
 

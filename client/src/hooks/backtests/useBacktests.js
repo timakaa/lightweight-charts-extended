@@ -31,46 +31,6 @@ export const useBacktestsSummarized = (page, pageSize, search) => {
   });
 };
 
-const fetchBacktestById = async (backtestId) => {
-  const response = await fetch(`${API_BASE_URL}/backtest/${backtestId}`);
-  if (!response.ok) {
-    throw new Error("Network response was not ok");
-  }
-  return response.json();
-};
-
-export const useBacktest = (backtestId) => {
-  return useQuery({
-    queryKey: ["backtest", backtestId],
-    queryFn: () => fetchBacktestById(backtestId),
-    enabled: !!backtestId,
-  });
-};
-
-const createBacktest = async (backtestData) => {
-  const response = await fetch(`${API_BASE_URL}/backtest`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(backtestData),
-  });
-  if (!response.ok) {
-    throw new Error("Network response was not ok");
-  }
-  return response.json();
-};
-
-export const useCreateBacktest = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: createBacktest,
-    onSuccess: () => {
-      queryClient.invalidateQueries("backtestsSummarized");
-    },
-  });
-};
-
 const deleteBacktest = async (backtestId) => {
   const response = await fetch(`${API_BASE_URL}/backtest/${backtestId}`, {
     method: "DELETE",
@@ -86,7 +46,7 @@ export const useDeleteBacktest = () => {
   return useMutation({
     mutationFn: deleteBacktest,
     onSuccess: () => {
-      queryClient.invalidateQueries("backtestsSummarized");
+      queryClient.invalidateQueries({ queryKey: ["backtestsSummarized"] });
     },
   });
 };
@@ -109,8 +69,13 @@ export const useUpdateBacktest = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: updateBacktest,
-    onSuccess: () => {
-      queryClient.invalidateQueries("backtestsSummarized");
+    onSuccess: (data, variables) => {
+      // Invalidate the list
+      queryClient.invalidateQueries({ queryKey: ["backtestsSummarized"] });
+      // Invalidate the specific backtest stats
+      queryClient.invalidateQueries({
+        queryKey: ["backtestStats", variables.id],
+      });
     },
   });
 };

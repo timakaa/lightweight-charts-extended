@@ -13,8 +13,8 @@ const TimeframeSelector = () => {
         <button
           key={el}
           onClick={() => setTimeframe(el)}
-          className={`hover:bg-[#3D3D3D] duration-100 h-full p-1 rounded-md ${
-            timeframe === el ? "bg-[#3D3D3D] text-white" : ""
+          className={`hover:bg-foreground/10 duration-100 h-full p-1 rounded-md ${
+            timeframe === el ? "bg-foreground/10 text-primary" : ""
           }`}
         >
           {el}

@@ -1,4 +1,5 @@
 import React from "react";
+import { Input } from "@/components/ui/input";
 
 export const TickerModalSearch = ({ search, onChange }) => {
   const handleInputChange = (e) => {
@@ -7,13 +8,13 @@ export const TickerModalSearch = ({ search, onChange }) => {
   };
 
   return (
-    <div className='p-4 border-b border-[#2E2E2E]'>
-      <input
+    <div className='p-4 border-b border-border'>
+      <Input
         type='text'
         placeholder='Search symbols...'
         value={search}
         onChange={handleInputChange}
-        className='w-full px-3 py-2 bg-modal text-white rounded-md border border-[#4A4A4A] focus:border-blue-500 focus:outline-none'
+        className='bg-background border-border text-primary'
         autoFocus
       />
     </div>
