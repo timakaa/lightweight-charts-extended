@@ -1,7 +1,8 @@
 import { useLocalStorage } from "./useLocalStorage";
 import { useRef, useEffect } from "react";
+import { useTheme } from "./useTheme";
 
-const DEFAULT_CHART_THEME = {
+const DARK_CHART_THEME = {
   // Candle colors
   candles: {
     bodyEnabled: true,
@@ -31,42 +32,62 @@ const DEFAULT_CHART_THEME = {
     crosshairEnabled: true,
     crosshairColor: "#9598a1",
     crosshairOpacity: 100,
-    watermarkEnabled: true,
-    watermarkColor: "#ffffff",
-    watermarkOpacity: 100,
   },
   // Scales colors
   scales: {
     textEnabled: true,
     textColor: "#b2b5be",
     textSize: "12",
-    linesEnabled: true,
-    linesColor: "#2b2b43",
-  },
-  // Buttons visibility
-  buttons: {
-    navigationEnabled: true,
-    paneEnabled: true,
-  },
-  // Margins
-  margins: {
-    top: 0,
-    bottom: 0,
-    right: 0,
-  },
-  // Data modification
-  data: {
-    precision: "default",
-    timezone: "utc0",
-    colorBarsBasedOnPrevClose: false,
   },
 };
+
+const LIGHT_CHART_THEME = {
+  // Candle colors
+  candles: {
+    bodyEnabled: true,
+    bodyUpColor: "#22c55e",
+    bodyUpOpacity: 100,
+    bodyDownColor: "#ef4444",
+    bodyDownOpacity: 100,
+    borderEnabled: true,
+    borderUpColor: "#22c55e",
+    borderUpOpacity: 100,
+    borderDownColor: "#ef4444",
+    borderDownOpacity: 100,
+    wickEnabled: true,
+    wickUpColor: "#22c55e",
+    wickUpOpacity: 100,
+    wickDownColor: "#ef4444",
+    wickDownOpacity: 100,
+  },
+  // Canvas colors
+  canvas: {
+    backgroundEnabled: true,
+    backgroundColor: "#ffffff",
+    backgroundOpacity: 100,
+    gridEnabled: true,
+    gridColor: "#d1d4dc",
+    gridOpacity: 100,
+    crosshairEnabled: true,
+    crosshairColor: "#758696",
+    crosshairOpacity: 100,
+  },
+  // Scales colors
+  scales: {
+    textEnabled: true,
+    textColor: "#4a5568",
+    textSize: "12",
+  },
+};
+
+const DEFAULT_CHART_THEME = DARK_CHART_THEME;
 
 export function useChartTheme() {
   const [chartTheme, setChartTheme] = useLocalStorage(
     "chartTheme",
     DEFAULT_CHART_THEME,
   );
+  const { theme } = useTheme();
 
   // Batch multiple updates together
   const pendingUpdates = useRef(null);
@@ -144,7 +165,19 @@ export function useChartTheme() {
   };
 
   const applyDefaults = () => {
-    setChartTheme(DEFAULT_CHART_THEME);
+    if (theme === "dark") {
+      applyDarkTheme();
+    } else {
+      applyLightTheme();
+    }
+  };
+
+  const applyDarkTheme = () => {
+    setChartTheme(DARK_CHART_THEME);
+  };
+
+  const applyLightTheme = () => {
+    setChartTheme(LIGHT_CHART_THEME);
   };
 
   return {
@@ -156,5 +189,7 @@ export function useChartTheme() {
     updateMargins,
     updateData,
     applyDefaults,
+    applyDarkTheme,
+    applyLightTheme,
   };
 }

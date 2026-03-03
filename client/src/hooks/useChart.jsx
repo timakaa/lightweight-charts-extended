@@ -6,10 +6,7 @@ import { hexToRgba } from "@/utils/colorUtils";
 
 export const useChart = (chartContainerRef) => {
   const [chart, setChart] = useState(null);
-  const { theme } = useTheme();
-  const { chartTheme, updateCanvasColors, updateCandleColors } =
-    useChartTheme();
-  const prevThemeRef = useRef(theme);
+  const { chartTheme } = useChartTheme();
 
   // Helper function to get opacity (0 if disabled, otherwise the set value)
   const getOpacity = (enabled, opacity) => {
@@ -36,39 +33,6 @@ export const useChart = (chartContainerRef) => {
   const backgroundColorRgba = hexToRgba(backgroundColor, backgroundOpacity);
   const gridColorRgba = hexToRgba(gridColor, gridOpacity);
   const crosshairColorRgba = hexToRgba(crosshairColor, crosshairOpacity);
-
-  // Update theme defaults ONLY when theme actually changes
-  useEffect(() => {
-    if (prevThemeRef.current === theme) {
-      console.log("Theme hasn't changed, skipping");
-      return;
-    }
-
-    prevThemeRef.current = theme;
-
-    if (theme === "dark") {
-      updateCanvasColors({ backgroundColor: "#000000" });
-      updateCandleColors({
-        bodyUpColor: "#26a69a",
-        bodyDownColor: "#ef5350",
-        borderUpColor: "#26a69a",
-        borderDownColor: "#ef5350",
-        wickUpColor: "#26a69a",
-        wickDownColor: "#ef5350",
-      });
-    } else {
-      updateCanvasColors({ backgroundColor: "#ffffff" });
-      updateCandleColors({
-        bodyUpColor: "#22c55e",
-        bodyDownColor: "#ef4444",
-        borderUpColor: "#22c55e",
-        borderDownColor: "#ef4444",
-        wickUpColor: "#22c55e",
-        wickDownColor: "#ef4444",
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [theme]);
 
   useEffect(() => {
     if (!chartContainerRef.current) {
