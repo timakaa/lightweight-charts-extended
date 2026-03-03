@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useChartTheme } from "@/hooks/useChartTheme";
 import { Sliders, BarChart3, Ruler, Palette } from "lucide-react";
@@ -6,9 +6,24 @@ import { SymbolTab } from "./tabs/SymbolTab";
 import { StatusLineTab } from "./tabs/StatusLineTab";
 import { ScalesTab } from "./tabs/ScalesTab";
 import { CanvasTab } from "./tabs/CanvasTab";
+import AsyncTemplateSelect from "./AsyncTemplateSelect";
+import SaveTemplateModal from "./SaveTemplateModal";
+import ConfirmUpdateModal from "./ConfirmUpdateModal";
+import {
+  useTemplate,
+  useCreateTemplate,
+  useUpdateTemplate,
+} from "@/hooks/templates/useTemplates";
+import { API_BASE_URL } from "@config/api";
 
 const SettingsModal = ({ isOpen, onClose }) => {
   const [activeTab, setActiveTab] = useState("symbol");
+  const [selectedTemplateId, setSelectedTemplateId] = useState(null);
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [pendingTemplateName, setPendingTemplateName] = useState("");
+  const [existingTemplateId, setExistingTemplateId] = useState(null);
+
   const {
     chartTheme,
     updateCandleColors,
@@ -17,7 +32,118 @@ const SettingsModal = ({ isOpen, onClose }) => {
     updateButtons,
     updateMargins,
     updateData,
+    applyDefaults,
   } = useChartTheme();
+
+  // Fetch template data when selected
+  const { data: templateData } = useTemplate(selectedTemplateId);
+
+  // Mutations
+  const createTemplate = useCreateTemplate();
+  const updateTemplate = useUpdateTemplate();
+
+  // Apply template when loaded
+  useEffect(() => {
+    if (templateData?.theme_data) {
+      // Apply all theme settings from template
+      if (templateData.theme_data.candles) {
+        updateCandleColors(templateData.theme_data.candles);
+      }
+      if (templateData.theme_data.canvas) {
+        updateCanvasColors(templateData.theme_data.canvas);
+      }
+      if (templateData.theme_data.scales) {
+        updateScalesColors(templateData.theme_data.scales);
+      }
+      if (templateData.theme_data.buttons) {
+        updateButtons(templateData.theme_data.buttons);
+      }
+      if (templateData.theme_data.margins) {
+        updateMargins(templateData.theme_data.margins);
+      }
+      if (templateData.theme_data.data) {
+        updateData(templateData.theme_data.data);
+      }
+
+      // Reset selection after applying
+      setSelectedTemplateId(null);
+    }
+  }, [templateData]);
+
+  const handleSaveTemplate = async (templateName) => {
+    // Search for template with this exact name
+    const searchResponse = await fetch(
+      `${API_BASE_URL}/templates?page=1&page_size=10&search=${encodeURIComponent(templateName)}`,
+    );
+    const searchData = await searchResponse.json();
+
+    // Check if any template exactly matches the name (case-insensitive)
+    const existingTemplate = searchData?.templates?.find(
+      (t) => t.name.toLowerCase() === templateName.toLowerCase(),
+    );
+
+    if (existingTemplate) {
+      // Template exists, ask for confirmation
+      setPendingTemplateName(templateName);
+      setExistingTemplateId(existingTemplate.id);
+      setIsSaveModalOpen(false);
+      setIsConfirmModalOpen(true);
+    } else {
+      // Create new template
+      createTemplate.mutate(
+        {
+          name: templateName,
+          theme_data: chartTheme,
+        },
+        {
+          onSuccess: () => {
+            setIsSaveModalOpen(false);
+          },
+          onError: (error) => {
+            console.error("Error creating template:", error);
+            // If backend returns duplicate error, show error message
+            if (
+              error.detail?.includes("already exists") ||
+              error.message?.includes("already exists")
+            ) {
+              alert(
+                "Template name already exists. Please choose a different name.",
+              );
+              setIsSaveModalOpen(true);
+            }
+          },
+        },
+      );
+    }
+  };
+
+  const handleConfirmUpdate = () => {
+    // Update existing template
+    updateTemplate.mutate(
+      {
+        templateId: existingTemplateId,
+        templateData: {
+          name: pendingTemplateName,
+          theme_data: chartTheme,
+        },
+      },
+      {
+        onSuccess: () => {
+          setIsConfirmModalOpen(false);
+          setPendingTemplateName("");
+          setExistingTemplateId(null);
+        },
+      },
+    );
+  };
+
+  const handleCancelUpdate = () => {
+    setIsConfirmModalOpen(false);
+    setPendingTemplateName("");
+    setExistingTemplateId(null);
+    // Reopen save modal to let user enter a different name
+    setIsSaveModalOpen(true);
+  };
 
   if (!isOpen) return null;
 
@@ -114,18 +240,46 @@ const SettingsModal = ({ isOpen, onClose }) => {
         </div>
 
         {/* Footer */}
-        <div className='p-4 border-t border-border flex justify-end gap-2 flex-shrink-0'>
-          <Button variant='ghost' onClick={onClose} className='text-primary'>
-            Cancel
-          </Button>
-          <Button
-            onClick={onClose}
-            className='bg-primary text-primary-foreground hover:bg-primary/90'
-          >
-            Save Changes
-          </Button>
+        <div className='p-4 border-t border-border flex justify-between items-center gap-4 flex-shrink-0'>
+          {/* Template Selector - Left Side */}
+          <div className='w-64'>
+            <AsyncTemplateSelect
+              value={selectedTemplateId}
+              onChange={setSelectedTemplateId}
+              onApplyDefaults={applyDefaults}
+              onSaveTemplate={() => setIsSaveModalOpen(true)}
+            />
+          </div>
+
+          {/* Action Buttons - Right Side */}
+          <div className='flex gap-2'>
+            <Button variant='ghost' onClick={onClose} className='text-primary'>
+              Cancel
+            </Button>
+            <Button
+              onClick={onClose}
+              className='bg-primary text-primary-foreground hover:bg-primary/90'
+            >
+              Save Changes
+            </Button>
+          </div>
         </div>
       </div>
+
+      {/* Save Template Modal */}
+      <SaveTemplateModal
+        isOpen={isSaveModalOpen}
+        onClose={() => setIsSaveModalOpen(false)}
+        onSave={handleSaveTemplate}
+      />
+
+      {/* Confirm Update Modal */}
+      <ConfirmUpdateModal
+        isOpen={isConfirmModalOpen}
+        onClose={handleCancelUpdate}
+        onConfirm={handleConfirmUpdate}
+        templateName={pendingTemplateName}
+      />
     </div>
   );
 };

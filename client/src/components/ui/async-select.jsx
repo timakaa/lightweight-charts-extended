@@ -22,6 +22,8 @@ const AsyncSelect = ({
   getItemKey,
   getItemValue,
   getItemDisplay,
+  headerButtons,
+  onCloseRequest,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState(null);
@@ -107,6 +109,13 @@ const AsyncSelect = ({
     setSearchInput("");
   };
 
+  // Expose close function to parent via callback
+  useEffect(() => {
+    if (onCloseRequest) {
+      onCloseRequest(handleClose);
+    }
+  }, [onCloseRequest]);
+
   const dropdownContent =
     isOpen &&
     dropdownPosition &&
@@ -124,7 +133,14 @@ const AsyncSelect = ({
             width: `${dropdownPosition.width}px`,
           }}
         >
-          <div className='p-2 border-b border-border'>
+          {/* Header Buttons (if provided) */}
+          {headerButtons && (
+            <div className='p-2 border-b border-border cursor-default'>
+              {headerButtons}
+            </div>
+          )}
+
+          <div className='p-2 border-b border-border cursor-default'>
             <Input
               type='text'
               placeholder={searchPlaceholder}
@@ -173,7 +189,7 @@ const AsyncSelect = ({
                 )}
               </>
             ) : (
-              <div className='p-4 text-center text-sm text-muted-foreground'>
+              <div className='p-4 cursor-default text-center text-sm text-muted-foreground'>
                 No items found
               </div>
             )}

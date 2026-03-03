@@ -137,6 +137,10 @@ export function useChartTheme() {
     setChartTheme(DEFAULT_CHART_THEME);
   };
 
+  const applyDefaults = () => {
+    setChartTheme(DEFAULT_CHART_THEME);
+  };
+
   return {
     chartTheme,
     updateCandleColors,
@@ -146,5 +150,6 @@ export function useChartTheme() {
     updateMargins,
     updateData,
     resetToDefaults,
+    applyDefaults,
   };
 }
