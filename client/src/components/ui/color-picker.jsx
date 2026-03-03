@@ -42,10 +42,10 @@ export function ColorPicker({
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <button
-          className={`w-10 h-10 rounded-lg p-1 border-2 border-transparent hover:border-gray-400 transition-colors cursor-pointer ${className}`}
+          className={`w-10 h-10 rounded-lg p-1 border-2 border-border hover:border-gray-400 transition-colors cursor-pointer ${className}`}
         >
           <div
-            className='w-full h-full rounded-md'
+            className='w-full h-full rounded-md border border-border'
             style={{ backgroundColor: value }}
           />
         </button>
