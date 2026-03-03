@@ -4,7 +4,7 @@ import { Button } from "../button";
 export function RecentColors({ colors, onColorSelect, onAddColor }) {
   if (!colors || colors.length === 0) {
     return (
-      <div className='mb-4'>
+      <div>
         <div className='text-xs text-primary/60 mb-2 uppercase tracking-wider'>
           Recent Colors
         </div>
@@ -24,7 +24,7 @@ export function RecentColors({ colors, onColorSelect, onAddColor }) {
   }
 
   return (
-    <div className='mb-4'>
+    <div>
       <div className='text-xs text-primary/60 mb-2 uppercase tracking-wider'>
         Recent Colors
       </div>

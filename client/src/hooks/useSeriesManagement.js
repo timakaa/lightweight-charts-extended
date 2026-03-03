@@ -1,21 +1,38 @@
 import { useState, useEffect, useRef } from "react";
 import { CandlestickSeries } from "lightweight-charts";
 import { useChartTheme } from "./useChartTheme";
+import { hexToRgba } from "@/utils/colorUtils";
 
 export const useSeriesManagement = (chart, symbol, timeframe) => {
   const [series, setSeries] = useState(null);
   const chartMountedRef = useRef(true);
   const { chartTheme } = useChartTheme();
 
-  // Helper function to get candle colors from chartTheme
+  // Helper function to get candle colors from chartTheme with opacity
   const getCandleColors = () => {
+    const bodyUpOpacity = chartTheme.candles.bodyUpOpacity ?? 100;
+    const bodyDownOpacity = chartTheme.candles.bodyDownOpacity ?? 100;
+    const borderUpOpacity = chartTheme.candles.borderUpOpacity ?? 100;
+    const borderDownOpacity = chartTheme.candles.borderDownOpacity ?? 100;
+    const wickUpOpacity = chartTheme.candles.wickUpOpacity ?? 100;
+    const wickDownOpacity = chartTheme.candles.wickDownOpacity ?? 100;
+
     return {
-      upColor: chartTheme.candles.bodyUpColor,
-      downColor: chartTheme.candles.bodyDownColor,
-      borderUpColor: chartTheme.candles.borderUpColor,
-      borderDownColor: chartTheme.candles.borderDownColor,
-      wickUpColor: chartTheme.candles.wickUpColor,
-      wickDownColor: chartTheme.candles.wickDownColor,
+      upColor: hexToRgba(chartTheme.candles.bodyUpColor, bodyUpOpacity),
+      downColor: hexToRgba(chartTheme.candles.bodyDownColor, bodyDownOpacity),
+      borderUpColor: hexToRgba(
+        chartTheme.candles.borderUpColor,
+        borderUpOpacity,
+      ),
+      borderDownColor: hexToRgba(
+        chartTheme.candles.borderDownColor,
+        borderDownOpacity,
+      ),
+      wickUpColor: hexToRgba(chartTheme.candles.wickUpColor, wickUpOpacity),
+      wickDownColor: hexToRgba(
+        chartTheme.candles.wickDownColor,
+        wickDownOpacity,
+      ),
     };
   };
 

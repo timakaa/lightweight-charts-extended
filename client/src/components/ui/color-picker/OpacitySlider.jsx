@@ -13,7 +13,7 @@ export function OpacitySlider({ opacity = 100, onChange }) {
   };
 
   return (
-    <div className='space-y-2'>
+    <div className='space-y-2 mt-4'>
       <div className='text-xs text-primary/60 uppercase tracking-wider'>
         Opacity
       </div>

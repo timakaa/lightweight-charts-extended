@@ -45,6 +45,10 @@ export function CanvasTab({
               onChange={(color) =>
                 updateCanvasColors({ backgroundColor: color })
               }
+              opacity={chartTheme.canvas.backgroundOpacity ?? 100}
+              onOpacityChange={(opacity) =>
+                updateCanvasColors({ backgroundOpacity: opacity })
+              }
             />
           </div>
 

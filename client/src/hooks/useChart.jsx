@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { createChart, CrosshairMode } from "lightweight-charts";
 import { useTheme } from "./useTheme";
 import { useChartTheme } from "./useChartTheme";
+import { hexToRgba } from "@/utils/colorUtils";
 
 export const useChart = (chartContainerRef) => {
   const [chart, setChart] = useState(null);
@@ -12,9 +13,13 @@ export const useChart = (chartContainerRef) => {
 
   // Extract primitive values for dependency tracking
   const backgroundColor = chartTheme.canvas.backgroundColor;
+  const backgroundOpacity = chartTheme.canvas.backgroundOpacity ?? 100;
   const textColor = chartTheme.scales.textColor;
   const gridColor = chartTheme.canvas.gridColor;
   const crosshairColor = chartTheme.canvas.crosshairColor;
+
+  // Convert hex + opacity to rgba
+  const backgroundColorRgba = hexToRgba(backgroundColor, backgroundOpacity);
 
   // Update theme defaults ONLY when theme actually changes
   useEffect(() => {
@@ -58,7 +63,7 @@ export const useChart = (chartContainerRef) => {
       width: chartContainerRef.current.clientWidth,
       height: chartContainerRef.current.clientHeight,
       layout: {
-        background: { color: backgroundColor },
+        background: { color: backgroundColorRgba },
         textColor: textColor,
       },
       grid: {
@@ -150,7 +155,7 @@ export const useChart = (chartContainerRef) => {
     try {
       chart.applyOptions({
         layout: {
-          background: { color: backgroundColor },
+          background: { color: backgroundColorRgba },
           textColor: textColor,
         },
         grid: {
@@ -169,7 +174,7 @@ export const useChart = (chartContainerRef) => {
     } catch (error) {
       console.error("Error applying chart options:", error);
     }
-  }, [chart, backgroundColor, textColor, gridColor, crosshairColor]);
+  }, [chart, backgroundColorRgba, textColor, gridColor, crosshairColor]);
 
   return chart;
 };

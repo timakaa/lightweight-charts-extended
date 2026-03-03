@@ -53,10 +53,18 @@ export function SymbolTab({ chartTheme, updateCandleColors, updateData }) {
             <ColorPicker
               value={chartTheme.candles.bodyUpColor}
               onChange={(color) => updateCandleColors({ bodyUpColor: color })}
+              opacity={chartTheme.candles.bodyUpOpacity}
+              onOpacityChange={(opacity) =>
+                updateCandleColors({ bodyUpOpacity: opacity ?? 100 })
+              }
             />
             <ColorPicker
               value={chartTheme.candles.bodyDownColor}
               onChange={(color) => updateCandleColors({ bodyDownColor: color })}
+              opacity={chartTheme.candles.bodyDownOpacity}
+              onOpacityChange={(opacity) =>
+                updateCandleColors({ bodyDownOpacity: opacity ?? 100 })
+              }
             />
           </div>
         </div>
@@ -80,11 +88,19 @@ export function SymbolTab({ chartTheme, updateCandleColors, updateData }) {
             <ColorPicker
               value={chartTheme.candles.borderUpColor}
               onChange={(color) => updateCandleColors({ borderUpColor: color })}
+              opacity={chartTheme.candles.borderUpOpacity ?? 100}
+              onOpacityChange={(opacity) =>
+                updateCandleColors({ borderUpOpacity: opacity })
+              }
             />
             <ColorPicker
               value={chartTheme.candles.borderDownColor}
               onChange={(color) =>
                 updateCandleColors({ borderDownColor: color })
+              }
+              opacity={chartTheme.candles.borderDownOpacity ?? 100}
+              onOpacityChange={(opacity) =>
+                updateCandleColors({ borderDownOpacity: opacity })
               }
             />
           </div>
@@ -109,10 +125,18 @@ export function SymbolTab({ chartTheme, updateCandleColors, updateData }) {
             <ColorPicker
               value={chartTheme.candles.wickUpColor}
               onChange={(color) => updateCandleColors({ wickUpColor: color })}
+              opacity={chartTheme.candles.wickUpOpacity ?? 100}
+              onOpacityChange={(opacity) =>
+                updateCandleColors({ wickUpOpacity: opacity })
+              }
             />
             <ColorPicker
               value={chartTheme.candles.wickDownColor}
               onChange={(color) => updateCandleColors({ wickDownColor: color })}
+              opacity={chartTheme.candles.wickDownOpacity ?? 100}
+              onOpacityChange={(opacity) =>
+                updateCandleColors({ wickDownOpacity: opacity })
+              }
             />
           </div>
         </div>
