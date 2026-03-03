@@ -8,6 +8,12 @@ export const useChart = (chartContainerRef) => {
   const { theme } = useTheme();
   const { chartTheme, updateCanvasColors, updateCandleColors } =
     useChartTheme();
+  const prevThemeRef = useRef(theme);
+
+  console.log(
+    "useChart mounted/rendered, chartTheme.canvas.backgroundColor:",
+    chartTheme.canvas.backgroundColor,
+  );
 
   // Extract primitive values for dependency tracking
   const backgroundColor = chartTheme.canvas.backgroundColor;
@@ -15,8 +21,23 @@ export const useChart = (chartContainerRef) => {
   const gridColor = chartTheme.canvas.gridColor;
   const crosshairColor = chartTheme.canvas.crosshairColor;
 
-  // Update theme defaults when theme toggle changes
+  // Update theme defaults ONLY when theme actually changes
   useEffect(() => {
+    console.log(
+      "Theme effect running, prevTheme:",
+      prevThemeRef.current,
+      "currentTheme:",
+      theme,
+    );
+
+    if (prevThemeRef.current === theme) {
+      console.log("Theme hasn't changed, skipping");
+      return;
+    }
+
+    prevThemeRef.current = theme;
+    console.log("Theme changed! Applying theme colors");
+
     if (theme === "dark") {
       updateCanvasColors({ backgroundColor: "#000000" });
       updateCandleColors({

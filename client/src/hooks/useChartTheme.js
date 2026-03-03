@@ -62,6 +62,15 @@ export function useChartTheme() {
   const pendingUpdates = useRef(null);
   const timeoutRef = useRef(null);
 
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
   const batchUpdate = (updateFn) => {
     if (!pendingUpdates.current) {
       pendingUpdates.current = updateFn;
