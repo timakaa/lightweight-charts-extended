@@ -6,7 +6,9 @@ import { hexToRgba } from "@/utils/colorUtils";
 
 export const useChart = (chartContainerRef) => {
   const [chart, setChart] = useState(null);
-  const { chartTheme } = useChartTheme();
+  const { theme } = useTheme();
+  const { chartTheme, applyDefaults } = useChartTheme();
+  const prevThemeRef = useRef(theme);
 
   // Helper function to get opacity (0 if disabled, otherwise the set value)
   const getOpacity = (enabled, opacity) => {
@@ -161,6 +163,17 @@ export const useChart = (chartContainerRef) => {
     gridColorRgba,
     crosshairColorRgba,
   ]);
+
+  // Update theme defaults ONLY when theme actually changes
+  useEffect(() => {
+    if (prevThemeRef.current === theme) {
+      return;
+    }
+
+    prevThemeRef.current = theme;
+
+    applyDefaults();
+  }, [theme, applyDefaults]);
 
   return chart;
 };

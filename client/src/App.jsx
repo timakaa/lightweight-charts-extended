@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Chart from "@components/Chart/Chart";
@@ -7,8 +7,6 @@ import Sidebar from "@components/Sidebar/Sidebar";
 import Backtest from "@pages/Backtest/Backtest";
 import Backtests from "@pages/Backtests/Backtests";
 import NotFound404 from "@components/404/404";
-import { useChartTheme } from "./hooks/useChartTheme";
-import { useTheme } from "./hooks/useTheme";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -21,13 +19,7 @@ const queryClient = new QueryClient({
 });
 
 function App() {
-  const { applyDefaults } = useChartTheme();
-  const { theme } = useTheme();
   const [drawingTools, setDrawingTools] = React.useState(null);
-
-  useEffect(() => {
-    applyDefaults();
-  }, [theme]);
 
   return (
     <QueryClientProvider client={queryClient}>
