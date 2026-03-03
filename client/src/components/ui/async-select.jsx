@@ -57,10 +57,25 @@ const AsyncSelect = ({
   useEffect(() => {
     if (isOpen && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const spaceBelow = viewportHeight - rect.bottom;
+      const spaceAbove = rect.top;
+
+      // Open upwards if not enough space below and more space above
+      const openUpwards = spaceBelow < 450 && spaceAbove > spaceBelow;
+
+      // Calculate max height based on available space
+      const maxHeight = openUpwards
+        ? Math.min(spaceAbove - 8, 400)
+        : Math.min(spaceBelow - 8, 400);
+
       setDropdownPosition({
-        top: rect.bottom + window.scrollY + 4,
-        left: rect.left + window.scrollX,
+        bottom: openUpwards ? viewportHeight - rect.top + 4 : null,
+        top: openUpwards ? null : rect.bottom + 4,
+        left: rect.left,
         width: rect.width,
+        maxHeight,
+        openUpwards,
       });
     } else {
       setDropdownPosition(null);
@@ -126,11 +141,17 @@ const AsyncSelect = ({
           onClick={handleClose}
         />
         <div
-          className='fixed z-[9999] bg-background border border-border rounded-md shadow-lg animate-in fade-in-0 zoom-in-95 duration-100'
+          className='fixed z-[9999] bg-background border border-border rounded-md shadow-lg animate-in fade-in-0 zoom-in-95 duration-100 flex flex-col'
           style={{
-            top: `${dropdownPosition.top}px`,
+            ...(dropdownPosition.top !== null && {
+              top: `${dropdownPosition.top}px`,
+            }),
+            ...(dropdownPosition.bottom !== null && {
+              bottom: `${dropdownPosition.bottom}px`,
+            }),
             left: `${dropdownPosition.left}px`,
             width: `${dropdownPosition.width}px`,
+            maxHeight: `${dropdownPosition.maxHeight}px`,
           }}
         >
           {/* Header Buttons (if provided) */}

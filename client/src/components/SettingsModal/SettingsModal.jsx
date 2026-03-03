@@ -9,10 +9,12 @@ import { CanvasTab } from "./tabs/CanvasTab";
 import AsyncTemplateSelect from "./AsyncTemplateSelect";
 import SaveTemplateModal from "./SaveTemplateModal";
 import ConfirmUpdateModal from "./ConfirmUpdateModal";
+import ConfirmDeleteModal from "./ConfirmDeleteModal";
 import {
   useTemplate,
   useCreateTemplate,
   useUpdateTemplate,
+  useDeleteTemplate,
 } from "@/hooks/templates/useTemplates";
 import { API_BASE_URL } from "@config/api";
 
@@ -21,8 +23,10 @@ const SettingsModal = ({ isOpen, onClose }) => {
   const [selectedTemplateId, setSelectedTemplateId] = useState(null);
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [pendingTemplateName, setPendingTemplateName] = useState("");
   const [existingTemplateId, setExistingTemplateId] = useState(null);
+  const [templateToDelete, setTemplateToDelete] = useState(null);
 
   const {
     chartTheme,
@@ -41,6 +45,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
   // Mutations
   const createTemplate = useCreateTemplate();
   const updateTemplate = useUpdateTemplate();
+  const deleteTemplate = useDeleteTemplate();
 
   // Apply template when loaded
   useEffect(() => {
@@ -145,6 +150,27 @@ const SettingsModal = ({ isOpen, onClose }) => {
     setIsSaveModalOpen(true);
   };
 
+  const handleDeleteTemplate = (template) => {
+    setTemplateToDelete(template);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (templateToDelete) {
+      deleteTemplate.mutate(templateToDelete.id, {
+        onSuccess: () => {
+          setIsDeleteModalOpen(false);
+          setTemplateToDelete(null);
+        },
+      });
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setIsDeleteModalOpen(false);
+    setTemplateToDelete(null);
+  };
+
   if (!isOpen) return null;
 
   const handleBackdropClick = (e) => {
@@ -191,7 +217,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
 
   return (
     <div
-      className='fixed cursor-default inset-0 bg-background/50 flex items-center justify-center z-[999]'
+      className='fixed cursor-default inset-0 bg-background/50 flex justify-center items-center z-[999]'
       onClick={handleBackdropClick}
     >
       <div className='bg-background border border-border rounded-lg w-[800px] h-[600px] flex flex-col'>
@@ -248,6 +274,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
               onChange={setSelectedTemplateId}
               onApplyDefaults={applyDefaults}
               onSaveTemplate={() => setIsSaveModalOpen(true)}
+              onDeleteTemplate={handleDeleteTemplate}
             />
           </div>
 
@@ -279,6 +306,14 @@ const SettingsModal = ({ isOpen, onClose }) => {
         onClose={handleCancelUpdate}
         onConfirm={handleConfirmUpdate}
         templateName={pendingTemplateName}
+      />
+
+      {/* Confirm Delete Modal */}
+      <ConfirmDeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        templateName={templateToDelete?.name}
       />
     </div>
   );

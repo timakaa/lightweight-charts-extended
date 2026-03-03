@@ -3,12 +3,14 @@ import { useTemplates } from "@/hooks/templates/useTemplates";
 import { useDebounce } from "@hooks/useDebounce";
 import AsyncSelect from "@/components/ui/async-select";
 import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
 
 const AsyncTemplateSelect = ({
   value,
   onChange,
   onApplyDefaults,
   onSaveTemplate,
+  onDeleteTemplate,
 }) => {
   const [searchInput, setSearchInput] = useState("");
   const [page, setPage] = useState(1);
@@ -45,13 +47,26 @@ const AsyncTemplateSelect = ({
   };
 
   const renderTemplateItem = (template) => (
-    <div className='flex flex-col w-full'>
-      <span className='text-sm font-medium text-foreground'>
-        {template.name}
-      </span>
-      <span className='text-xs text-muted-foreground'>
-        {new Date(template.created_at).toLocaleDateString()}
-      </span>
+    <div className='flex items-center justify-between w-full gap-2'>
+      <div className='flex flex-col flex-1 min-w-0'>
+        <span className='text-sm font-medium text-foreground truncate'>
+          {template.name}
+        </span>
+        <span className='text-xs text-muted-foreground'>
+          {new Date(template.created_at).toLocaleDateString()}
+        </span>
+      </div>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onDeleteTemplate?.(template);
+          closeDropdownRef.current?.();
+        }}
+        className='flex-shrink-0 p-1 hover:bg-error/10 rounded transition-colors'
+        title='Delete template'
+      >
+        <Trash2 className='h-4 w-4 text-error' />
+      </button>
     </div>
   );
 
