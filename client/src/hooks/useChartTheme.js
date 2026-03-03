@@ -133,10 +133,6 @@ export function useChartTheme() {
     }));
   };
 
-  const resetToDefaults = () => {
-    setChartTheme(DEFAULT_CHART_THEME);
-  };
-
   const applyDefaults = () => {
     setChartTheme(DEFAULT_CHART_THEME);
   };
@@ -149,7 +145,6 @@ export function useChartTheme() {
     updateButtons,
     updateMargins,
     updateData,
-    resetToDefaults,
     applyDefaults,
   };
 }

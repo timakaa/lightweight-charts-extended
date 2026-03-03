@@ -287,7 +287,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
               onClick={onClose}
               className='bg-primary text-primary-foreground hover:bg-primary/90'
             >
-              Save Changes
+              Ok
             </Button>
           </div>
         </div>

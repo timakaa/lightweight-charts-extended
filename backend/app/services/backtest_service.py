@@ -6,6 +6,7 @@ from typing import Optional, Dict, Any, List
 from app.db.database import get_db
 from app.repositories.backtest_repository import BacktestRepository
 from app.services.backtest import BacktestSerializer, BacktestCache
+from app.utils.pagination import Paginator
 
 
 class BacktestService:
@@ -90,7 +91,7 @@ class BacktestService:
             BacktestCache.set_detail(backtest_id, result)
         
         return result
-        
+
 
     def get_backtests_paginated(
         self, page: int = 1, page_size: int = 10, search: Optional[str] = None
