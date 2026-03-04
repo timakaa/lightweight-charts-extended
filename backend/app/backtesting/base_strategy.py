@@ -88,9 +88,6 @@ class BaseBacktestStrategy(ABC):
                     ]
                 }
             ]
-            
-            Or for backward compatibility, a flat list of fields:
-            [{"label": "Field Name", "value": "Field Value"}]
         """
         return []
 
