@@ -31,7 +31,7 @@ The application will be available at:
 
 ### Drawing Tools
 
-- Multiple series types (lines, rectangles, Fibonacci retracement)
+- Multiple series types (lines, rectangles, Fibonacci retracement, long/short positions)
 - Drag & drop functionality for all drawings
 - Resize capability for drawings
 - Hybrid coordinate system for precise drawing placement
@@ -46,13 +46,22 @@ The application will be available at:
 - Timeframe management
 - Ticker management
 - TradingView-style hotkeys
+- Chart appearance settings (colors, grid, crosshair, etc.)
+- Template system for saving/loading chart configurations
+- Light/Dark theme support
+
+### Backtesting
+
+- Run backtest API integration
+- Frontend backtest execution interface
+- Strategy execution from the UI
+- Backtest-specific drawing isolation (drawings on backtest don't affect main chart)
 
 ## Not Yet Implemented
 
 ### Styling
 
-- Custom styling for chart elements
-- Drawing tool appearance customization
+- Individual drawing tool appearance customization (per-drawing styling)
 
 ### Code Structure
 

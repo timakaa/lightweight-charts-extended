@@ -1,4 +1,4 @@
-# Moon Charts Backend
+# Lightweight Charts Backend
 
 FastAPI backend with Socket.IO for real-time trading chart functionality.
 
@@ -9,16 +9,23 @@ FastAPI backend with Socket.IO for real-time trading chart functionality.
 - CORS configuration
 - Environment-based configuration
 - Health check endpoint
+- Backtest execution API
+- Chart template management
+- Drawing persistence and synchronization
 
 ## Project Structure
 
 ```
-moon-charts-backend/
+backend/
 ├── app/
 │   ├── api/
 │   │   └── v1/
 │   │       ├── endpoints/
-│   │       │   └── health.py
+│   │       │   ├── health.py
+│   │       │   ├── charts.py
+│   │       │   ├── tickers.py
+│   │       │   ├── backtests.py
+│   │       │   └── templates.py
 │   │       └── api.py
 │   ├── core/
 │   │   ├── cors.py
@@ -68,27 +75,14 @@ python main.py
 uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
-## API Endpoints
+## API Documentation
 
-### Charts
+Once the server is running, visit:
 
-- `GET /api/v1/charts/{symbol}/candles` - Get candlestick data for a symbol
-- `GET /api/v1/charts/test-drawing` - Test endpoint for single drawing
-- `GET /api/v1/charts/test-multiple-drawings` - Test endpoint for multiple drawings
-- `GET /api/v1/charts/test-drawing-delete` - Test endpoint for drawing deletion
-- `GET /api/v1/charts/test-drawing-update` - Test endpoint for drawing update
+- **Swagger UI**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
 
-### Tickers
-
-- `GET /api/v1/tickers/` - Get default tickers
-- `GET /api/v1/tickers/all` - Get all available tickers
-- `GET /api/v1/tickers/{symbol}` - Get specific ticker information
-
-### System
-
-- `GET /` - Root endpoint
-- `GET /api/v1/health` - Health check
-- `GET /docs` - API documentation (Swagger UI)
+All REST API endpoints are documented there with interactive testing capabilities.
 
 ## Socket.IO Events
 
@@ -105,6 +99,9 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 - `room_joined` - Emitted when a client joins a room
 - `room_left` - Emitted when a client leaves a room
 - `chart_data_updated` - Real-time chart data updates with new candles
+- `drawing` - New drawing created
+- `drawing_updated` - Drawing modified
+- `drawing_deleted` - Drawing removed
 
 ## Environment Variables
 
