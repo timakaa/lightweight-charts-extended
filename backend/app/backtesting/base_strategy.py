@@ -55,10 +55,18 @@ class BaseBacktestStrategy(ABC):
         """
         pass
 
-    @abstractmethod
     def validate_parameters(self, parameters: Dict[str, Any]) -> bool:
-        """Validate if parameters are correct for this strategy"""
-        pass
+        """
+        Validate if parameters are correct for this strategy.
+        Override in subclass for custom validation logic.
+        
+        Args:
+            parameters: Strategy parameters to validate
+            
+        Returns:
+            True if parameters are valid, False otherwise
+        """
+        return True  # Default: all parameters are valid
     
     def get_metrics_overrides(self) -> Dict[str, Any]:
         """
