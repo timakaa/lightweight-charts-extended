@@ -13,31 +13,6 @@ FastAPI backend with Socket.IO for real-time trading chart functionality.
 - Chart template management
 - Drawing persistence and synchronization
 
-## Project Structure
-
-```
-backend/
-├── app/
-│   ├── api/
-│   │   └── v1/
-│   │       ├── endpoints/
-│   │       │   ├── health.py
-│   │       │   ├── charts.py
-│   │       │   ├── tickers.py
-│   │       │   ├── backtests.py
-│   │       │   └── templates.py
-│   │       └── api.py
-│   ├── core/
-│   │   ├── cors.py
-│   │   └── socket_manager.py
-│   ├── config.py
-│   └── main.py
-├── requirements.txt
-├── env.example
-├── main.py
-└── README.md
-```
-
 ## Setup
 
 1. Create virtual environment:
