@@ -3,50 +3,34 @@ Simple MA Cross Strategy - Direct Port from simple_ma_cross.py
 Implements the exact same logic as the original simple_ma_cross.py but in the flexible framework
 """
 
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 import pandas as pd
 from backtesting.lib import crossover
 from backtesting import Strategy
 
-from ...base_strategy import BaseBacktestStrategy, StrategyConfig
+from ...base_strategy import BaseBacktestStrategy
 
 
 class SimpleMACrossStrategy(BaseBacktestStrategy):
     """Simple Moving Average Cross Strategy - Direct port from simple_ma_cross.py"""
+    
+    # Class attributes
+    name = "Simple MA Cross Strategy"
+    description = "Simple Moving Average Crossover with flexible timeframes"
+    default_parameters = {
+        "fast_ma": 28,          # Fast moving average period
+        "slow_ma": 100,         # Slow moving average period
+        "risk_reward": 2,       # Risk:Reward ratio (1:2)
+        "stop_loss_pct": 0.02,  # 2% stop loss
+        "commission": 0.002,    # 0.2% commission per trade
+        "cash": 10000,          # Initial cash (can be overridden)
+    }
+    default_timeframes = ["1h"]
 
-    def __init__(self, parameters: Optional[Dict[str, Any]] = None, timeframes: Optional[List[str]] = None, save_charts: bool = False):
-        # Merge provided parameters with defaults
-        default_params = self.get_default_parameters()
-        if parameters:
-            default_params.update(parameters)
-
-        # Use provided timeframes or default to 1h
-        if timeframes is None:
-            timeframes = ["1h"]
-
-        # Default configuration matching simple_ma_cross.py
-        config = StrategyConfig(
-            name="Simple MA Cross Strategy",
-            description="Direct port of simple_ma_cross.py - Simple Moving Average Crossover with flexible timeframes",
-            parameters=default_params,
-            timeframes=timeframes,
-            required_data=["Close"]
-        )
-        super().__init__(config, save_charts)
-        
+    def __init__(self, parameters: Dict[str, Any] = None, timeframes: List[str] = None, save_charts: bool = False):
+        super().__init__(parameters, timeframes, save_charts)
         # Store balance history for chart generation
         self._balance_history = []
-
-    def get_default_parameters(self) -> Dict[str, Any]:
-        """Default parameters matching simple_ma_cross.py exactly"""
-        return {
-            "fast_ma": 28,      # Fast moving average period
-            "slow_ma": 100,      # Slow moving average period
-            "risk_reward": 2,   # Risk:Reward ratio (1:2)
-            "stop_loss_pct": 0.02,  # 2% stop loss
-            "commission": 0.002,    # 0.2% commission per trade
-            "cash": 10000,          # Initial cash (can be overridden)
-        }
 
     def validate_parameters(self, parameters: Dict[str, Any]) -> bool:
         """Validate parameters"""
@@ -72,50 +56,6 @@ class SimpleMACrossStrategy(BaseBacktestStrategy):
             return False
 
         return True
-
-    def get_parameter_schema(self) -> Dict[str, Any]:
-        """Parameter schema for validation"""
-        return {
-            "type": "object",
-            "properties": {
-                "fast_ma": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "maximum": 100,
-                    "description": "Fast moving average period"
-                },
-                "slow_ma": {
-                    "type": "integer",
-                    "minimum": 2,
-                    "maximum": 200,
-                    "description": "Slow moving average period"
-                },
-                "risk_reward": {
-                    "type": "number",
-                    "minimum": 0.1,
-                    "maximum": 10.0,
-                    "description": "Risk to reward ratio"
-                },
-                "stop_loss_pct": {
-                    "type": "number",
-                    "minimum": 0.001,
-                    "maximum": 0.1,
-                    "description": "Stop loss percentage"
-                },
-                "commission": {
-                    "type": "number",
-                    "minimum": 0.0,
-                    "maximum": 0.01,
-                    "description": "Commission per trade"
-                },
-                "cash": {
-                    "type": "number",
-                    "minimum": 1000,
-                    "description": "Initial cash amount"
-                }
-            },
-            "required": ["fast_ma", "slow_ma", "risk_reward", "stop_loss_pct"]
-        }
 
     def create_strategy_class(self, data_dict: Dict[str, pd.DataFrame]) -> type:
         """Create the actual Strategy class for backtesting - exact port from simple_ma_cross.py"""

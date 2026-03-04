@@ -41,7 +41,7 @@ def load_and_validate_strategy(
     # Validate parameters
     if not strategy_instance.validate_parameters(strategy_instance.parameters):
         print("❌ Invalid parameters for this strategy")
-        print(f"💡 Default parameters: {json.dumps(strategy_instance.get_default_parameters(), indent=2)}")
+        print(f"💡 Default parameters: {json.dumps(strategy_instance.default_parameters, indent=2)}")
         return None
     
     return strategy_instance

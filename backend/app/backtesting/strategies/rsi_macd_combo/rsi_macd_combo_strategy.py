@@ -8,53 +8,43 @@ from typing import Dict, Any, List
 import pandas as pd
 import numpy as np
 from backtesting import Strategy
-from ...base_strategy import BaseBacktestStrategy, StrategyConfig
+from ...base_strategy import BaseBacktestStrategy
 
 
 class RSIMACDComboStrategy(BaseBacktestStrategy):
     """RSI + MACD Combo Strategy with divergence detection"""
     
-    def __init__(self, parameters: Dict[str, Any] = None, timeframes: List[str] = None):
-        default_params = self.get_default_parameters()
-        if parameters:
-            default_params.update(parameters)
+    # Class attributes
+    name = "RSI + MACD Combo"
+    description = "RSI and MACD combination strategy with divergence detection and crossover signals"
+    default_parameters = {
+        # RSI Parameters
+        "rsi_length": 14,
+        "rsi_overbought": 70,
+        "rsi_oversold": 30,
         
-        if timeframes is None:
-            timeframes = ["1h"]
+        # MACD Parameters
+        "macd_fast": 12,
+        "macd_slow": 26,
+        "macd_signal": 9,
         
-        config = StrategyConfig(
-            name="RSI + MACD Combo",
-            description="RSI and MACD combination strategy with divergence detection and crossover signals",
-            parameters=default_params,
-            timeframes=timeframes,
-            required_data=["Open", "High", "Low", "Close"]
-        )
-        super().__init__(config)
+        # Display Options
+        "show_rsi": True,
+        "show_macd": True,
+        "show_divergence": True,
+        
+        # Trading Parameters
+        "risk_reward": 2.0,
+        "stop_loss_pct": 0.02,
+        "commission": 0.002,
+        "cash": 10000,
+    }
+    default_timeframes = ["1h"]
     
-    def get_default_parameters(self) -> Dict[str, Any]:
-        """Default parameters matching Pine Script"""
-        return {
-            # RSI Parameters
-            "rsi_length": 14,
-            "rsi_overbought": 70,
-            "rsi_oversold": 30,
-            
-            # MACD Parameters
-            "macd_fast": 12,
-            "macd_slow": 26,
-            "macd_signal": 9,
-            
-            # Display Options
-            "show_rsi": True,
-            "show_macd": True,
-            "show_divergence": True,
-            
-            # Trading Parameters
-            "risk_reward": 2.0,
-            "stop_loss_pct": 0.02,
-            "commission": 0.002,
-            "cash": 10000,
-        }
+    def __init__(self, parameters: Dict[str, Any] = None, timeframes: List[str] = None, save_charts: bool = False):
+        super().__init__(parameters, timeframes, save_charts)
+        # Initialize detected signals storage
+        self._detected_signals = []
     
     def validate_parameters(self, parameters: Dict[str, Any]) -> bool:
         """Validate parameters"""
@@ -75,72 +65,11 @@ class RSIMACDComboStrategy(BaseBacktestStrategy):
         
         return True
     
-    def get_parameter_schema(self) -> Dict[str, Any]:
-        """Parameter schema for validation"""
-        return {
-            "type": "object",
-            "properties": {
-                "rsi_length": {
-                    "type": "integer",
-                    "minimum": 2,
-                    "maximum": 50,
-                    "description": "RSI calculation period"
-                },
-                "rsi_overbought": {
-                    "type": "integer",
-                    "minimum": 50,
-                    "maximum": 90,
-                    "description": "RSI overbought level"
-                },
-                "rsi_oversold": {
-                    "type": "integer",
-                    "minimum": 10,
-                    "maximum": 50,
-                    "description": "RSI oversold level"
-                },
-                "macd_fast": {
-                    "type": "integer",
-                    "minimum": 5,
-                    "maximum": 20,
-                    "description": "MACD fast EMA period"
-                },
-                "macd_slow": {
-                    "type": "integer",
-                    "minimum": 15,
-                    "maximum": 50,
-                    "description": "MACD slow EMA period"
-                },
-                "macd_signal": {
-                    "type": "integer",
-                    "minimum": 5,
-                    "maximum": 20,
-                    "description": "MACD signal line period"
-                },
-                "risk_reward": {
-                    "type": "number",
-                    "minimum": 0.5,
-                    "maximum": 5.0,
-                    "description": "Risk to reward ratio"
-                },
-                "stop_loss_pct": {
-                    "type": "number",
-                    "minimum": 0.005,
-                    "maximum": 0.1,
-                    "description": "Stop loss percentage"
-                }
-            },
-            "required": ["rsi_length", "macd_fast", "macd_slow", "macd_signal"]
-        }
-    
     def create_strategy_class(self, data_dict: Dict[str, pd.DataFrame]) -> type:
         """Create the RSI + MACD combo strategy class"""
         
         params = self.parameters
-        
-        # Store reference to outer strategy instance
-        outer_strategy = self
-        # Initialize detected signals storage
-        self._detected_signals = []
+        detected_signals_list = self._detected_signals
         
         class RSIMACDComboBacktestStrategy(Strategy):
             """RSI + MACD Combo Strategy Implementation"""
@@ -264,7 +193,7 @@ class RSIMACDComboStrategy(BaseBacktestStrategy):
                     }
                     self.detected_signals.append(signal_data)
                     RSIMACDComboBacktestStrategy._collected_signals.append(signal_data)
-                    outer_strategy._detected_signals = RSIMACDComboBacktestStrategy._collected_signals
+                    detected_signals_list.append(signal_data)
                     
                     if len(self.detected_signals) <= 5:
                         print(f"🟢 MACD Bullish Cross at {current_price:.4f} on {current_time}")
@@ -279,7 +208,7 @@ class RSIMACDComboStrategy(BaseBacktestStrategy):
                     }
                     self.detected_signals.append(signal_data)
                     RSIMACDComboBacktestStrategy._collected_signals.append(signal_data)
-                    outer_strategy._detected_signals = RSIMACDComboBacktestStrategy._collected_signals
+                    detected_signals_list.append(signal_data)
                     
                     if len(self.detected_signals) <= 5:
                         print(f"🔴 MACD Bearish Cross at {current_price:.4f} on {current_time}")
@@ -294,7 +223,7 @@ class RSIMACDComboStrategy(BaseBacktestStrategy):
                     }
                     self.detected_signals.append(signal_data)
                     RSIMACDComboBacktestStrategy._collected_signals.append(signal_data)
-                    outer_strategy._detected_signals = RSIMACDComboBacktestStrategy._collected_signals
+                    detected_signals_list.append(signal_data)
                     
                     if len(self.detected_signals) <= 5:
                         print(f"📈 Bullish Divergence at {current_price:.4f} on {current_time}")
@@ -309,7 +238,7 @@ class RSIMACDComboStrategy(BaseBacktestStrategy):
                     }
                     self.detected_signals.append(signal_data)
                     RSIMACDComboBacktestStrategy._collected_signals.append(signal_data)
-                    outer_strategy._detected_signals = RSIMACDComboBacktestStrategy._collected_signals
+                    detected_signals_list.append(signal_data)
                     
                     if len(self.detected_signals) <= 5:
                         print(f"📉 Bearish Divergence at {current_price:.4f} on {current_time}")

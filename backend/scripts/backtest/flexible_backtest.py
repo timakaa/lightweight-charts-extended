@@ -79,21 +79,14 @@ def run_flexible_backtest(
     if data_dict is None:
         return None
     
-    # Prepare data
-    try:
-        prepared_data = strategy_instance.prepare_data(data_dict)
-    except Exception as e:
-        print(f"❌ Error preparing data: {e}")
-        return None
-    
     # Run backtest
-    stats, bt = run_backtest(strategy_instance, prepared_data, timeframes, cash)
+    stats, bt = run_backtest(strategy_instance, data_dict, timeframes, cash)
     if stats is None:
         return None
     
     # Use main timeframe data
     main_timeframe = timeframes[0]
-    main_data = prepared_data[main_timeframe]
+    main_data = data_dict[main_timeframe]
     
     # Process trades
     trades_list, profitable_trades, loss_trades, long_trades, short_trades, pnl_list = process_trades(

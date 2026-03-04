@@ -7,44 +7,34 @@ from typing import Dict, Any, List
 import pandas as pd
 import numpy as np
 from backtesting import Strategy
-from ...base_strategy import BaseBacktestStrategy, StrategyConfig
+from ...base_strategy import BaseBacktestStrategy
 from .components import SwingDetector, FVGDetector, OrderBlockDetector, LevelManager
 
 
 class SmartMoneySimpleTestStrategy(BaseBacktestStrategy):
     """Smart Money Concepts - Creates line drawings for swing highs and lows"""
     
-    def __init__(self, parameters: Dict[str, Any] = None, timeframes: List[str] = None):
-        default_params = self.get_default_parameters()
-        if parameters:
-            default_params.update(parameters)
-        
-        if timeframes is None:
-            timeframes = ["1h"]
-        
-        config = StrategyConfig(
-            name="Smart Money Concepts",
-            description="Creates horizontal line drawings for swing highs and lows - no trading",
-            parameters=default_params,
-            timeframes=timeframes,
-            required_data=["Open", "High", "Low", "Close"]
-        )
-        super().__init__(config)
+    # Class attributes
+    name = "Smart Money Concepts"
+    description = "Creates horizontal line drawings for swing highs and lows - no trading"
+    default_parameters = {
+        "swing_length": 3,              # Number of bars to look for swing highs/lows
+        "min_swing_size": 0.002,        # Minimum swing size as percentage (0.2%)
+        "show_swing_highs": True,       # Create line drawings for swing highs
+        "show_swing_lows": True,        # Create line drawings for swing lows
+        "show_fvgs": True,              # Show Fair Value Gaps
+        "fvg_min_size": 0.001,          # Minimum FVG size as percentage (0.1%)
+        "show_order_blocks": True,      # Show Order Blocks
+        "ob_close_mitigation": False,   # Use high/low for OB mitigation instead of close
+        "commission": 0.002,            # Not used (no trading)
+        "cash": 10000,                  # Not used (no trading)
+    }
+    default_timeframes = ["1h"]
     
-    def get_default_parameters(self) -> Dict[str, Any]:
-        """Default parameters for swing highs and lows detection"""
-        return {
-            "swing_length": 3,          # Number of bars to look for swing highs/lows (reduced for more detection)
-            "min_swing_size": 0.002,    # Minimum swing size as percentage (0.2% - very small)
-            "show_swing_highs": True,   # Create line drawings for swing highs
-            "show_swing_lows": True,    # Create line drawings for swing lows
-            "show_fvgs": True,          # Show Fair Value Gaps
-            "fvg_min_size": 0.001,      # Minimum FVG size as percentage (0.1%)
-            "show_order_blocks": True,  # Show Order Blocks
-            "ob_close_mitigation": False, # Use high/low for OB mitigation instead of close
-            "commission": 0.002,        # Not used (no trading)
-            "cash": 10000,              # Not used (no trading)
-        }
+    def __init__(self, parameters: Dict[str, Any] = None, timeframes: List[str] = None, save_charts: bool = False):
+        super().__init__(parameters, timeframes, save_charts)
+        # Initialize detected levels storage
+        self._detected_levels = []
     
     def validate_parameters(self, parameters: Dict[str, Any]) -> bool:
         """Validate parameters"""
@@ -61,62 +51,11 @@ class SmartMoneySimpleTestStrategy(BaseBacktestStrategy):
         
         return True
     
-    def get_parameter_schema(self) -> Dict[str, Any]:
-        """Parameter schema for validation"""
-        return {
-            "type": "object",
-            "properties": {
-                "swing_length": {
-                    "type": "integer",
-                    "minimum": 2,
-                    "maximum": 20,
-                    "description": "Number of bars to look for swing highs/lows"
-                },
-                "min_swing_size": {
-                    "type": "number",
-                    "minimum": 0.0,
-                    "maximum": 0.1,
-                    "description": "Minimum swing size as percentage"
-                },
-                "show_swing_highs": {
-                    "type": "boolean",
-                    "description": "Show swing highs on chart"
-                },
-                "show_swing_lows": {
-                    "type": "boolean",
-                    "description": "Show swing lows on chart"
-                },
-                "show_fvgs": {
-                    "type": "boolean",
-                    "description": "Show Fair Value Gaps on chart"
-                },
-                "fvg_min_size": {
-                    "type": "number",
-                    "minimum": 0.0001,
-                    "maximum": 0.01,
-                    "description": "Minimum FVG size as percentage"
-                },
-                "show_order_blocks": {
-                    "type": "boolean",
-                    "description": "Show Order Blocks on chart"
-                },
-                "ob_close_mitigation": {
-                    "type": "boolean",
-                    "description": "Use close price for OB mitigation instead of high/low"
-                }
-            },
-            "required": ["swing_length"]
-        }
-    
     def create_strategy_class(self, data_dict: Dict[str, pd.DataFrame]) -> type:
         """Create strategy class that identifies highs and lows"""
         
         params = self.parameters
-        
-        # Store reference to outer strategy instance to access levels later
-        outer_strategy = self
-        # Initialize detected levels storage
-        self._detected_levels = []
+        detected_levels_list = self._detected_levels
         
         class SmartMoneyHighsLowsStrategy(Strategy):
             """Strategy that creates line drawings for swing highs and lows"""
@@ -199,7 +138,7 @@ class SmartMoneySimpleTestStrategy(BaseBacktestStrategy):
                 if (self.show_swing_highs and not np.isnan(self.swing_highs[current_idx])):
                     level = self.level_manager.add_swing_high(current_time, self.swing_highs[current_idx])
                     SmartMoneyHighsLowsStrategy._collected_levels.append(level)
-                    outer_strategy._detected_levels = SmartMoneyHighsLowsStrategy._collected_levels
+                    detected_levels_list.append(level)
                     
                     if len(self.level_manager.levels) <= 5:  # Debug print
                         print(f"🔴 Swing High detected: {self.swing_highs[current_idx]:.4f} at {current_time}")
@@ -208,7 +147,7 @@ class SmartMoneySimpleTestStrategy(BaseBacktestStrategy):
                 if (self.show_swing_lows and not np.isnan(self.swing_lows[current_idx])):
                     level = self.level_manager.add_swing_low(current_time, self.swing_lows[current_idx])
                     SmartMoneyHighsLowsStrategy._collected_levels.append(level)
-                    outer_strategy._detected_levels = SmartMoneyHighsLowsStrategy._collected_levels
+                    detected_levels_list.append(level)
                     
                     if len(self.level_manager.levels) <= 5:  # Debug print
                         print(f"🔵 Swing Low detected: {self.swing_lows[current_idx]:.4f} at {current_time}")
@@ -223,7 +162,7 @@ class SmartMoneySimpleTestStrategy(BaseBacktestStrategy):
                             
                             level = self.level_manager.add_fvg(start_time, fvg)
                             SmartMoneyHighsLowsStrategy._collected_levels.append(level)
-                            outer_strategy._detected_levels = SmartMoneyHighsLowsStrategy._collected_levels
+                            detected_levels_list.append(level)
                             
                             fvg['added_to_levels'] = True
                             
@@ -237,7 +176,7 @@ class SmartMoneySimpleTestStrategy(BaseBacktestStrategy):
                         if ob['index'] == current_idx and not ob.get('added_to_levels', False):
                             level = self.level_manager.add_order_block(ob)
                             SmartMoneyHighsLowsStrategy._collected_levels.append(level)
-                            outer_strategy._detected_levels = SmartMoneyHighsLowsStrategy._collected_levels
+                            detected_levels_list.append(level)
                             
                             ob['added_to_levels'] = True
                             

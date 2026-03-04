@@ -108,8 +108,13 @@ def build_results_dict(
     
     results = {
         "title": f"{strategy_instance.name} - {display_symbol}",
-        "strategy_name": strategy_instance.config.name,
-        "strategy_config": strategy_instance.config.to_dict(),
+        "strategy_name": strategy_instance.name,
+        "strategy_config": {
+            "name": strategy_instance.name,
+            "description": strategy_instance.description,
+            "parameters": strategy_instance.parameters,
+            "timeframes": strategy_instance.timeframes,
+        },
         "trades": trades_list,
         "initial_balance": cash,
         "final_balance": stats["Equity Final [$]"],

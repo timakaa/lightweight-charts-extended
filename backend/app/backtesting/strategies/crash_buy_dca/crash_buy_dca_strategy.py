@@ -6,15 +6,14 @@ when we would buy more, but since backtesting.py doesn't support true position a
 we simulate it by opening a single position and tracking buy signals separately.
 """
 
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 import pandas as pd
 from backtesting import Strategy
 
-from ...base_strategy import BaseBacktestStrategy, StrategyConfig
+from ...base_strategy import BaseBacktestStrategy
 from .parameters import (
     get_default_parameters, 
     validate_parameters, 
-    get_parameter_schema,
     format_strategy_fields
 )
 from .dca_simulator import simulate_dca
@@ -23,41 +22,23 @@ from .strategy_class import create_strategy_class
 
 class CrashBuyDCAStrategy(BaseBacktestStrategy):
     """DCA Strategy that increases buying during market crashes"""
+    
+    # Class attributes
+    name = "Crash Buy DCA Strategy"
+    description = "Dollar Cost Averaging with increased buying during market crashes (Buy & Hold simulation)"
+    default_parameters = get_default_parameters()
+    default_timeframes = ["1d"]
 
-    def __init__(self, parameters: Optional[Dict[str, Any]] = None, timeframes: Optional[List[str]] = None, save_charts: bool = False):
-        default_params = get_default_parameters()
-        if parameters:
-            default_params.update(parameters)
-
-        if timeframes is None:
-            timeframes = ["1d"]
-
-        config = StrategyConfig(
-            name="Crash Buy DCA Strategy",
-            description="Dollar Cost Averaging with increased buying during market crashes (Buy & Hold simulation)",
-            parameters=default_params,
-            timeframes=timeframes,
-            required_data=["Close", "High", "Low"]
-        )
-        super().__init__(config, save_charts)
-        
+    def __init__(self, parameters: Dict[str, Any] = None, timeframes: List[str] = None, save_charts: bool = False):
+        super().__init__(parameters, timeframes, save_charts)
         # Store detected buy signals for visualization
         self._buy_signals = []
-        
         # Store balance history for chart generation
         self._balance_history = []
-
-    def get_default_parameters(self) -> Dict[str, Any]:
-        """Default parameters for crash buying DCA"""
-        return get_default_parameters()
 
     def validate_parameters(self, parameters: Dict[str, Any]) -> bool:
         """Validate parameters"""
         return validate_parameters(parameters)
-
-    def get_parameter_schema(self) -> Dict[str, Any]:
-        """Parameter schema for validation"""
-        return get_parameter_schema()
 
     def create_strategy_class(self, data_dict: Dict[str, pd.DataFrame]) -> type:
         """Create the actual Strategy class for backtesting"""
