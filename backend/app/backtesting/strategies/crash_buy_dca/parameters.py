@@ -13,7 +13,81 @@ def get_default_parameters() -> Dict[str, Any]:
         "weekly_crash_threshold": 0.10, # 10% weekly drop threshold
         "monthly_interval_days": 30,  # Buy every N days normally
         "commission": 0.002,          # 0.2% commission per trade
-        "cash": 100000,               # Initial cash
+        "cash": 1000000,               # Initial cash
+    }
+
+
+def get_parameter_schema() -> Dict[str, Any]:
+    """
+    Get parameter schema for UI form generation
+    Returns metadata about each parameter for frontend display
+    """
+    defaults = get_default_parameters()
+
+    return {
+        "base_amount": {
+            "type": "number",
+            "label": "Base Amount",
+            "description": "Base investment amount per interval",
+            "default": defaults['base_amount'],
+            "min": 1,
+            "max": 10000,
+            "step": 10
+        },
+        "crash_multiplier": {
+            "type": "number",
+            "label": "Crash Multiplier",
+            "description": "Multiply investment by this during crashes",
+            "default": defaults['crash_multiplier'],
+            "min": 1,
+            "max": 10,
+            "step": 0.5
+        },
+        "daily_crash_threshold": {
+            "type": "number",
+            "label": "Daily Crash Threshold",
+            "description": "Daily drop percentage to trigger crash buying (0.05 = 5%)",
+            "default": defaults['daily_crash_threshold'],
+            "min": 0.01,
+            "max": 0.5,
+            "step": 0.01
+        },
+        "weekly_crash_threshold": {
+            "type": "number",
+            "label": "Weekly Crash Threshold",
+            "description": "Weekly drop percentage to trigger crash buying (0.10 = 10%)",
+            "default": defaults['weekly_crash_threshold'],
+            "min": 0.01,
+            "max": 0.5,
+            "step": 0.01
+        },
+        "monthly_interval_days": {
+            "type": "integer",
+            "label": "DCA Interval (Days)",
+            "description": "Days between regular DCA purchases",
+            "default": defaults['monthly_interval_days'],
+            "min": 1,
+            "max": 90,
+            "step": 1
+        },
+        "commission": {
+            "type": "number",
+            "label": "Commission %",
+            "description": "Commission per trade (0.002 = 0.2%)",
+            "default": defaults['commission'],
+            "min": 0,
+            "max": 0.01,
+            "step": 0.0001
+        },
+        "cash": {
+            "type": "number",
+            "label": "Initial Cash",
+            "description": "Initial capital amount",
+            "default": defaults['cash'],
+            "min": 1000,
+            "max": 1000000,
+            "step": 1000
+        }
     }
 
 
@@ -44,57 +118,6 @@ def validate_parameters(parameters: Dict[str, Any]) -> bool:
         return False
 
     return True
-
-
-def get_parameter_schema() -> Dict[str, Any]:
-    """Parameter schema for validation"""
-    return {
-        "type": "object",
-        "properties": {
-            "base_amount": {
-                "type": "number",
-                "minimum": 1,
-                "description": "Base investment amount per interval"
-            },
-            "crash_multiplier": {
-                "type": "number",
-                "minimum": 1,
-                "maximum": 10,
-                "description": "Multiply investment by this during crashes"
-            },
-            "daily_crash_threshold": {
-                "type": "number",
-                "minimum": 0.01,
-                "maximum": 0.5,
-                "description": "Daily drop percentage to trigger crash buying (e.g., 0.05 = 5%)"
-            },
-            "weekly_crash_threshold": {
-                "type": "number",
-                "minimum": 0.01,
-                "maximum": 0.5,
-                "description": "Weekly drop percentage to trigger crash buying (e.g., 0.10 = 10%)"
-            },
-            "monthly_interval_days": {
-                "type": "integer",
-                "minimum": 1,
-                "maximum": 90,
-                "description": "Days between regular DCA purchases"
-            },
-            "commission": {
-                "type": "number",
-                "minimum": 0.0,
-                "maximum": 0.01,
-                "description": "Commission per trade"
-            },
-            "cash": {
-                "type": "number",
-                "minimum": 1000,
-                "description": "Initial cash amount"
-            }
-        },
-        "required": ["base_amount", "crash_multiplier", "daily_crash_threshold", 
-                    "weekly_crash_threshold", "monthly_interval_days"]
-    }
 
 
 def format_strategy_fields(metrics: Dict[str, Any]) -> list:

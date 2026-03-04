@@ -106,19 +106,6 @@ def build_results_dict(
     # Normalize symbol for display: BTC/USDT:USDT -> BTC/USDT
     display_symbol = normalize_symbol_for_display(symbol)
     
-    # Debug logging for zero-trade scenario
-    if total_trades == 0:
-        print(f"\n⚠️  DEBUG: Zero trades detected")
-        print(f"Initial Cash: ${cash:,.2f}")
-        print(f"Equity Final from stats: ${stats['Equity Final [$]']:,.2f}")
-        print(f"Difference: ${stats['Equity Final [$]'] - cash:,.2f}")
-        print(f"Return [%]: {stats.get('Return [%]', 'N/A')}")
-        print(f"Buy & Hold Return [%]: {stats.get('Buy & Hold Return [%]', 'N/A')}")
-        print(f"# Trades: {stats.get('# Trades', 'N/A')}")
-        print(f"\n⚠️  The backtesting.py library incorrectly calculates equity when there are no trades.")
-        print(f"It appears to apply Buy & Hold returns even when the strategy doesn't trade.")
-        print(f"Overriding final_balance to equal initial cash since no trades were executed.\n")
-    
     # Override final balance when there are no trades
     # The backtesting.py library has a bug where it calculates equity based on Buy & Hold
     # even when no trades are executed, which doesn't make sense for a trading strategy
