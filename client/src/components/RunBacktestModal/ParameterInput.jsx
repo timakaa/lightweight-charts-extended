@@ -23,26 +23,39 @@ const ParameterInput = ({ paramKey, schema, value, onChange }) => {
     }
   };
 
+  // Helper to get decimal places from step
+  const getDecimalPlaces = (step) => {
+    const stepStr = step.toString();
+    if (stepStr.includes(".")) {
+      return stepStr.split(".")[1].length;
+    }
+    return 0;
+  };
+
   const handleIncrement = () => {
     const step = schema.step || (schema.type === "integer" ? 1 : 0.01);
+    const decimalPlaces = getDecimalPlaces(step);
     const newValue = (parseFloat(value) || 0) + step;
     const clampedValue =
       schema.max !== undefined ? Math.min(newValue, schema.max) : newValue;
-    onChange(
-      paramKey,
-      schema.type === "integer" ? Math.round(clampedValue) : clampedValue,
-    );
+    const finalValue =
+      schema.type === "integer"
+        ? Math.round(clampedValue)
+        : parseFloat(clampedValue.toFixed(decimalPlaces));
+    onChange(paramKey, finalValue);
   };
 
   const handleDecrement = () => {
     const step = schema.step || (schema.type === "integer" ? 1 : 0.01);
+    const decimalPlaces = getDecimalPlaces(step);
     const newValue = (parseFloat(value) || 0) - step;
     const clampedValue =
       schema.min !== undefined ? Math.max(newValue, schema.min) : newValue;
-    onChange(
-      paramKey,
-      schema.type === "integer" ? Math.round(clampedValue) : clampedValue,
-    );
+    const finalValue =
+      schema.type === "integer"
+        ? Math.round(clampedValue)
+        : parseFloat(clampedValue.toFixed(decimalPlaces));
+    onChange(paramKey, finalValue);
   };
 
   const renderInput = () => {
