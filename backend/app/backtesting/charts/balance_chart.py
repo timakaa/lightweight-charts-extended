@@ -64,7 +64,7 @@ def generate_balance_chart(
         buy_hold_times = [entry['time'] for entry in buy_hold_history]
         buy_hold_balances = [entry['balance'] for entry in buy_hold_history]
         ax.plot(buy_hold_times, buy_hold_balances, linewidth=2, color='#FF9800', 
-                label='Buy & Hold (Deployed Capital)', linestyle='-', alpha=0.8, zorder=2)
+                label='Buy & Hold', linestyle='-', alpha=0.8, zorder=2)
         # Fill area under buy & hold curve
         ax.fill_between(buy_hold_times, buy_hold_balances, y_min, alpha=0.2, color='#FF9800', zorder=1)
     

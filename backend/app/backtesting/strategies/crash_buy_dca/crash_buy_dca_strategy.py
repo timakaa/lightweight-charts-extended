@@ -18,7 +18,6 @@ from .parameters import (
     format_strategy_fields
 )
 from .dca_simulator import simulate_dca
-from .chart_generator import generate_charts
 from .strategy_class import create_strategy_class
 
 
@@ -110,21 +109,3 @@ class CrashBuyDCAStrategy(BaseBacktestStrategy):
         """Get formatted fields for UI display with subsections"""
         metrics = getattr(self, '_dca_metrics', {})
         return format_strategy_fields(metrics)
-
-    def generate_charts(self, backtest_id: int) -> List[str]:
-        """Generate and upload charts to MinIO"""
-        if not self.save_charts or not self._balance_history:
-            return []
-        
-        chart_keys = generate_charts(
-            backtest_id=backtest_id,
-            balance_history=self._balance_history,
-            dca_metrics=self._dca_metrics,
-            strategy_name=self.name,
-            initial_balance=self.parameters.get("cash")
-        )
-        
-        # Clear balance history to free memory
-        self._balance_history.clear()
-        
-        return chart_keys

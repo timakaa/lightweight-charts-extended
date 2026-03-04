@@ -11,7 +11,7 @@ const BacktestSidebar = () => {
 
   if (isLoading) {
     return (
-      <div className='fixed z-50 border-l-[4px] cursor-default top-0 right-0 w-[400px] h-full bg-background text-primary border-border flex flex-col items-center justify-center'>
+      <div className='fixed z-50 border-l-[4px] cursor-default top-0 right-0 w-[500px] h-full bg-background text-primary border-border flex flex-col items-center justify-center'>
         <span className='text-primary/70 text-lg'>Loading stats...</span>
       </div>
     );
