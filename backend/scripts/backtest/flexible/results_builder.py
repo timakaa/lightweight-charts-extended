@@ -106,6 +106,24 @@ def build_results_dict(
     # Normalize symbol for display: BTC/USDT:USDT -> BTC/USDT
     display_symbol = normalize_symbol_for_display(symbol)
     
+    # Debug logging for zero-trade scenario
+    if total_trades == 0:
+        print(f"\n⚠️  DEBUG: Zero trades detected")
+        print(f"Initial Cash: ${cash:,.2f}")
+        print(f"Equity Final from stats: ${stats['Equity Final [$]']:,.2f}")
+        print(f"Difference: ${stats['Equity Final [$]'] - cash:,.2f}")
+        print(f"Return [%]: {stats.get('Return [%]', 'N/A')}")
+        print(f"Buy & Hold Return [%]: {stats.get('Buy & Hold Return [%]', 'N/A')}")
+        print(f"# Trades: {stats.get('# Trades', 'N/A')}")
+        print(f"\n⚠️  The backtesting.py library incorrectly calculates equity when there are no trades.")
+        print(f"It appears to apply Buy & Hold returns even when the strategy doesn't trade.")
+        print(f"Overriding final_balance to equal initial cash since no trades were executed.\n")
+    
+    # Override final balance when there are no trades
+    # The backtesting.py library has a bug where it calculates equity based on Buy & Hold
+    # even when no trades are executed, which doesn't make sense for a trading strategy
+    final_balance = cash if total_trades == 0 else stats["Equity Final [$]"]
+    
     results = {
         "title": f"{strategy_instance.name} - {display_symbol}",
         "strategy_name": strategy_instance.name,
@@ -117,7 +135,7 @@ def build_results_dict(
         },
         "trades": trades_list,
         "initial_balance": cash,
-        "final_balance": stats["Equity Final [$]"],
+        "final_balance": final_balance,
         "start_date": main_data.index[0].tz_localize("UTC").to_pydatetime(),
         "end_date": main_data.index[-1].tz_localize("UTC").to_pydatetime(),
         "total_trades": total_trades,
@@ -128,13 +146,13 @@ def build_results_dict(
         "sharpe_ratio": stats["Sharpe Ratio"],
         "profit_factor": stats["Profit Factor"],
         "value_at_risk": value_at_risk,
-        "total_pnl": stats["Equity Final [$]"] - cash,
+        "total_pnl": final_balance - cash,
         "average_pnl": (
-            (stats["Equity Final [$]"] - cash) / total_trades if total_trades > 0 else 0
+            (final_balance - cash) / total_trades if total_trades > 0 else 0
         ),
-        "total_pnl_percentage": ((stats["Equity Final [$]"] - cash) / cash) * 100,
+        "total_pnl_percentage": ((final_balance - cash) / cash) * 100,
         "average_pnl_percentage": (
-            ((((stats["Equity Final [$]"] - cash) / cash) * 100) / total_trades)
+            ((((final_balance - cash) / cash) * 100) / total_trades)
             if total_trades > 0
             else 0
         ),

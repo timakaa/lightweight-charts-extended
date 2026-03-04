@@ -3,6 +3,7 @@ import DateRangePicker from "./DateRangePicker";
 import AsyncSymbolSelect from "./AsyncSymbolSelect";
 import AsyncStrategySelect from "./AsyncStrategySelect";
 import PresetsSection from "./PresetsSection";
+import StrategyParameters from "./StrategyParameters";
 import { TIMEFRAMES } from "./constants";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useSymbolDateRange } from "@hooks/useSymbolDateRange";
@@ -18,6 +19,8 @@ const BacktestForm = ({
   setStartDate,
   endDate,
   setEndDate,
+  parameters,
+  setParameters,
   onSubmit,
 }) => {
   const { data: dateRangeData } = useSymbolDateRange(symbol);
@@ -90,6 +93,13 @@ const BacktestForm = ({
             startDate={startDate}
             endDate={endDate}
             onPresetClick={handlePresetClick}
+          />
+
+          {/* Strategy Parameters */}
+          <StrategyParameters
+            strategy={strategy}
+            parameters={parameters}
+            setParameters={setParameters}
           />
         </div>
       </form>

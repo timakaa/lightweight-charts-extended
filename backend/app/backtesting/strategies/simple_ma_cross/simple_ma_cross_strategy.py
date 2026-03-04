@@ -6,7 +6,7 @@ Implements the exact same logic as the original simple_ma_cross.py but in the fl
 from typing import Dict, Any, List
 import pandas as pd
 from ...base_strategy import BaseBacktestStrategy
-from .parameters import get_default_parameters, validate_parameters
+from .parameters import get_default_parameters, validate_parameters, get_parameter_schema
 from .strategy_class import create_strategy_class
 from .charts import generate_charts as generate_strategy_charts
 
@@ -28,6 +28,10 @@ class SimpleMACrossStrategy(BaseBacktestStrategy):
     def validate_parameters(self, parameters: Dict[str, Any]) -> bool:
         """Validate parameters"""
         return validate_parameters(parameters)
+    
+    def get_parameter_schema(self) -> Dict[str, Any]:
+        """Get parameter schema for UI"""
+        return get_parameter_schema()
 
     def create_strategy_class(self, data_dict: Dict[str, pd.DataFrame]) -> type:
         """Create the actual Strategy class for backtesting"""

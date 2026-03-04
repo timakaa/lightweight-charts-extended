@@ -68,6 +68,27 @@ class BaseBacktestStrategy(ABC):
         """
         return True  # Default: all parameters are valid
     
+    def get_parameter_schema(self) -> Dict[str, Any]:
+        """
+        Get parameter schema for UI form generation.
+        Override in subclass to provide parameter metadata.
+        
+        Returns:
+            Dict with parameter metadata for each parameter:
+            {
+                "param_name": {
+                    "type": "integer" | "number" | "boolean" | "string",
+                    "label": "Display Label",
+                    "description": "Parameter description",
+                    "default": default_value,
+                    "min": min_value,  # optional
+                    "max": max_value,  # optional
+                    "step": step_value  # optional
+                }
+            }
+        """
+        return {}
+    
     def get_metrics_overrides(self) -> Dict[str, Any]:
         """
         Override specific metrics that can't be calculated from trades
