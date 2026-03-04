@@ -1,6 +1,6 @@
 import { useStrategyParameters } from "@hooks/backtests/useStrategyParameters";
 import ParameterInput from "./ParameterInput";
-import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, ChevronDown } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
@@ -81,15 +81,20 @@ const StrategyParameters = ({ strategy, parameters, setParameters }) => {
             ({Object.keys(data.parameter_schema).length} parameters)
           </span>
         </div>
-        {isExpanded ? (
-          <ChevronUp className='h-4 w-4 text-muted-foreground' />
-        ) : (
-          <ChevronDown className='h-4 w-4 text-muted-foreground' />
-        )}
+        <ChevronDown
+          className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${
+            isExpanded ? "rotate-180" : ""
+          }`}
+        />
       </button>
 
       {/* Parameters */}
-      {isExpanded && (
+      <div
+        className={`transition-all duration-200 linear ${
+          isExpanded ? "max-h-[800px] opacity-100" : "max-h-0 opacity-0"
+        }`}
+        style={{ overflow: isExpanded ? "visible" : "hidden" }}
+      >
         <div className='p-4 space-y-4'>
           <div className='grid grid-cols-2 gap-4'>
             {Object.entries(data.parameter_schema).map(([key, schema]) => (
@@ -116,7 +121,7 @@ const StrategyParameters = ({ strategy, parameters, setParameters }) => {
             </Button>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };
