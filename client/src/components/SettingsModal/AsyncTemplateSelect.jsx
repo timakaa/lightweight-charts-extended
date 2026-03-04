@@ -56,7 +56,7 @@ const AsyncTemplateSelect = ({
           {new Date(template.created_at).toLocaleDateString()}
         </span>
       </div>
-      <button
+      <div
         onClick={(e) => {
           e.stopPropagation();
           onDeleteTemplate?.(template);
@@ -66,7 +66,7 @@ const AsyncTemplateSelect = ({
         title='Delete template'
       >
         <Trash2 className='h-4 w-4 text-error' />
-      </button>
+      </div>
     </div>
   );
 

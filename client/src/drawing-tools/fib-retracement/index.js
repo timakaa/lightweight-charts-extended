@@ -251,22 +251,24 @@ export class FibRetracementDrawingTool extends PluginBase {
       this._series.attachPrimitive(newFib);
       this._retracements.add(newFib);
 
-      // Add to store
-      const { addDrawing } = useDrawingsStore.getState();
-      const { ticker } = useChartStore.getState();
+      // Add to store (but not in backtest mode)
+      if (!window.location.pathname.startsWith("/backtest/")) {
+        const { addDrawing } = useDrawingsStore.getState();
+        const { ticker } = useChartStore.getState();
 
-      if (ticker) {
-        const drawingData = {
-          type: "fib_retracement",
-          ticker: ticker.replace("/", ""),
-          startTime: new Date(this._p1.time * 1000).toISOString(),
-          endTime: new Date(this._p2.time * 1000).toISOString(),
-          startPrice: this._p1.price,
-          endPrice: this._p2.price,
-          primitiveId: newFib.id,
-        };
+        if (ticker) {
+          const drawingData = {
+            type: "fib_retracement",
+            ticker: ticker.replace("/", ""),
+            startTime: new Date(this._p1.time * 1000).toISOString(),
+            endTime: new Date(this._p2.time * 1000).toISOString(),
+            startPrice: this._p1.price,
+            endPrice: this._p2.price,
+            primitiveId: newFib.id,
+          };
 
-        addDrawing(drawingData);
+          addDrawing(drawingData);
+        }
       }
 
       if (this._onRetracementsChange) {

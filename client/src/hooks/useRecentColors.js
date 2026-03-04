@@ -1,6 +1,6 @@
 import { useLocalStorage } from "./useLocalStorage";
 
-const MAX_RECENT_COLORS = 10;
+const MAX_RECENT_COLORS = 9;
 
 export function useRecentColors() {
   const [recentColors, setRecentColors] = useLocalStorage("recentColors", []);

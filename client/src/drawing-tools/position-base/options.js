@@ -1,6 +1,6 @@
 export const defaultOptions = {
-  fillColor: "rgba(49, 121, 245, 0.31)", // profit zone (default blue)
-  lossFillColor: "rgba(255, 255, 255, 0.14)", // loss zone (default white)
+  fillColor: "rgba(0, 255, 0, 0.3)", // profit zone (default blue)
+  lossFillColor: "rgba(255, 0, 0, 0.3)", // loss zone (default white)
   previewFillColor: "rgba(33, 150, 243, 0.08)",
   entryLineColor: "#808080", // Color for the entry line
   entryLineTappedColor: "#808080", // Color for dashed line

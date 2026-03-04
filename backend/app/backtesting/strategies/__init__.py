@@ -46,4 +46,9 @@ def get_strategy_info(strategy_name: str) -> Dict:
     """Get detailed information about a strategy"""
     strategy_class = get_strategy(strategy_name)
     instance = strategy_class()
-    return instance.get_strategy_info()
+    return {
+        "name": instance.name,
+        "description": instance.description,
+        "default_parameters": instance.default_parameters,
+        "timeframes": instance.timeframes,
+    }

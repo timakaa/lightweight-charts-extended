@@ -108,8 +108,13 @@ def build_results_dict(
     
     results = {
         "title": f"{strategy_instance.name} - {display_symbol}",
-        "strategy_name": strategy_instance.config.name,
-        "strategy_config": strategy_instance.config.to_dict(),
+        "strategy_name": strategy_instance.name,
+        "strategy_config": {
+            "name": strategy_instance.name,
+            "description": strategy_instance.description,
+            "parameters": strategy_instance.parameters,
+            "timeframes": strategy_instance.timeframes,
+        },
         "trades": trades_list,
         "initial_balance": cash,
         "final_balance": stats["Equity Final [$]"],
@@ -137,10 +142,6 @@ def build_results_dict(
         "loss_trades": loss_trades,
         "long_trades": long_trades,
         "short_trades": short_trades,
-        "capital_deployed": stats.get('Capital Deployed [$]'),
-        "capital_utilization": stats.get('Capital Utilization [%]'),
-        "roic": stats.get('ROIC [%]'),
-        "buy_hold_return_deployed": stats.get('Buy & Hold Return Deployed [$]'),
         "drawings": drawings,
         "is_live": False,  # Always False for backtests
         "symbols": [
@@ -172,15 +173,6 @@ def print_results_summary(results: Dict[str, Any]):
     print(f"Short Trades: {results['short_trades']}")
     print(f"Trading Days: {results['trading_days']}")
     print(f"Value at Risk: ${results['value_at_risk']:,.2f}")
-    
-    if results.get('capital_deployed'):
-        print(f"Capital Deployed: ${results['capital_deployed']:,.2f}")
-    if results.get('capital_utilization') is not None:
-        print(f"Capital Utilization: {results['capital_utilization']:.2f}%")
-    if results.get('roic') is not None:
-        print(f"ROIC: {results['roic']:.2f}%")
-    if results.get('buy_hold_return_deployed') is not None:
-        print(f"Buy & Hold $ (Deployed): ${results['buy_hold_return_deployed']:,.2f}")
 
 
 def save_to_database(results: Dict[str, Any]) -> Optional[int]:

@@ -107,14 +107,6 @@ const MetricsGrid = ({ stats }) => {
           : "-",
     },
     {
-      title: "Buy & Hold $ (Deployed Capital)",
-      value:
-        stats?.buy_hold_return_deployed !== undefined &&
-        stats?.buy_hold_return_deployed !== null
-          ? `$${Number(stats.buy_hold_return_deployed).toFixed(2)}`
-          : "-",
-    },
-    {
       title: "Profit Factor",
       value:
         stats?.profit_factor !== undefined && stats?.profit_factor !== null
@@ -126,32 +118,6 @@ const MetricsGrid = ({ stats }) => {
       value:
         stats?.max_drawdown !== undefined && stats?.max_drawdown !== null
           ? `${(Number(stats.max_drawdown) * 100).toFixed(1)}%`
-          : "-",
-    },
-    {
-      title: "Capital Deployed",
-      value:
-        stats?.capital_deployed !== undefined &&
-        stats?.capital_deployed !== null
-          ? `$${Number(stats.capital_deployed).toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}`
-          : "-",
-    },
-    {
-      title: "Capital Utilization",
-      value:
-        stats?.capital_utilization !== undefined &&
-        stats?.capital_utilization !== null
-          ? `${Number(stats.capital_utilization).toFixed(2)}%`
-          : "-",
-    },
-    {
-      title: "ROIC",
-      value:
-        stats?.roic !== undefined && stats?.roic !== null
-          ? `${Number(stats.roic).toFixed(2)}%`
           : "-",
     },
   ];

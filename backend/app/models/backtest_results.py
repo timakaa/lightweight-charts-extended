@@ -42,11 +42,6 @@ class BacktestResult(Base):
     long_trades = Column(Integer)
     short_trades = Column(Integer)
 
-    # Capital efficiency metrics
-    capital_deployed = Column(Float)  # Actual capital used in trades
-    capital_utilization = Column(Float)  # Percentage of initial balance used
-    roic = Column(Float)  # Return on Invested Capital
-
     # PNL metrics
     total_pnl = Column(Float)
     average_pnl = Column(Float)
@@ -56,7 +51,6 @@ class BacktestResult(Base):
     # Performance metrics
     sharpe_ratio = Column(Float)
     buy_hold_return = Column(Float)  # Based on initial balance
-    buy_hold_return_deployed = Column(Float)  # Based on capital deployed
     profit_factor = Column(Float)
     max_drawdown = Column(Float)
 

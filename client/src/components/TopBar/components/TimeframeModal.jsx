@@ -57,7 +57,7 @@ const TimeframeModal = ({
 
   return (
     <div
-      className='fixed inset-0 cursor-default bg-black bg-opacity-60 flex items-center justify-center z-50'
+      className='fixed inset-0 cursor-default bg-black bg-opacity-50 flex items-center justify-center z-50'
       onClick={onClose}
     >
       <div

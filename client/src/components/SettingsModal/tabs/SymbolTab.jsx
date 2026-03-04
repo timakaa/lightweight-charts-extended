@@ -17,23 +17,6 @@ export function SymbolTab({ chartTheme, updateCandleColors, updateData }) {
           CANDLES
         </h3>
 
-        {/* Color bars based on previous close */}
-        <div className='mb-6 flex items-center gap-3'>
-          <Checkbox
-            id='color-bars-prev-close'
-            checked={chartTheme.data.colorBarsBasedOnPrevClose}
-            onCheckedChange={(checked) =>
-              updateData({ colorBarsBasedOnPrevClose: checked })
-            }
-          />
-          <Label
-            htmlFor='color-bars-prev-close'
-            className='text-primary cursor-pointer'
-          >
-            Color bars based on previous close
-          </Label>
-        </div>
-
         {/* Body Colors */}
         <div className='mb-4 flex items-center gap-4'>
           <Checkbox
@@ -53,10 +36,18 @@ export function SymbolTab({ chartTheme, updateCandleColors, updateData }) {
             <ColorPicker
               value={chartTheme.candles.bodyUpColor}
               onChange={(color) => updateCandleColors({ bodyUpColor: color })}
+              opacity={chartTheme.candles.bodyUpOpacity}
+              onOpacityChange={(opacity) =>
+                updateCandleColors({ bodyUpOpacity: opacity ?? 100 })
+              }
             />
             <ColorPicker
               value={chartTheme.candles.bodyDownColor}
               onChange={(color) => updateCandleColors({ bodyDownColor: color })}
+              opacity={chartTheme.candles.bodyDownOpacity}
+              onOpacityChange={(opacity) =>
+                updateCandleColors({ bodyDownOpacity: opacity ?? 100 })
+              }
             />
           </div>
         </div>
@@ -80,11 +71,19 @@ export function SymbolTab({ chartTheme, updateCandleColors, updateData }) {
             <ColorPicker
               value={chartTheme.candles.borderUpColor}
               onChange={(color) => updateCandleColors({ borderUpColor: color })}
+              opacity={chartTheme.candles.borderUpOpacity ?? 100}
+              onOpacityChange={(opacity) =>
+                updateCandleColors({ borderUpOpacity: opacity })
+              }
             />
             <ColorPicker
               value={chartTheme.candles.borderDownColor}
               onChange={(color) =>
                 updateCandleColors({ borderDownColor: color })
+              }
+              opacity={chartTheme.candles.borderDownOpacity ?? 100}
+              onOpacityChange={(opacity) =>
+                updateCandleColors({ borderDownOpacity: opacity })
               }
             />
           </div>
@@ -109,60 +108,19 @@ export function SymbolTab({ chartTheme, updateCandleColors, updateData }) {
             <ColorPicker
               value={chartTheme.candles.wickUpColor}
               onChange={(color) => updateCandleColors({ wickUpColor: color })}
+              opacity={chartTheme.candles.wickUpOpacity ?? 100}
+              onOpacityChange={(opacity) =>
+                updateCandleColors({ wickUpOpacity: opacity })
+              }
             />
             <ColorPicker
               value={chartTheme.candles.wickDownColor}
               onChange={(color) => updateCandleColors({ wickDownColor: color })}
+              opacity={chartTheme.candles.wickDownOpacity ?? 100}
+              onOpacityChange={(opacity) =>
+                updateCandleColors({ wickDownOpacity: opacity })
+              }
             />
-          </div>
-        </div>
-
-        {/* Data Modification Section */}
-        <h3 className='text-sm font-semibold text-primary/60 mb-4 uppercase tracking-wider'>
-          DATA MODIFICATION
-        </h3>
-
-        <div className='space-y-4'>
-          {/* Precision */}
-          <div className='flex items-center gap-4'>
-            <span className='text-primary w-32'>Precision</span>
-            <Select
-              value={chartTheme.data.precision}
-              onValueChange={(value) => updateData({ precision: value })}
-            >
-              <SelectTrigger className='flex-1'>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='default'>Default</SelectItem>
-                <SelectItem value='0'>0</SelectItem>
-                <SelectItem value='1'>1</SelectItem>
-                <SelectItem value='2'>2</SelectItem>
-                <SelectItem value='3'>3</SelectItem>
-                <SelectItem value='4'>4</SelectItem>
-                <SelectItem value='5'>5</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Timezone */}
-          <div className='flex items-center gap-4'>
-            <span className='text-primary w-32'>Timezone</span>
-            <Select
-              value={chartTheme.data.timezone}
-              onValueChange={(value) => updateData({ timezone: value })}
-            >
-              <SelectTrigger className='flex-1'>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='utc0'>(UTC+0) London</SelectItem>
-                <SelectItem value='utc1'>(UTC+1) Berlin</SelectItem>
-                <SelectItem value='utc3'>(UTC+3) Moscow</SelectItem>
-                <SelectItem value='utc-5'>(UTC-5) New York</SelectItem>
-                <SelectItem value='utc-8'>(UTC-8) Los Angeles</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
         </div>
       </div>

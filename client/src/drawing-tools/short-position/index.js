@@ -52,6 +52,9 @@ export class ShortPositionDrawingTool extends BasePositionDrawingTool {
 
   // Save short position data to persistent store
   _saveShortPositionToStore(position) {
+    // Don't save drawings when in backtest mode
+    if (window.location.pathname.startsWith("/backtest/")) return;
+
     const { addDrawing } = useDrawingsStore.getState();
     const { ticker } = useChartStore.getState();
 

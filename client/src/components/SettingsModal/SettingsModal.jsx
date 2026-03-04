@@ -1,10 +1,8 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useChartTheme } from "@/hooks/useChartTheme";
-import { Sliders, BarChart3, Ruler, Palette } from "lucide-react";
+import { Sliders, Palette } from "lucide-react";
 import { SymbolTab } from "./tabs/SymbolTab";
-import { StatusLineTab } from "./tabs/StatusLineTab";
-import { ScalesTab } from "./tabs/ScalesTab";
 import { CanvasTab } from "./tabs/CanvasTab";
 import AsyncTemplateSelect from "./AsyncTemplateSelect";
 import SaveTemplateModal from "./SaveTemplateModal";
@@ -181,8 +179,6 @@ const SettingsModal = ({ isOpen, onClose }) => {
 
   const tabs = [
     { id: "symbol", label: "Symbol", icon: Sliders },
-    { id: "status", label: "Status line", icon: BarChart3 },
-    { id: "scales", label: "Scales and lines", icon: Ruler },
     { id: "canvas", label: "Canvas", icon: Palette },
   ];
 
@@ -196,10 +192,6 @@ const SettingsModal = ({ isOpen, onClose }) => {
             updateData={updateData}
           />
         );
-      case "status":
-        return <StatusLineTab />;
-      case "scales":
-        return <ScalesTab />;
       case "canvas":
         return (
           <CanvasTab
@@ -217,7 +209,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
 
   return (
     <div
-      className='fixed cursor-default inset-0 bg-background/50 flex justify-center items-center z-[999]'
+      className='fixed cursor-default inset-0 bg-black/50 flex justify-center items-center z-[999]'
       onClick={handleBackdropClick}
     >
       <div className='bg-background border border-border rounded-lg w-[800px] h-[600px] flex flex-col'>

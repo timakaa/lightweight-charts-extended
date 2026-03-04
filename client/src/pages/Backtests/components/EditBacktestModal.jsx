@@ -60,7 +60,7 @@ const EditBacktestModal = ({ isOpen, onClose, onSave, initialTitle }) => {
 
   return (
     <div
-      className='fixed cursor-default inset-0 bg-background/30 flex items-center justify-center z-[999]'
+      className='fixed cursor-default inset-0 bg-black/30 flex items-center justify-center z-[999]'
       onClick={handleBackdropClick}
     >
       <div className='bg-background rounded-lg w-[400px] flex flex-col'>

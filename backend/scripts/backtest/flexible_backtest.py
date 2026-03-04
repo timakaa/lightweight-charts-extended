@@ -19,7 +19,7 @@ from flexible.data_loader import load_multi_timeframe_data, check_and_scrape_dat
 from flexible.backtest_runner import run_backtest
 from flexible.trade_processor import process_trades, calculate_trading_days, calculate_value_at_risk
 from flexible.drawing_creator import create_trade_drawings, create_strategy_drawings
-from flexible.metrics_calculator import calculate_and_apply_metrics
+from flexible.strategy_overrides import apply_strategy_overrides
 from flexible.results_builder import build_results_dict, print_results_summary, save_to_database
 from flexible.chart_handler import generate_and_save_charts
 
@@ -79,21 +79,14 @@ def run_flexible_backtest(
     if data_dict is None:
         return None
     
-    # Prepare data
-    try:
-        prepared_data = strategy_instance.prepare_data(data_dict)
-    except Exception as e:
-        print(f"❌ Error preparing data: {e}")
-        return None
-    
     # Run backtest
-    stats, bt = run_backtest(strategy_instance, prepared_data, timeframes, cash)
+    stats, bt = run_backtest(strategy_instance, data_dict, timeframes, cash)
     if stats is None:
         return None
     
     # Use main timeframe data
     main_timeframe = timeframes[0]
-    main_data = prepared_data[main_timeframe]
+    main_data = data_dict[main_timeframe]
     
     # Process trades
     trades_list, profitable_trades, loss_trades, long_trades, short_trades, pnl_list = process_trades(
@@ -113,8 +106,8 @@ def run_flexible_backtest(
     if hasattr(strategy_instance, 'get_strategy_related_fields'):
         strategy_related_fields = strategy_instance.get_strategy_related_fields()
     
-    # Calculate and apply metrics to stats
-    calculate_and_apply_metrics(stats, trades_list, cash, main_data, strategy_instance)
+    # Apply strategy-specific metric overrides
+    apply_strategy_overrides(stats, strategy_instance)
     
     # Build results dictionary
     results = build_results_dict(

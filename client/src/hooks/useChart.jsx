@@ -2,52 +2,28 @@ import { useEffect, useState, useRef } from "react";
 import { createChart, CrosshairMode } from "lightweight-charts";
 import { useTheme } from "./useTheme";
 import { useChartTheme } from "./useChartTheme";
+import { hexToRgba } from "@/utils/colorUtils";
 
 export const useChart = (chartContainerRef) => {
   const [chart, setChart] = useState(null);
   const { theme } = useTheme();
-  const { chartTheme, updateCanvasColors, updateCandleColors } =
-    useChartTheme();
+  const { chartTheme, applyDefaults } = useChartTheme();
   const prevThemeRef = useRef(theme);
 
   // Extract primitive values for dependency tracking
-  const backgroundColor = chartTheme.canvas.backgroundColor;
+  const { canvas } = chartTheme;
+  const backgroundColor = canvas.backgroundColor;
+  const backgroundOpacity = canvas.backgroundOpacity ?? 100;
+  const gridColor = canvas.gridColor;
+  const gridOpacity = canvas.gridOpacity ?? 100;
+  const crosshairColor = canvas.crosshairColor;
+  const crosshairOpacity = canvas.crosshairOpacity ?? 100;
   const textColor = chartTheme.scales.textColor;
-  const gridColor = chartTheme.canvas.gridColor;
-  const crosshairColor = chartTheme.canvas.crosshairColor;
 
-  // Update theme defaults ONLY when theme actually changes
-  useEffect(() => {
-    if (prevThemeRef.current === theme) {
-      console.log("Theme hasn't changed, skipping");
-      return;
-    }
-
-    prevThemeRef.current = theme;
-
-    if (theme === "dark") {
-      updateCanvasColors({ backgroundColor: "#000000" });
-      updateCandleColors({
-        bodyUpColor: "#26a69a",
-        bodyDownColor: "#ef5350",
-        borderUpColor: "#26a69a",
-        borderDownColor: "#ef5350",
-        wickUpColor: "#26a69a",
-        wickDownColor: "#ef5350",
-      });
-    } else {
-      updateCanvasColors({ backgroundColor: "#ffffff" });
-      updateCandleColors({
-        bodyUpColor: "#22c55e",
-        bodyDownColor: "#ef4444",
-        borderUpColor: "#22c55e",
-        borderDownColor: "#ef4444",
-        wickUpColor: "#22c55e",
-        wickDownColor: "#ef4444",
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [theme]);
+  // Convert hex + opacity to rgba
+  const backgroundColorRgba = hexToRgba(backgroundColor, backgroundOpacity);
+  const gridColorRgba = hexToRgba(gridColor, gridOpacity);
+  const crosshairColorRgba = hexToRgba(crosshairColor, crosshairOpacity);
 
   useEffect(() => {
     if (!chartContainerRef.current) {
@@ -58,20 +34,20 @@ export const useChart = (chartContainerRef) => {
       width: chartContainerRef.current.clientWidth,
       height: chartContainerRef.current.clientHeight,
       layout: {
-        background: { color: backgroundColor },
+        background: { color: backgroundColorRgba },
         textColor: textColor,
       },
       grid: {
-        vertLines: { color: gridColor },
-        horzLines: { color: gridColor },
+        vertLines: { color: gridColorRgba },
+        horzLines: { color: gridColorRgba },
       },
       crosshair: {
         mode: CrosshairMode.Normal,
         vertLine: {
-          color: crosshairColor,
+          color: crosshairColorRgba,
         },
         horzLine: {
-          color: crosshairColor,
+          color: crosshairColorRgba,
         },
       },
       timeScale: {
@@ -150,26 +126,43 @@ export const useChart = (chartContainerRef) => {
     try {
       chart.applyOptions({
         layout: {
-          background: { color: backgroundColor },
+          background: { color: backgroundColorRgba },
           textColor: textColor,
         },
         grid: {
-          vertLines: { color: gridColor },
-          horzLines: { color: gridColor },
+          vertLines: { color: gridColorRgba },
+          horzLines: { color: gridColorRgba },
         },
         crosshair: {
           vertLine: {
-            color: crosshairColor,
+            color: crosshairColorRgba,
           },
           horzLine: {
-            color: crosshairColor,
+            color: crosshairColorRgba,
           },
         },
       });
     } catch (error) {
       console.error("Error applying chart options:", error);
     }
-  }, [chart, backgroundColor, textColor, gridColor, crosshairColor]);
+  }, [
+    chart,
+    backgroundColorRgba,
+    textColor,
+    gridColorRgba,
+    crosshairColorRgba,
+  ]);
+
+  // Update theme defaults ONLY when theme actually changes
+  useEffect(() => {
+    if (prevThemeRef.current === theme) {
+      return;
+    }
+
+    prevThemeRef.current = theme;
+
+    applyDefaults();
+  }, [theme, applyDefaults]);
 
   return chart;
 };

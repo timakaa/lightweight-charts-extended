@@ -62,8 +62,6 @@ def handle_strategy_info(strategy_name: str):
         print(f"Timeframes: {', '.join(info['timeframes'])}")
         print(f"\nDefault Parameters:")
         print(json.dumps(info['default_parameters'], indent=2))
-        print(f"\nParameter Schema:")
-        print(json.dumps(info['parameter_schema'], indent=2))
     except Exception as e:
         print(f"❌ Error getting strategy info: {e}")
 

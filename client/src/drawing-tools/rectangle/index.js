@@ -306,6 +306,9 @@ export class RectangleDrawingTool extends PluginBase {
 
   // Save rectangle data to persistent store
   _saveRectangleToStore(rectangle) {
+    // Don't save drawings when in backtest mode
+    if (window.location.pathname.startsWith("/backtest/")) return;
+
     const { addDrawing } = useDrawingsStore.getState();
     const { ticker } = useChartStore.getState();
 

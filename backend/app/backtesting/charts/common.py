@@ -12,6 +12,9 @@ def calculate_simple_buy_hold_history(
     Calculate simple buy & hold balance over time
     Buys at first price with all capital and holds
     
+    This is the standard comparison for trading strategies:
+    "What if I just bought at the start and held instead of trading?"
+    
     Args:
         balance_history: List of {time: datetime, balance: float, price: float}
         
@@ -45,51 +48,6 @@ def calculate_simple_buy_hold_history(
     return buy_hold_history
 
 
-def calculate_buy_hold_with_deployed_capital(
-    balance_history: List[Dict[str, Any]],
-    capital_deployed: float,
-    starting_balance: float
-) -> List[Dict[str, Any]]:
-    """
-    Calculate buy & hold balance using only deployed capital
-    Useful for DCA strategies where not all capital is deployed at once
-    
-    Args:
-        balance_history: List of {time: datetime, balance: float, price: float}
-        capital_deployed: Total capital that was deployed in the strategy
-        starting_balance: Starting balance (includes uninvested cash)
-        
-    Returns:
-        List of {time: datetime, balance: float} for buy & hold
-    """
-    if not balance_history or capital_deployed == 0:
-        return []
-    
-    first_price = balance_history[0].get('price', 0)
-    if first_price == 0:
-        return []
-    
-    # Calculate units bought with deployed capital only
-    units = capital_deployed / first_price
-    
-    # Calculate uninvested cash
-    uninvested_cash = starting_balance - capital_deployed
-    
-    # Calculate buy & hold value at each timestamp
-    buy_hold_history = []
-    for entry in balance_history:
-        current_price = entry.get('price', 0)
-        if current_price > 0:
-            # Buy & hold value = (units * current_price) + uninvested cash
-            buy_hold_value = (units * current_price) + uninvested_cash
-            buy_hold_history.append({
-                'time': entry['time'],
-                'balance': buy_hold_value
-            })
-    
-    return buy_hold_history
-
-
 def generate_and_upload_balance_chart(
     backtest_id: int,
     balance_history: List[Dict[str, Any]],
@@ -100,11 +58,15 @@ def generate_and_upload_balance_chart(
     """
     Generate balance chart and upload to MinIO
     
+    Standard chart for trading strategies showing:
+    - Blue line: Strategy portfolio value over time
+    - Orange line: Buy & hold comparison (optional)
+    
     Args:
         backtest_id: Backtest ID for naming
-        balance_history: Portfolio balance history
+        balance_history: Portfolio balance history from strategy
         strategy_name: Name for chart title
-        initial_balance: Initial balance (not used in chart, kept for compatibility)
+        initial_balance: Initial balance (for reference)
         buy_hold_history: Optional buy & hold comparison data
         
     Returns:

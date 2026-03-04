@@ -8,9 +8,16 @@ import {
 import { PresetColorGrid } from "./color-picker/PresetColorGrid";
 import { CustomColorPicker } from "./color-picker/CustomColorPicker";
 import { RecentColors } from "./color-picker/RecentColors";
+import { OpacitySlider } from "./color-picker/OpacitySlider";
 import { useRecentColors } from "@/hooks/useRecentColors";
 
-export function ColorPicker({ value, onChange, className }) {
+export function ColorPicker({
+  value,
+  onChange,
+  className,
+  opacity = 100,
+  onOpacityChange,
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const [showCustomPicker, setShowCustomPicker] = useState(false);
   const { recentColors, addRecentColor } = useRecentColors();
@@ -35,10 +42,10 @@ export function ColorPicker({ value, onChange, className }) {
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <button
-          className={`w-10 h-10 rounded-lg p-1 border-2 border-transparent hover:border-gray-400 transition-colors cursor-pointer ${className}`}
+          className={`w-10 h-10 rounded-lg p-1 border-2 border-border hover:border-gray-400 transition-colors cursor-pointer ${className}`}
         >
           <div
-            className='w-full h-full rounded-md'
+            className='w-full h-full rounded-md border border-border'
             style={{ backgroundColor: value }}
           />
         </button>
@@ -50,14 +57,11 @@ export function ColorPicker({ value, onChange, className }) {
             <RecentColors
               colors={recentColors}
               onColorSelect={handlePresetClick}
+              onAddColor={() => setShowCustomPicker(true)}
             />
-            <Button
-              variant='outline'
-              className='w-full'
-              onClick={() => setShowCustomPicker(true)}
-            >
-              + Add custom color
-            </Button>
+            {onOpacityChange && (
+              <OpacitySlider opacity={opacity} onChange={onOpacityChange} />
+            )}
           </div>
         ) : (
           <CustomColorPicker

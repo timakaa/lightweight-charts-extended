@@ -1,0 +1,30 @@
+/* Opacity slider range input styling */
+.opacity-range-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 15px;
+  height: 15px;
+  background: white;
+  border: 2px solid #666;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.opacity-range-input::-moz-range-thumb {
+  width: 15px;
+  height: 15px;
+  background: white;
+  border: 2px solid #666;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.opacity-range-input::-webkit-slider-thumb:hover {
+  background: #f0f0f0;
+}
+
+.opacity-range-input::-moz-range-thumb:hover {
+  background: #f0f0f0;
+}
