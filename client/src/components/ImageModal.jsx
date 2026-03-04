@@ -29,7 +29,7 @@ const ImageModal = ({ isOpen, onClose, imageUrl, altText }) => {
 
   return (
     <div
-      className='fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[9999]'
+      className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]'
       onClick={handleBackdropClick}
     >
       <button

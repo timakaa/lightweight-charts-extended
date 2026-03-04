@@ -6,8 +6,7 @@ import { Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const RunBacktestModalContent = ({ onClose }) => {
-  const navigate = useNavigate();
-  const [strategy, setStrategy] = useState("simple_ma_cross");
+  const [strategy, setStrategy] = useState("");
   const [symbol, setSymbol] = useState("BTC/USDT");
   const [timeframe, setTimeframe] = useState("1h");
   const [startDate, setStartDate] = useState("2024-01-01");
@@ -121,7 +120,7 @@ const RunBacktestModal = ({ isOpen, onClose }) => {
 
   return (
     <div
-      className='fixed cursor-default inset-0 bg-background/50 flex items-center justify-center z-[999]'
+      className='fixed cursor-default inset-0 bg-black/50 flex items-center justify-center z-[999]'
       onClick={handleBackdropClick}
     >
       <div className='bg-background border border-border rounded-lg w-[500px] max-h-[80vh] flex flex-col'>

@@ -121,7 +121,7 @@ const TickerModal = ({ isOpen, onClose, onSelectTicker, initialLetter }) => {
 
   return (
     <div
-      className='fixed cursor-default inset-0 bg-background/50 flex items-center justify-center z-50'
+      className='fixed cursor-default inset-0 bg-black/50 flex items-center justify-center z-50'
       onClick={handleBackdropClick}
     >
       <TickerModalContent

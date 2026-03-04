@@ -28,7 +28,7 @@ const ConfirmUpdateModal = ({ isOpen, onClose, onConfirm, templateName }) => {
 
   return (
     <div
-      className='fixed inset-0 bg-background/50 flex items-center justify-center z-[9999]'
+      className='fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]'
       onClick={handleBackdropClick}
     >
       <div className='bg-background border border-border rounded-lg w-[400px] p-6'>

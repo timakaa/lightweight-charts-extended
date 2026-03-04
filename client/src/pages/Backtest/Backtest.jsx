@@ -22,7 +22,7 @@ const Backtest = () => {
   }
 
   return (
-    <div className='fixed inset-0 flex bg-black'>
+    <div className='fixed inset-0 flex bg-background'>
       {/* Main content area */}
       <div className='flex-1 flex flex-col overflow-hidden'>
         <TopBar />

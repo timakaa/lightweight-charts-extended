@@ -209,7 +209,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
 
   return (
     <div
-      className='fixed cursor-default inset-0 bg-background/50 flex justify-center items-center z-[999]'
+      className='fixed cursor-default inset-0 bg-black/50 flex justify-center items-center z-[999]'
       onClick={handleBackdropClick}
     >
       <div className='bg-background border border-border rounded-lg w-[800px] h-[600px] flex flex-col'>
