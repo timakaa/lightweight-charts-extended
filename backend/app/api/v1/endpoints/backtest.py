@@ -48,6 +48,9 @@ async def run_backtest(request: RunBacktestRequest, background_tasks: Background
         # Remove "/" from symbol (e.g., BTC/USDT -> BTCUSDT)
         symbol = normalize_symbol_for_api(request.symbol)
         
+        # Use cash from strategy parameters if provided, otherwise use request.cash
+        cash = request.parameters.get('cash', request.cash)
+        
         # Run the backtest in the background
         background_tasks.add_task(
             run_flexible_backtest,
@@ -55,7 +58,7 @@ async def run_backtest(request: RunBacktestRequest, background_tasks: Background
             symbol=symbol,
             parameters=request.parameters,
             timeframes=timeframes,
-            cash=request.cash,
+            cash=cash,
             save_to_db=True,
             start_date=request.start_date,
             end_date=request.end_date
@@ -168,7 +171,7 @@ def get_strategies(
             ),
             all_strategies
         ))
-    
+
     # Calculate pagination
     total_count = len(all_strategies)
     start_idx = (page - 1) * page_size
@@ -187,4 +190,36 @@ def get_strategies(
             "has_prev": page > 1,
         }
     }
+
+
+@router.get("/strategies/{strategy_name}/parameters")
+def get_strategy_parameters(strategy_name: str):
+    """
+    Get parameter schema for a specific strategy
+    Returns parameter metadata for UI form generation
+    """
+    try:
+        from app.backtesting.strategies import get_strategy
+        
+        # Get strategy class
+        strategy_class = get_strategy(strategy_name)
+        
+        # Create instance to get parameter schema
+        strategy_instance = strategy_class()
+        
+        # Get parameter schema (includes defaults)
+        parameter_schema = strategy_instance.get_parameter_schema()
+        
+        return {
+            "strategy_name": strategy_name,
+            "display_name": strategy_instance.name,
+            "description": strategy_instance.description,
+            "parameter_schema": parameter_schema,
+            "default_timeframes": strategy_instance.default_timeframes
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error getting strategy parameters: {str(e)}")
+
 

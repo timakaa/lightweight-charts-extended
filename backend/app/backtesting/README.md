@@ -127,6 +127,8 @@ def __init__(self, parameters: Dict[str, Any] = None, timeframes: List[str] = No
 
 Validate parameters before running the backtest. Return `True` if valid, `False` otherwise.
 
+**Note**: This method is optional. The default implementation returns `True` (all parameters valid). Override only if you need custom validation logic.
+
 ```python
 def validate_parameters(self, parameters: Dict[str, Any]) -> bool:
     """Validate parameters"""
@@ -135,6 +137,8 @@ def validate_parameters(self, parameters: Dict[str, Any]) -> bool:
         return False
     return True
 ```
+
+**If you don't need validation, you can skip implementing this method entirely.**
 
 ### `create_strategy_class(data_dict)`
 

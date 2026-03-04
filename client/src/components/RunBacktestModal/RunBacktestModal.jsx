@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import BacktestForm from "./BacktestForm";
 import { Button } from "@/components/ui/button";
 import { useRunBacktest } from "@hooks/backtests/useRunBacktest";
@@ -11,11 +11,14 @@ const RunBacktestModalContent = ({ onClose }) => {
   const [timeframe, setTimeframe] = useState("1h");
   const [startDate, setStartDate] = useState("2024-01-01");
   const [endDate, setEndDate] = useState("2025-01-01");
+  const [parameters, setParameters] = useState({});
 
   const { mutate: runBacktest, isPending } = useRunBacktest();
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    console.log("Submitting with parameters:", parameters); // Debug log
 
     runBacktest(
       {
@@ -24,7 +27,7 @@ const RunBacktestModalContent = ({ onClose }) => {
         timeframe,
         start_date: startDate,
         end_date: endDate,
-        parameters: {}, // Empty parameters for now, can be extended later
+        parameters: parameters,
       },
       {
         onSuccess: (data) => {
@@ -69,6 +72,8 @@ const RunBacktestModalContent = ({ onClose }) => {
         setStartDate={setStartDate}
         endDate={endDate}
         setEndDate={setEndDate}
+        parameters={parameters}
+        setParameters={setParameters}
         onSubmit={handleSubmit}
       />
 
