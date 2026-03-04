@@ -10,7 +10,9 @@ from .divergence import check_bullish_divergence, check_bearish_divergence
 
 def create_strategy_class(
     params: Dict[str, Any],
-    detected_signals_list: List[Dict[str, Any]]
+    detected_signals_list: List[Dict[str, Any]],
+    balance_history_list: List[Dict[str, Any]],
+    should_track_balance: bool
 ) -> type:
     """
     Create the backtesting.Strategy class for RSI + MACD Combo
@@ -18,6 +20,8 @@ def create_strategy_class(
     Args:
         params: Strategy parameters
         detected_signals_list: List to store detected signals
+        balance_history_list: List to store balance history for charts
+        should_track_balance: Whether to track balance history
         
     Returns:
         Strategy class ready for backtesting
@@ -75,6 +79,14 @@ def create_strategy_class(
             current_idx = len(self.data) - 1
             current_time = self.data.index[current_idx]
             current_price = self.data.Close[-1]
+            
+            # Track balance history if needed
+            if should_track_balance:
+                balance_history_list.append({
+                    'time': current_time,
+                    'balance': self.equity,
+                    'price': current_price
+                })
             
             if current_idx < 10:  # Need enough data
                 return
