@@ -4,7 +4,7 @@ import { useTheme } from "./useTheme";
 import { useChartTheme } from "./useChartTheme";
 import { hexToRgba } from "@/utils/colorUtils";
 
-export const useChart = (chartContainerRef) => {
+export const useChart = (chartContainerRef, precision = 2) => {
   const [chart, setChart] = useState(null);
   const { theme } = useTheme();
   const { chartTheme, applyDefaults } = useChartTheme();
@@ -53,6 +53,9 @@ export const useChart = (chartContainerRef) => {
       timeScale: {
         timeVisible: true,
         secondsVisible: false,
+      },
+      localization: {
+        priceFormatter: (price) => price.toFixed(precision),
       },
     });
 
@@ -163,6 +166,23 @@ export const useChart = (chartContainerRef) => {
 
     applyDefaults();
   }, [theme, applyDefaults]);
+
+  // Update price formatter when precision changes
+  useEffect(() => {
+    if (!chart) {
+      return;
+    }
+
+    try {
+      chart.applyOptions({
+        localization: {
+          priceFormatter: (price) => price.toFixed(precision),
+        },
+      });
+    } catch (error) {
+      console.error("Error applying price formatter:", error);
+    }
+  }, [chart, precision]);
 
   return chart;
 };
