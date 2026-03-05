@@ -7,6 +7,7 @@ import BalanceCards from "./BalanceCards";
 import MetricsGrid from "./MetricsGrid";
 import ChartImages from "./ChartImages";
 import StrategyFields from "./StrategyFields";
+import { omit } from "@/utils/omit";
 
 const BacktestSidebar = () => {
   const { backtestId } = useParams();
@@ -14,8 +15,11 @@ const BacktestSidebar = () => {
   const [copied, setCopied] = useState(false);
 
   const handleCopyToClipboard = () => {
-    const { strategy_related_fields: _, ...statsWithoutStrategy } = stats || {};
-    const jsonData = JSON.stringify(statsWithoutStrategy, null, 2);
+    const statsWithoutStrategyAndCharts = omit(stats, [
+      "strategy_related_fields",
+      "chart_images",
+    ]);
+    const jsonData = JSON.stringify(statsWithoutStrategyAndCharts, null, 2);
     navigator.clipboard.writeText(jsonData).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
