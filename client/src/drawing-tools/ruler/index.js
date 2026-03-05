@@ -20,7 +20,7 @@ export class RulerTool extends PluginBase {
   _isSnapping = false;
   candleData = null; // Will be set externally
 
-  constructor(chart, series, onToolChanged, onRulersChange) {
+  constructor(chart, series, onToolChanged, onRulersChange, options = {}) {
     super();
     // Chart and series references
     this._chart = chart;
@@ -29,6 +29,8 @@ export class RulerTool extends PluginBase {
     this._onToolChanged = onToolChanged;
     // Callback for when the set of rulers changes
     this._onRulersChange = onRulersChange;
+    // Custom options to pass to created rulers
+    this._options = options;
   }
 
   // Remove all rulers and preview ruler from the chart
@@ -145,6 +147,10 @@ export class RulerTool extends PluginBase {
         this._chart,
         this.candleData,
       );
+      // Apply custom options if provided
+      if (this._options && Object.keys(this._options).length > 0) {
+        newRuler.applyOptions(this._options);
+      }
       this._series.attachPrimitive(newRuler);
       this._rulers.add(newRuler);
       if (this._onRulersChange) {
@@ -182,6 +188,10 @@ export class RulerTool extends PluginBase {
         this._chart,
         this.candleData,
       );
+      // Apply custom options if provided
+      if (this._options && Object.keys(this._options).length > 0) {
+        this._previewRuler.applyOptions(this._options);
+      }
       this._series.attachPrimitive(this._previewRuler);
     } else {
       this._previewRuler.updateEndPoint(p2);

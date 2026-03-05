@@ -29,6 +29,7 @@ function useFibRetracementDrawingTool(
   setSelectedFibRetracementId,
   currentTool,
   candleData,
+  precision = 2,
 ) {
   // Ref to the drawing tool instance
   const fibRetracementDrawingTool = useRef(null);
@@ -40,7 +41,7 @@ function useFibRetracementDrawingTool(
       chart,
       candlestickSeries,
       () => setCurrentTool(TOOL_CROSSHAIR),
-      {},
+      { priceLabelFormatter: (price) => price.toFixed(precision) },
       setRetracementsData,
       (fib) => setSelectedFibRetracementId(fib.id),
     );
@@ -54,6 +55,7 @@ function useFibRetracementDrawingTool(
     setCurrentTool,
     setRetracementsData,
     setSelectedFibRetracementId,
+    precision,
   ]);
 
   // Update candle data on the existing tool when data changes

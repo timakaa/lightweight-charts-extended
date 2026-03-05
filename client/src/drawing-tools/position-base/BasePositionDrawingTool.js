@@ -27,6 +27,7 @@ export class BasePositionDrawingTool extends PluginBase {
     chart,
     series,
     onToolChanged,
+    options,
     onPositionsChange,
     onPositionCreated,
     candleData,
@@ -39,6 +40,8 @@ export class BasePositionDrawingTool extends PluginBase {
     this._series = series;
     // Callbacks for tool state and position changes
     this._onToolChanged = onToolChanged;
+    // Custom options to pass to created positions
+    this._options = options || {};
     this._onPositionsChange = onPositionsChange;
     this._onPositionCreated = onPositionCreated;
     // Candle data for hybrid coordinate calculations
@@ -248,7 +251,7 @@ export class BasePositionDrawingTool extends PluginBase {
 
   // Create a position with enhanced points
   _createPosition(entryPrice, targetPrice, stopPrice, startTime, endTime) {
-    return new this._PositionClass(
+    const position = new this._PositionClass(
       entryPrice,
       targetPrice,
       stopPrice,
@@ -260,5 +263,10 @@ export class BasePositionDrawingTool extends PluginBase {
       this._activeResizeHandleRef,
       this._candleData,
     );
+    // Apply custom options if provided
+    if (this._options && Object.keys(this._options).length > 0) {
+      position.applyOptions(this._options);
+    }
+    return position;
   }
 }

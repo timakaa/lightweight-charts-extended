@@ -11,6 +11,7 @@ function useRulerDrawingTool(
   setRulersData,
   currentTool,
   candleData,
+  precision = 2,
 ) {
   const rulerDrawingTool = useRef(null);
 
@@ -22,11 +23,12 @@ function useRulerDrawingTool(
       candlestickSeries,
       () => setCurrentTool(TOOL_CROSSHAIR),
       setRulersData,
+      { priceLabelFormatter: (price) => price.toFixed(precision) },
     );
     return () => {
       rulerDrawingTool.current = null;
     };
-  }, [chart, candlestickSeries, setCurrentTool, setRulersData]);
+  }, [chart, candlestickSeries, setCurrentTool, setRulersData, precision]);
 
   // Update candleData on the existing tool when data changes
   useEffect(() => {

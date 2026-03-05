@@ -6,7 +6,12 @@ import useRulerChartEvents from "./ruler/useRulerChartEvents";
 
 // useRulerDrawing.js - React hook for integrating all ruler drawing logic and state management
 // useRulerDrawing integrates all hooks and logic for ruler drawing and state management
-export function useRulerDrawing(chart, candlestickSeries, candleData) {
+export function useRulerDrawing(
+  chart,
+  candlestickSeries,
+  candleData,
+  precision = 2,
+) {
   // Tool state (current tool, setter)
   const currentTool = useToolStore((s) => s.currentTool);
   const { setCurrentTool } = useToolStore();
@@ -27,6 +32,7 @@ export function useRulerDrawing(chart, candlestickSeries, candleData) {
     setRulersData,
     currentTool,
     candleData,
+    precision,
   );
 
   // Subscribe to chart click and crosshair move events for ruler logic

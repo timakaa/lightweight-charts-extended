@@ -21,6 +21,7 @@ export function useChartDrawingSocket({
   shortPositionDrawingTool,
   fibRetracementDrawingTool,
   activeResizeHandleRefs = {},
+  precision = 2,
 }) {
   const { removeDrawing, updateDrawing, addDrawing } = useDrawingsStore();
 
@@ -46,6 +47,7 @@ export function useChartDrawingSocket({
         fibRetracementDrawingTool,
         activeResizeHandleRefs,
         addDrawing,
+        precision,
       }),
     onDrawingUpdated: (msg, socket) =>
       onDrawingUpdate({

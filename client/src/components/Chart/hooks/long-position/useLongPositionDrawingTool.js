@@ -13,6 +13,7 @@ function useLongPositionDrawingTool(
   currentTool,
   candleData,
   activeResizeHandleRef,
+  precision = 2,
 ) {
   const longPositionDrawingTool = useRef(null);
 
@@ -23,7 +24,7 @@ function useLongPositionDrawingTool(
       chart,
       candlestickSeries,
       () => setCurrentTool(TOOL_CROSSHAIR),
-      {},
+      { priceLabelFormatter: (price) => price?.toFixed(precision) ?? "" },
       setLongPositionsData,
       (pos) => setSelectedLongPositionId(pos.id),
       candleData,
@@ -39,6 +40,7 @@ function useLongPositionDrawingTool(
     setLongPositionsData,
     setSelectedLongPositionId,
     activeResizeHandleRef,
+    precision,
   ]);
 
   // Update candleData on the existing tool when data changes

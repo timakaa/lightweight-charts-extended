@@ -13,6 +13,7 @@ function useLineDrawingTool(
   currentTool,
   activeResizeHandleRef,
   candleData = null,
+  precision = 2,
 ) {
   // Ref to the LineDrawingTool instance
   const lineDrawingTool = useRef(null);
@@ -25,7 +26,7 @@ function useLineDrawingTool(
       chart,
       candlestickSeries,
       () => setCurrentTool(TOOL_CROSSHAIR),
-      {},
+      { priceLabelFormatter: (price) => price.toFixed(precision) },
       setLinesData,
       (line) => setSelectedLineId(line.id),
       activeResizeHandleRef,
@@ -42,6 +43,7 @@ function useLineDrawingTool(
     setLinesData,
     setSelectedLineId,
     activeResizeHandleRef,
+    precision,
   ]);
 
   // Update candleData on the existing tool when data changes

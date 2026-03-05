@@ -25,5 +25,5 @@ export const useChartSetup = (chartContainerRef) => {
   usePriceAxisScroll(chart, candlestickSeries);
   useChartFitHotkey(chart, candlestickSeries, candleData);
 
-  return { chart, candlestickSeries, candleData, chartDataInfo };
+  return { chart, candlestickSeries, candleData, chartDataInfo, precision };
 };

@@ -44,6 +44,8 @@ export class LineDrawingTool extends PluginBase {
     this._series = series;
     // Callback for when the tool changes (e.g., drawing finished)
     this._onToolChanged = onToolChanged;
+    // Custom options to pass to created lines
+    this._options = options || {};
     // Callback for when the set of lines changes
     this._onLinesChange = onLinesChange;
     // Callback for when a new line is created
@@ -221,6 +223,10 @@ export class LineDrawingTool extends PluginBase {
         this._activeResizeHandleRef,
         this._candleData,
       );
+      // Apply custom options if provided
+      if (this._options && Object.keys(this._options).length > 0) {
+        newLine.applyOptions(this._options);
+      }
       this._series.attachPrimitive(newLine);
       this._lines.add(newLine);
 
@@ -260,6 +266,10 @@ export class LineDrawingTool extends PluginBase {
         this._selectedLineId,
         this._candleData,
       );
+      // Apply custom options if provided
+      if (this._options && Object.keys(this._options).length > 0) {
+        this._previewLine.applyOptions(this._options);
+      }
       this._series.attachPrimitive(this._previewLine);
     } else {
       this._previewLine.updateEndPoint(this._p2);

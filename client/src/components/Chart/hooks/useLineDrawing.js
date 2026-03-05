@@ -20,7 +20,12 @@ import {
 } from "@hooks/useViewportDrawings";
 
 // useLineDrawing integrates all hooks and logic for line drawing, selection, drag, resize, and keyboard shortcuts
-export const useLineDrawing = (chart, candlestickSeries, candleData) => {
+export const useLineDrawing = (
+  chart,
+  candlestickSeries,
+  candleData,
+  precision = 2,
+) => {
   // State and actions for lines (data, selection, hover)
   const {
     linesData,
@@ -58,6 +63,7 @@ export const useLineDrawing = (chart, candlestickSeries, candleData) => {
     currentTool,
     activeResizeHandleRef,
     candleData,
+    precision,
   );
 
   // Enable resizing of line endpoints

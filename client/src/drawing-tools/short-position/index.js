@@ -20,6 +20,7 @@ export class ShortPositionDrawingTool extends BasePositionDrawingTool {
       chart,
       series,
       onToolChanged,
+      options,
       onPositionsChange,
       onPositionCreated,
       candleData,

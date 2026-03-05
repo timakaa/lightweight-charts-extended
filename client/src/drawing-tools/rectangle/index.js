@@ -41,6 +41,8 @@ export class RectangleDrawingTool extends PluginBase {
     this._series = series;
     // Callback for when the tool changes (e.g., drawing finished)
     this._onToolChanged = onToolChanged;
+    // Custom options to pass to created rectangles
+    this._options = options || {};
     // Callback for when the set of rectangles changes
     this._onBoxesChange = onBoxesChange;
     // Callback for when a new rectangle is created
@@ -174,6 +176,10 @@ export class RectangleDrawingTool extends PluginBase {
         this._activeResizeHandleRef,
         this._candleData,
       );
+      // Apply custom options if provided
+      if (this._options && Object.keys(this._options).length > 0) {
+        newBox.applyOptions(this._options);
+      }
       this._series.attachPrimitive(newBox);
       this._rectangles.add(newBox);
 
@@ -212,6 +218,10 @@ export class RectangleDrawingTool extends PluginBase {
         this._chart,
         this._candleData,
       );
+      // Apply custom options if provided
+      if (this._options && Object.keys(this._options).length > 0) {
+        this._previewRectangle.applyOptions(this._options);
+      }
       this._series.attachPrimitive(this._previewRectangle);
     } else {
       this._previewRectangle.updateEndPoint(this._p2);

@@ -20,6 +20,7 @@ export class LongPositionDrawingTool extends BasePositionDrawingTool {
       chart,
       series,
       onToolChanged,
+      options,
       onPositionsChange,
       onPositionCreated,
       candleData,

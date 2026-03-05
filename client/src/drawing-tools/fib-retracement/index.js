@@ -72,6 +72,8 @@ export class FibRetracementDrawingTool extends PluginBase {
     this._chart = chart;
     this._series = series;
     this._onToolChanged = onToolChanged;
+    // Custom options to pass to created retracements
+    this._options = options || {};
     this._onRetracementsChange = onRetracementsChange;
     this._onRetracementCreated = onRetracementCreated;
     this._candleData = candleData;
@@ -248,6 +250,10 @@ export class FibRetracementDrawingTool extends PluginBase {
         null,
         this._candleData,
       );
+      // Apply custom options if provided
+      if (this._options && Object.keys(this._options).length > 0) {
+        newFib.applyOptions(this._options);
+      }
       this._series.attachPrimitive(newFib);
       this._retracements.add(newFib);
 
@@ -313,6 +319,10 @@ export class FibRetracementDrawingTool extends PluginBase {
         this._chart,
         this._candleData,
       );
+      // Apply custom options if provided
+      if (this._options && Object.keys(this._options).length > 0) {
+        this._previewRetracement.applyOptions(this._options);
+      }
       this._series.attachPrimitive(this._previewRetracement);
     }
   };

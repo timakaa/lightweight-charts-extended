@@ -19,6 +19,7 @@ export const onDrawing = ({
   fibRetracementDrawingTool,
   activeResizeHandleRefs,
   addDrawing,
+  precision = 2,
 }) => {
   if (
     msg.symbol &&
@@ -66,6 +67,7 @@ export const onDrawing = ({
         shortPositionDrawingTool,
         fibRetracementDrawingTool,
         activeResizeHandleRefs,
+        precision,
       );
 
       const allDrawingsCreated = validDrawings.every((drawing) => {
