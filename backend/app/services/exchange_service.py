@@ -114,10 +114,11 @@ class ExchangeService:
         
         # Extract precision info from market
         precision = market.get("precision", {})
+        price_precision = market["info"]["priceScale"] or 2
         
         return {
             "symbol": symbol,
-            "price_precision": precision_to_decimals(precision.get("price")),
+            "price_precision": price_precision,
             "amount_precision": precision_to_decimals(precision.get("amount")),
             "base_precision": precision_to_decimals(precision.get("base")),
             "quote_precision": precision_to_decimals(precision.get("quote")),
