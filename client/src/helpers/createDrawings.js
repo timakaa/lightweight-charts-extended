@@ -294,6 +294,7 @@ export const createDrawings = (
           setBoxesData,
           rectangleDrawingTool,
           activeResizeHandleRefs.rectangle,
+          precision,
         );
         break;
       case "line":
