@@ -1,4 +1,3 @@
-import PluginBase from "../PluginBase.js";
 import { getSnappedPrice } from "../helpers.js";
 import {
   logicalIndexToTime,
@@ -8,7 +7,8 @@ import { Ruler, PreviewRuler } from "./Ruler.js";
 
 // index.js - Implements the RulerTool for managing ruler drawing interactions on the chart
 // RulerTool manages the creation, drawing, and management of ruler primitives on the chart
-export class RulerTool extends PluginBase {
+// Note: RulerTool is a manager class, not a primitive, so it doesn't extend PluginBase
+export class RulerTool {
   _series;
   _p1 = null;
   _p2 = null;
@@ -21,7 +21,6 @@ export class RulerTool extends PluginBase {
   candleData = null; // Will be set externally
 
   constructor(chart, series, onToolChanged, onRulersChange, options = {}) {
-    super();
     // Chart and series references
     this._chart = chart;
     this._series = series;
