@@ -25,6 +25,7 @@ export const createLine = (
   setLinesData = null,
   lineDrawingTool = null,
   activeResizeHandleRef = null,
+  precision = 2,
 ) => {
   if (!chart || !candlestickSeries || !candleData || candleData.length === 0)
     return;
@@ -60,6 +61,11 @@ export const createLine = (
       },
     });
   }
+
+  // Apply precision formatter
+  line.applyOptions({
+    priceLabelFormatter: (price) => price.toFixed(precision),
+  });
 
   // Attach to chart
   candlestickSeries.attachPrimitive(line);

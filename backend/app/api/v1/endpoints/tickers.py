@@ -60,3 +60,17 @@ async def get_symbol_date_range(symbol: str = Query(..., description="Trading sy
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching symbol date range: {str(e)}")
+
+
+@router.get("/{symbol}/precision")
+async def get_symbol_precision(symbol: str):
+    """Get price and amount precision for a symbol"""
+    try:
+        precision_info = await exchange_service.get_symbol_precision(symbol)
+        if not precision_info:
+            raise HTTPException(status_code=404, detail=f"Symbol {symbol} not found")
+        return precision_info
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching symbol precision: {str(e)}")

@@ -27,6 +27,7 @@ export function createShortPosition(
   setShortPositionsData = null,
   shortPositionDrawingTool = null,
   activeResizeHandleRef = null,
+  precision = 2,
 ) {
   if (!chart || !candlestickSeries || !candleData || candleData.length === 0)
     return;
@@ -53,6 +54,11 @@ export function createShortPosition(
     { showHandles: false }, // Disable handles for programmatic creation
     shortPositionData.id, // Pass through the id
   );
+
+  // Apply precision formatter
+  shortPosition.applyOptions({
+    priceLabelFormatter: (price) => price?.toFixed(precision) ?? "",
+  });
 
   // Attach to the series
   candlestickSeries.attachPrimitive(shortPosition);

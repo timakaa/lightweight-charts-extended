@@ -25,6 +25,7 @@ export function createFibRetracement(
   setFibRetracementsData = null,
   fibRetracementDrawingTool = null,
   activeResizeHandleRef = null,
+  precision = 2,
 ) {
   if (!chart || !candlestickSeries || !candleData || candleData.length === 0)
     return;
@@ -62,6 +63,11 @@ export function createFibRetracement(
 
   // Ensure handles are disabled for programmatic creation
   fibRetracement.applyOptions({ showHandles: false });
+
+  // Apply precision formatter
+  fibRetracement.applyOptions({
+    priceLabelFormatter: (price) => price.toFixed(precision),
+  });
 
   // Attach to the series
   candlestickSeries.attachPrimitive(fibRetracement);

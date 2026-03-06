@@ -13,6 +13,7 @@ function useShortPositionDrawingTool(
   currentTool,
   candleData,
   activeResizeHandleRef,
+  precision = 2,
 ) {
   const shortPositionDrawingTool = useRef(null);
 
@@ -23,7 +24,7 @@ function useShortPositionDrawingTool(
       chart,
       candlestickSeries,
       () => setCurrentTool(TOOL_CROSSHAIR),
-      {},
+      { priceLabelFormatter: (price) => price?.toFixed(precision) ?? "" },
       setShortPositionsData,
       (pos) => setSelectedShortPositionId(pos.id),
       candleData,
@@ -39,6 +40,7 @@ function useShortPositionDrawingTool(
     setShortPositionsData,
     setSelectedShortPositionId,
     activeResizeHandleRef,
+    precision,
   ]);
 
   // Update candleData on the existing tool when data changes

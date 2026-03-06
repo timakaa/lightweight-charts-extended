@@ -11,6 +11,7 @@ export const useDrawingSync = ({
   drawings,
   drawingTools,
   activeResizeHandleRefs,
+  precision = 2,
 }) => {
   const {
     lineDrawing,
@@ -39,6 +40,7 @@ export const useDrawingSync = ({
     shortPositionDrawingTool: shortPositionDrawing.shortPositionDrawingTool,
     fibRetracementDrawingTool: fibRetracementDrawing.fibRetracementDrawingTool,
     activeResizeHandleRefs,
+    precision,
   });
 
   useChartDrawingSocket({
@@ -58,6 +60,7 @@ export const useDrawingSync = ({
     shortPositionDrawingTool: shortPositionDrawing.shortPositionDrawingTool,
     fibRetracementDrawingTool: fibRetracementDrawing.fibRetracementDrawingTool,
     activeResizeHandleRefs,
+    precision,
   });
 
   useUndeliveredDrawings();

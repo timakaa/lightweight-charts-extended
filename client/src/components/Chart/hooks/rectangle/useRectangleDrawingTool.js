@@ -14,6 +14,7 @@ function useRectangleDrawingTool(
   activeResizeHandleRef,
   dragOrResizeStateRef,
   candleData = null,
+  precision = 2,
 ) {
   const rectangleDrawingTool = useRef(null);
 
@@ -24,7 +25,7 @@ function useRectangleDrawingTool(
       chart,
       candlestickSeries,
       () => setCurrentTool(TOOL_CROSSHAIR),
-      {},
+      { priceLabelFormatter: (price) => price.toFixed(precision) },
       setBoxesData,
       (box) => setSelectedBoxId(box.id),
       activeResizeHandleRef,
@@ -40,6 +41,7 @@ function useRectangleDrawingTool(
     setBoxesData,
     setSelectedBoxId,
     activeResizeHandleRef,
+    precision,
   ]);
 
   // Update candleData on the existing tool when data changes

@@ -1,5 +1,26 @@
+import { useState } from "react";
+import { Copy, Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
 const StrategyFields = ({ strategyRelatedFields }) => {
+  const [copied, setCopied] = useState(false);
+
   if (!strategyRelatedFields || strategyRelatedFields.length === 0) return null;
+
+  const handleCopyToClipboard = () => {
+    const formattedData = strategyRelatedFields.map((section) => ({
+      title: section.title,
+      fields: section.fields.reduce((acc, field) => {
+        acc[field.label] = field.value;
+        return acc;
+      }, {}),
+    }));
+    const jsonData = JSON.stringify(formattedData, null, 2);
+    navigator.clipboard.writeText(jsonData).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
 
   // Check if first item is a subsection to determine format
   const hasSubsections =
@@ -26,9 +47,21 @@ const StrategyFields = ({ strategyRelatedFields }) => {
 
   return (
     <div>
-      <h2 className='mx-5 font-bold text-2xl py-2.5'>
-        Strategy Related Fields
-      </h2>
+      <div className='mx-5 flex items-center justify-between'>
+        <h2 className='font-bold text-2xl py-2.5'>Strategy Related Fields</h2>
+        <Button
+          onClick={handleCopyToClipboard}
+          variant='ghost'
+          size='icon'
+          title='Copy strategy fields as JSON'
+        >
+          {copied ? (
+            <Check className='h-4 w-4 text-green-500' />
+          ) : (
+            <Copy className='h-4 w-4' />
+          )}
+        </Button>
+      </div>
       <div className='mx-5 mt-2'>
         {hasSubsections ? (
           // New subsection format

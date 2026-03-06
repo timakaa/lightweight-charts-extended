@@ -27,6 +27,7 @@ export function createLongPosition(
   setLongPositionsData = null,
   longPositionDrawingTool = null,
   activeResizeHandleRef = null,
+  precision = 2,
 ) {
   if (!chart || !candlestickSeries || !candleData || candleData.length === 0)
     return;
@@ -52,6 +53,11 @@ export function createLongPosition(
     { showHandles: false }, // Disable handles for programmatic creation
     longPositionData.id, // Use consistent ID
   );
+
+  // Apply precision formatter
+  longPosition.applyOptions({
+    priceLabelFormatter: (price) => price?.toFixed(precision) ?? "",
+  });
 
   // Attach to the series
   candlestickSeries.attachPrimitive(longPosition);

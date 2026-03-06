@@ -243,6 +243,7 @@ export const createDrawings = (
   shortPositionDrawingTool = null,
   fibRetracementDrawingTool = null,
   activeResizeHandleRefs = {},
+  precision = 2,
 ) => {
   if (!chart || !candlestickSeries || !candleData || candleData.length === 0)
     return;
@@ -293,6 +294,7 @@ export const createDrawings = (
           setBoxesData,
           rectangleDrawingTool,
           activeResizeHandleRefs.rectangle,
+          precision,
         );
         break;
       case "line":
@@ -301,6 +303,7 @@ export const createDrawings = (
           setLinesData,
           lineDrawingTool,
           activeResizeHandleRefs.line,
+          precision,
         );
         break;
       case "long_position":
@@ -309,6 +312,7 @@ export const createDrawings = (
           setLongPositionsData,
           longPositionDrawingTool,
           activeResizeHandleRefs.long_position,
+          precision,
         );
         break;
       case "short_position":
@@ -317,6 +321,7 @@ export const createDrawings = (
           setShortPositionsData,
           shortPositionDrawingTool,
           activeResizeHandleRefs.short_position,
+          precision,
         );
         break;
       case "fib_retracement":
@@ -325,6 +330,7 @@ export const createDrawings = (
           setFibRetracementsData,
           fibRetracementDrawingTool,
           activeResizeHandleRefs.fib_retracement,
+          precision,
         );
         break;
       default:

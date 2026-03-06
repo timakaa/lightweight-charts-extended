@@ -8,28 +8,51 @@ import useFibRetracementDrawing from "./useFibRetracementDrawing";
 import { useToolStore } from "@store/tool";
 import useCrosshairToRuler from "./useCrosshairToRuler";
 
-export const useDrawingTools = (chart, candlestickSeries, candleData) => {
+export const useDrawingTools = (
+  chart,
+  candlestickSeries,
+  candleData,
+  precision = 2,
+) => {
   const { setCurrentTool, currentTool } = useToolStore();
 
-  const lineDrawing = useLineDrawing(chart, candlestickSeries, candleData);
-  const boxDrawing = useBoxDrawing(chart, candlestickSeries, candleData);
+  const lineDrawing = useLineDrawing(
+    chart,
+    candlestickSeries,
+    candleData,
+    precision,
+  );
+  const boxDrawing = useBoxDrawing(
+    chart,
+    candlestickSeries,
+    candleData,
+    precision,
+  );
   const longPositionDrawing = useLongPositionDrawing(
     chart,
     candlestickSeries,
     candleData,
+    precision,
   );
   const shortPositionDrawing = useShortPositionDrawing(
     chart,
     candlestickSeries,
     candleData,
+    precision,
   );
-  const rulerDrawing = useRulerDrawing(chart, candlestickSeries, candleData);
+  const rulerDrawing = useRulerDrawing(
+    chart,
+    candlestickSeries,
+    candleData,
+    precision,
+  );
   const fibRetracementDrawing = useFibRetracementDrawing(
     chart,
     candlestickSeries,
     setCurrentTool,
     currentTool,
     candleData,
+    precision,
   );
 
   useCrosshairToRuler(

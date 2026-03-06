@@ -3,6 +3,7 @@ import asyncio
 from typing import List, Dict, Any, Optional
 
 from .exchange import TickerHandler, CandleHandler
+from app.utils.precision_utils import precision_to_decimals
 
 
 class ExchangeService:
@@ -92,6 +93,35 @@ class ExchangeService:
             "min_date": min_date,
             "max_date": max_date,
             "market_type": market.get("type"),
+        }
+
+    async def get_symbol_precision(self, symbol: str) -> Dict[str, Any]:
+        """Get price and amount precision for a symbol"""
+        from app.utils.market_cache import get_market_info
+        from app.utils.symbol_utils import normalize_symbol_for_api
+        import math
+        
+        exchange_id = "bybit"
+        
+        # Convert frontend format to backend format
+        api_symbol = normalize_symbol_for_api(symbol, market_type="swap")
+        
+        # Get market info
+        market = get_market_info(exchange_id, api_symbol)
+        
+        if not market:
+            return None
+        
+        # Extract precision info from market
+        precision = market.get("precision", {})
+        price_precision = market["info"]["priceScale"] or 2
+        
+        return {
+            "symbol": symbol,
+            "price_precision": price_precision,
+            "amount_precision": precision_to_decimals(precision.get("amount")),
+            "base_precision": precision_to_decimals(precision.get("base")),
+            "quote_precision": precision_to_decimals(precision.get("quote")),
         }
 
     async def get_candlesticks_paginated(

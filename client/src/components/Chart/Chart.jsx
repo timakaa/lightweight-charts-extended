@@ -21,10 +21,15 @@ const Chart = ({ drawings, onChartReady, symbol }) => {
     }
   }, [symbol, setTicker]);
 
-  const { chart, candlestickSeries, candleData, chartDataInfo } =
+  const { chart, candlestickSeries, candleData, chartDataInfo, precision } =
     useChartSetup(chartContainerRef);
 
-  const drawingTools = useDrawingTools(chart, candlestickSeries, candleData);
+  const drawingTools = useDrawingTools(
+    chart,
+    candlestickSeries,
+    candleData,
+    precision,
+  );
   const {
     lineDrawing,
     boxDrawing,
@@ -41,6 +46,7 @@ const Chart = ({ drawings, onChartReady, symbol }) => {
     drawings,
     drawingTools,
     activeResizeHandleRefs,
+    precision,
   });
 
   useEffect(() => {
@@ -48,7 +54,6 @@ const Chart = ({ drawings, onChartReady, symbol }) => {
       fitChartToRecentBars(chart, candlestickSeries, candleData);
     }
     // Only run on mount or when backtestId changes, not when candleData updates
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [backtestId]);
 
   // Notify parent when chart is ready (only once)
@@ -76,7 +81,6 @@ const Chart = ({ drawings, onChartReady, symbol }) => {
         },
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chart, candlestickSeries, candleData]);
 
   const selectedLineId = useSelectedLineStore((s) => s.selectedLineId);

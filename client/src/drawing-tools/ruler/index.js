@@ -1,4 +1,3 @@
-import PluginBase from "../PluginBase.js";
 import { getSnappedPrice } from "../helpers.js";
 import {
   logicalIndexToTime,
@@ -8,7 +7,8 @@ import { Ruler, PreviewRuler } from "./Ruler.js";
 
 // index.js - Implements the RulerTool for managing ruler drawing interactions on the chart
 // RulerTool manages the creation, drawing, and management of ruler primitives on the chart
-export class RulerTool extends PluginBase {
+// Note: RulerTool is a manager class, not a primitive, so it doesn't extend PluginBase
+export class RulerTool {
   _series;
   _p1 = null;
   _p2 = null;
@@ -20,8 +20,7 @@ export class RulerTool extends PluginBase {
   _isSnapping = false;
   candleData = null; // Will be set externally
 
-  constructor(chart, series, onToolChanged, onRulersChange) {
-    super();
+  constructor(chart, series, onToolChanged, onRulersChange, options = {}) {
     // Chart and series references
     this._chart = chart;
     this._series = series;
@@ -29,6 +28,8 @@ export class RulerTool extends PluginBase {
     this._onToolChanged = onToolChanged;
     // Callback for when the set of rulers changes
     this._onRulersChange = onRulersChange;
+    // Custom options to pass to created rulers
+    this._options = options;
   }
 
   // Remove all rulers and preview ruler from the chart
@@ -145,6 +146,10 @@ export class RulerTool extends PluginBase {
         this._chart,
         this.candleData,
       );
+      // Apply custom options if provided
+      if (this._options && Object.keys(this._options).length > 0) {
+        newRuler.applyOptions(this._options);
+      }
       this._series.attachPrimitive(newRuler);
       this._rulers.add(newRuler);
       if (this._onRulersChange) {
@@ -182,6 +187,10 @@ export class RulerTool extends PluginBase {
         this._chart,
         this.candleData,
       );
+      // Apply custom options if provided
+      if (this._options && Object.keys(this._options).length > 0) {
+        this._previewRuler.applyOptions(this._options);
+      }
       this._series.attachPrimitive(this._previewRuler);
     } else {
       this._previewRuler.updateEndPoint(p2);

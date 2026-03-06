@@ -39,6 +39,7 @@ export function useCreateDrawings({
   fibRetracementDrawingTool,
   drawingsData = null, // optional - will use store data by default
   activeResizeHandleRefs = {},
+  precision = 2,
 }) {
   const symbol = useChartStore((s) => s.ticker);
   const timeframe = useChartStore((s) => s.timeframe);
@@ -159,6 +160,7 @@ export function useCreateDrawings({
       shortPositionDrawingTool,
       fibRetracementDrawingTool,
       activeResizeHandleRefs,
+      precision,
     );
 
     // Update tracking AFTER drawings are created

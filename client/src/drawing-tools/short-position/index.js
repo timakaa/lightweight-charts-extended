@@ -1,10 +1,13 @@
 // index.js - Implements the ShortPositionDrawingTool for managing short position drawing interactions on the chart
 import { BasePositionDrawingTool } from "../position-base/BasePositionDrawingTool.js";
 import { ShortPosition } from "./ShortPosition.js";
-import { useDrawingsStore } from "@store/drawings.js";
-import { useChartStore } from "@store/chart.js";
 
-// ShortPositionDrawingTool manages the creation, drawing, and management of short position primitives on the chart
+/**
+ * ShortPositionDrawingTool - Drawing tool for creating short position primitives
+ *
+ * Extends BasePositionDrawingTool with short position-specific logic.
+ * Uses single-click workflow: calculates 1:1 RR (risk/reward) position
+ */
 export class ShortPositionDrawingTool extends BasePositionDrawingTool {
   constructor(
     chart,
@@ -20,6 +23,7 @@ export class ShortPositionDrawingTool extends BasePositionDrawingTool {
       chart,
       series,
       onToolChanged,
+      options,
       onPositionsChange,
       onPositionCreated,
       candleData,
@@ -28,110 +32,27 @@ export class ShortPositionDrawingTool extends BasePositionDrawingTool {
     );
   }
 
-  // Remove all positions from the chart
-  remove() {
-    this._positions.forEach((pos) => this._removePosition(pos));
-    this._positions.clear();
+  /**
+   * Get the drawing type for store persistence
+   */
+  _getDrawingType() {
+    return "short_position";
   }
 
-  // Remove all positions from chart without removing from store (for ticker/timeframe changes)
-  removeFromChartOnly() {
-    this._positions.forEach((pos) => this._removePositionFromChartOnly(pos));
-    this._positions.clear();
-  }
+  /**
+   * Calculate target and stop prices for short position (1:1 RR)
+   * For short: target is below entry, stop is above entry
+   */
+  _calculatePrices(entryPrice) {
+    const riskRewardRatio = 1.0; // 1:1 RR
+    const riskPercent = 0.01; // 1% risk
 
-  // Remove a position primitive from chart only (without removing from store)
-  _removePositionFromChartOnly(position) {
-    this._series.detachPrimitive(position);
-    this._positions.delete(position);
+    const risk = entryPrice * riskPercent;
+    const reward = risk * riskRewardRatio;
 
-    if (this._onPositionsChange) {
-      this._onPositionsChange([...this._positions]);
-    }
-  }
-
-  // Save short position data to persistent store
-  _saveShortPositionToStore(position) {
-    // Don't save drawings when in backtest mode
-    if (window.location.pathname.startsWith("/backtest/")) return;
-
-    const { addDrawing } = useDrawingsStore.getState();
-    const { ticker } = useChartStore.getState();
-
-    if (!ticker) return;
-
-    const positionData = {
-      type: "short_position",
-      ticker: ticker.replace("/", ""),
-      startTime: new Date(position._startTime * 1000).toISOString(),
-      endTime: new Date(position._endTime * 1000).toISOString(),
-      entryPrice: position._entryPrice.price,
-      targetPrice: position._targetPrice.price,
-      stopPrice: position._stopPrice.price,
-      primitiveId: position.id,
-      style: {
-        // Add any style properties if needed
-      },
+    return {
+      targetPrice: entryPrice - reward, // Below entry for short
+      stopPrice: entryPrice + risk, // Above entry for short
     };
-
-    addDrawing(positionData);
-  }
-
-  // Remove short position data from persistent store
-  _removeShortPositionFromStore(position) {
-    const { drawings, removeDrawing } = useDrawingsStore.getState();
-
-    // Find the drawing by primitiveId
-    const drawing = drawings.find((d) => d.primitiveId === position.id);
-
-    if (drawing) {
-      removeDrawing(drawing.id);
-    }
-  }
-
-  // Override the base class's _createPosition to add store persistence
-  _createPosition(entryPrice, targetPrice, stopPrice, startTime, endTime) {
-    const position = super._createPosition(
-      entryPrice,
-      targetPrice,
-      stopPrice,
-      startTime,
-      endTime,
-    );
-    this._saveShortPositionToStore(position);
-    return position;
-  }
-
-  // Remove a position primitive from the chart and update state
-  _removePosition(position) {
-    this._series.detachPrimitive(position);
-    this._positions.delete(position);
-
-    // Remove from persistent store
-    this._removeShortPositionFromStore(position);
-
-    if (this._onPositionsChange) {
-      this._onPositionsChange([...this._positions]);
-    }
-  }
-
-  // Set the selected position ID and notify all positions
-  setSelectedPositionId(selectedPositionId) {
-    this._selectedPositionId = selectedPositionId;
-    this._positions.forEach((position) => {
-      if (position && position.setSelectedPositionId) {
-        position.setSelectedPositionId(selectedPositionId);
-      }
-    });
-  }
-
-  // Set the hovered position ID and notify all positions
-  setHoveredPositionId(hoveredPositionId) {
-    this._hoveredPositionId = hoveredPositionId;
-    this._positions.forEach((position) => {
-      if (position && position.setHoveredPositionId) {
-        position.setHoveredPositionId(hoveredPositionId);
-      }
-    });
   }
 }

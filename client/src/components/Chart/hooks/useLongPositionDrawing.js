@@ -25,6 +25,7 @@ export const useLongPositionDrawing = (
   chart,
   candlestickSeries,
   candleData,
+  precision = 2,
 ) => {
   const timeframe = useChartStore((s) => s.timeframe);
   const ticker = useChartStore((s) => s.ticker);
@@ -65,6 +66,7 @@ export const useLongPositionDrawing = (
     currentTool,
     candleData,
     activeResizeHandleRef,
+    precision,
   );
 
   // Subscribe to chart click and crosshair move events for selection/hover

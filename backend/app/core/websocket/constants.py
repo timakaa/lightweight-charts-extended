@@ -1,6 +1,7 @@
 """WebSocket constants and configuration"""
 
-BYBIT_WS_URL = "wss://stream.bybit.com/v5/public/spot"
+# Use linear endpoint for perpetual/swap contracts (USDT perpetuals)
+BYBIT_WS_URL = "wss://stream.bybit.com/v5/public/linear"
 
 BYBIT_INTERVAL_MAP = {
     "1m": "1",

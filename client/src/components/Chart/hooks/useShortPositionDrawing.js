@@ -1,6 +1,6 @@
 // useShortPositionDrawing.js - React hook for integrating all short position drawing logic and state management
 import { useRef, useEffect } from "react";
-import { useToolStore, TOOL_CROSSHAIR } from "@store/tool";
+import { useToolStore } from "@store/tool";
 import useShortPositionState from "./short-position/useShortPositionState";
 import useShortPositionChartEvents from "./short-position/useShortPositionChartEvents";
 import React from "react";
@@ -25,6 +25,7 @@ export const useShortPositionDrawing = (
   chart,
   candlestickSeries,
   candleData,
+  precision = 2,
 ) => {
   const timeframe = useChartStore((s) => s.timeframe);
   const ticker = useChartStore((s) => s.ticker);
@@ -65,6 +66,7 @@ export const useShortPositionDrawing = (
     currentTool,
     candleData,
     activeResizeHandleRef,
+    precision,
   );
 
   // Subscribe to chart click and crosshair move events for selection/hover
@@ -157,9 +159,6 @@ export const useShortPositionDrawing = (
 
     // Get current position IDs for comparison
     const currentPositionIds = new Set(shortPositionsData.map((pos) => pos.id));
-    const visiblePositionIds = new Set(
-      visibleShortPositions.map((pos) => pos.id),
-    );
 
     // Detach positions that are no longer in the data (deleted positions)
     previouslyAttachedRef.current.forEach((attachedPos) => {

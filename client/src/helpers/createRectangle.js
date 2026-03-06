@@ -25,6 +25,7 @@ export const createRectangle = (
   setBoxesData = null,
   rectangleDrawingTool = null,
   activeResizeHandleRef = null,
+  precision = 2,
 ) => {
   if (!chart || !candlestickSeries || !candleData || candleData.length === 0)
     return;
@@ -57,6 +58,11 @@ export const createRectangle = (
     });
     rectangle.updateAllViews(); // Force redraw with new styling
   }
+
+  // Apply precision formatter
+  rectangle.applyOptions({
+    priceLabelFormatter: (price) => price.toFixed(precision),
+  });
 
   // Attach to chart
   candlestickSeries.attachPrimitive(rectangle);

@@ -23,6 +23,7 @@ function useFibRetracementDrawing(
   setCurrentTool,
   currentTool,
   candleData,
+  precision = 2,
 ) {
   const {
     retracementsData,
@@ -52,6 +53,7 @@ function useFibRetracementDrawing(
     setSelectedFibRetracementId,
     currentTool,
     candleData,
+    precision,
   );
 
   useFibRetracementChartEvents(

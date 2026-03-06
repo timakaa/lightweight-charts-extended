@@ -1,12 +1,19 @@
 import { useState, useEffect, useRef } from "react";
 import { CandlestickSeries } from "lightweight-charts";
 import { useChartTheme } from "./useChartTheme";
+import { useSymbolPrecision } from "./useSymbolPrecision";
+import { getPrecisionDecimals } from "@/utils/precisionUtils";
 import { hexToRgba } from "@/utils/colorUtils";
 
 export const useSeriesManagement = (chart, symbol, timeframe) => {
   const [series, setSeries] = useState(null);
   const chartMountedRef = useRef(true);
   const { chartTheme } = useChartTheme();
+
+  // Fetch precision data for the symbol (cached, same data as useChartSetup)
+  const { data: precisionData } = useSymbolPrecision(symbol, {
+    enabled: !!symbol,
+  });
 
   // Helper function to get opacity (0 if disabled, otherwise the set value)
   const getOpacity = (enabled, opacity) => {
@@ -60,11 +67,19 @@ export const useSeriesManagement = (chart, symbol, timeframe) => {
       setSeries(null);
     }
 
-    // Create new series with current theme colors
-    const candlestickSeries = chart.addSeries(
-      CandlestickSeries,
-      getCandleColors(),
-    );
+    // Calculate precision and minMove from precision data
+    const precision = getPrecisionDecimals(precisionData?.price_precision);
+    const minMove = Math.pow(10, -precision);
+
+    // Create new series with current theme colors and precision
+    const candlestickSeries = chart.addSeries(CandlestickSeries, {
+      ...getCandleColors(),
+      priceFormat: {
+        type: "price",
+        precision: precision,
+        minMove: minMove,
+      },
+    });
 
     setSeries(candlestickSeries);
 
@@ -78,7 +93,7 @@ export const useSeriesManagement = (chart, symbol, timeframe) => {
         }
       }
     };
-  }, [chart, symbol, timeframe]);
+  }, [chart, symbol, timeframe, precisionData]);
 
   // Effect 2: Update colors when chartTheme changes (without recreating series)
   useEffect(() => {

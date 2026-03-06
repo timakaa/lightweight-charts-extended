@@ -23,7 +23,12 @@ import {
   getRectangleTimeRange,
 } from "@hooks/useViewportDrawings";
 
-export const useBoxDrawing = (chart, candlestickSeries, candleData) => {
+export const useBoxDrawing = (
+  chart,
+  candlestickSeries,
+  candleData,
+  precision = 2,
+) => {
   // Use the new box state management hook
   const {
     boxesData,
@@ -60,6 +65,7 @@ export const useBoxDrawing = (chart, candlestickSeries, candleData) => {
     activeResizeHandleRef,
     dragOrResizeStateRef,
     candleData,
+    precision,
   );
 
   // Ensure rectangles are aware of selection for label/rectangle visibility
