@@ -18,7 +18,7 @@ export class RulerTool {
   _onToolChanged;
   _onRulersChange;
   _isSnapping = false;
-  candleData = null; // Will be set externally
+  _candleData = null;
 
   constructor(chart, series, onToolChanged, onRulersChange, options = {}) {
     // Chart and series references
@@ -97,20 +97,25 @@ export class RulerTool {
     let time = param.time;
 
     // If no time (clicked outside candle range), calculate it from logical coordinates
-    if (!time && param.point && this.candleData && this.candleData.length > 0) {
+    if (
+      !time &&
+      param.point &&
+      this._candleData &&
+      this._candleData.length > 0
+    ) {
       const timeScale = this._chart.timeScale();
       const logicalIndex = timeScale.coordinateToLogical(param.point.x);
 
       if (logicalIndex !== null) {
         // Calculate time from logical index using candle data
-        time = logicalIndexToTime(logicalIndex, this.candleData);
+        time = logicalIndexToTime(logicalIndex, this._candleData);
       }
     }
 
     if (!time) return null;
 
     const point = { time, price };
-    return enhancePointWithLogicalIndex(point, this.candleData);
+    return enhancePointWithLogicalIndex(point, this._candleData);
   }
 
   // Get price from event, with optional snapping to candle
@@ -144,7 +149,7 @@ export class RulerTool {
         this._p2,
         this._series,
         this._chart,
-        this.candleData,
+        this._candleData,
       );
       // Apply custom options if provided
       if (this._options && Object.keys(this._options).length > 0) {
@@ -185,7 +190,7 @@ export class RulerTool {
         p2,
         this._series,
         this._chart,
-        this.candleData,
+        this._candleData,
       );
       // Apply custom options if provided
       if (this._options && Object.keys(this._options).length > 0) {
@@ -241,7 +246,7 @@ export class RulerTool {
 
   // Update candle data for coordinate calculations
   updateCandleData(candleData) {
-    this.candleData = candleData;
+    this._candleData = candleData;
 
     // Update candleData on all existing rulers
     this._rulers.forEach((ruler) => {

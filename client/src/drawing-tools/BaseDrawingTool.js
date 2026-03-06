@@ -37,8 +37,6 @@ export class BaseDrawingTool {
   _onPrimitivesChange;
   _onPrimitiveCreated;
   _isSnapping = false;
-  _isConstrained = false;
-  _lastCrosshairParam = null;
   _selectedPrimitiveId = null;
   _activeResizeHandleRef;
   _candleData;
@@ -104,17 +102,6 @@ export class BaseDrawingTool {
     throw new Error("getStoreData() must be implemented by subclass");
   }
 
-  /**
-   * Apply constraint logic to p2 based on p1 (optional override)
-   * Default: horizontal constraint (same price)
-   * @param {Object} p1 - First point
-   * @param {Object} p2 - Second point
-   * @returns {Object} Constrained p2
-   */
-  applyConstraint(p1, p2) {
-    return { ...p2, price: p1.price };
-  }
-
   // ============================================================================
   // Public API
   // ============================================================================
@@ -170,12 +157,6 @@ export class BaseDrawingTool {
     this._drawing = true;
 
     // Subscribe to chart events
-    const chartElement = this._chart.chartElement();
-    if (chartElement) {
-      chartElement.addEventListener("mousedown", this._onMouseDown, {
-        capture: true,
-      });
-    }
     this._chart.subscribeClick(this._onClick);
     this._chart.subscribeCrosshairMove(this._onCrosshairMove);
 
@@ -195,12 +176,6 @@ export class BaseDrawingTool {
     this._removePreviewPrimitive();
 
     // Unsubscribe from chart events
-    const chartElement = this._chart.chartElement();
-    if (chartElement) {
-      chartElement.removeEventListener("mousedown", this._onMouseDown, {
-        capture: true,
-      });
-    }
     this._chart.unsubscribeClick(this._onClick);
     this._chart.unsubscribeCrosshairMove(this._onCrosshairMove);
 
@@ -250,14 +225,7 @@ export class BaseDrawingTool {
   // ============================================================================
 
   /**
-   * Mouse down handler: check for constraint mode (shift key)
-   */
-  _onMouseDown = (e) => {
-    this._isConstrained = e.shiftKey;
-  };
-
-  /**
-   * Key down handler: enable snapping, constraint mode, or cancel drawing
+   * Key down handler: enable snapping or cancel drawing
    */
   _onKeyDown = (e) => {
     // Escape: cancel current drawing
@@ -275,35 +243,15 @@ export class BaseDrawingTool {
     if (e.key === "Control" || e.key === "Meta") {
       this._isSnapping = true;
     }
-
-    // Shift: enable constraint mode
-    if (e.key === "Shift") {
-      if (!this._isConstrained) {
-        this._isConstrained = true;
-        if (this._drawing && this._p1 && this._lastCrosshairParam) {
-          this._onCrosshairMove(this._lastCrosshairParam);
-        }
-      }
-    }
   };
 
   /**
-   * Key up handler: disable snapping or constraint mode
+   * Key up handler: disable snapping
    */
   _onKeyUp = (e) => {
     // Control/Meta: disable snapping
     if (e.key === "Control" || e.key === "Meta") {
       this._isSnapping = false;
-    }
-
-    // Shift: disable constraint mode
-    if (e.key === "Shift") {
-      if (this._isConstrained) {
-        this._isConstrained = false;
-        if (this._drawing && this._p1 && this._lastCrosshairParam) {
-          this._onCrosshairMove(this._lastCrosshairParam);
-        }
-      }
     }
   };
 
@@ -321,11 +269,6 @@ export class BaseDrawingTool {
       // Second click: set second endpoint and create primitive
       this._p2 = this._getPoint(param);
       if (!this._p2) return;
-
-      // Apply constraint if enabled
-      if (this._isConstrained) {
-        this._p2 = this.applyConstraint(this._p1, this._p2);
-      }
 
       // Create new primitive using factory method
       const newPrimitive = this.createPrimitive(this._p1, this._p2);
@@ -366,15 +309,9 @@ export class BaseDrawingTool {
    */
   _onCrosshairMove = (param) => {
     if (!this._p1 || !param.point) return;
-    this._lastCrosshairParam = param;
 
     this._p2 = this._getPoint(param);
     if (!this._p2) return;
-
-    // Apply constraint if enabled
-    if (this._isConstrained) {
-      this._p2 = this.applyConstraint(this._p1, this._p2);
-    }
 
     // Create or update preview primitive
     if (!this._previewPrimitive) {
