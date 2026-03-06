@@ -1,4 +1,3 @@
-import PluginBase from "./PluginBase.js";
 import { getSnappedPrice } from "./helpers.js";
 import {
   logicalIndexToTime,
@@ -9,6 +8,9 @@ import { useChartStore } from "@store/chart.js";
 
 /**
  * BaseDrawingTool - Abstract base class for all drawing tools
+ *
+ * Drawing tools are manager classes that handle user interaction and create primitives.
+ * They do NOT extend PluginBase because they are not attached to the chart as primitives.
  *
  * Provides common functionality for drawing tools including:
  * - Event handling (click, crosshair move, keyboard shortcuts)
@@ -24,7 +26,7 @@ import { useChartStore } from "@store/chart.js";
  * - getDrawingType() - Returns the drawing type string ("line", "rectangle", etc.)
  * - getStoreData(primitive) - Returns the data object to save to store
  */
-export class BaseDrawingTool extends PluginBase {
+export class BaseDrawingTool {
   _series;
   _p1 = null;
   _p2 = null;
@@ -51,7 +53,6 @@ export class BaseDrawingTool extends PluginBase {
     activeResizeHandleRef,
     candleData = null,
   ) {
-    super();
     this._chart = chart;
     this._series = series;
     this._onToolChanged = onToolChanged;
