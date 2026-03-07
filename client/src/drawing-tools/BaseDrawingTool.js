@@ -118,6 +118,8 @@ export class BaseDrawingTool {
         primitive.setSelectedBoxId(selectedId);
       } else if (primitive.setSelectedPositionId) {
         primitive.setSelectedPositionId(selectedId);
+      } else if (primitive.setSelectedFibRetracementId) {
+        primitive.setSelectedFibRetracementId(selectedId);
       }
     });
     if (this._previewPrimitive) {
@@ -125,6 +127,8 @@ export class BaseDrawingTool {
         this._previewPrimitive.setSelectedLineId(selectedId);
       } else if (this._previewPrimitive.setSelectedBoxId) {
         this._previewPrimitive.setSelectedBoxId(selectedId);
+      } else if (this._previewPrimitive.setSelectedFibRetracementId) {
+        this._previewPrimitive.setSelectedFibRetracementId(selectedId);
       }
     }
   }
@@ -331,6 +335,10 @@ export class BaseDrawingTool {
         this._previewPrimitive.setSelectedLineId(this._selectedPrimitiveId);
       } else if (this._previewPrimitive.setSelectedBoxId) {
         this._previewPrimitive.setSelectedBoxId(this._selectedPrimitiveId);
+      } else if (this._previewPrimitive.setSelectedFibRetracementId) {
+        this._previewPrimitive.setSelectedFibRetracementId(
+          this._selectedPrimitiveId,
+        );
       }
     }
   };

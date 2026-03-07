@@ -187,5 +187,12 @@ export const useOptimizedBoxSelection = (allDrawings) => {
  * @returns {Object} Fib-specific selection management functions
  */
 export const useOptimizedFibSelection = (allDrawings) => {
-  return useOptimizedSelection(allDrawings);
+  return useOptimizedSelection(allDrawings, {
+    customUpdateLogic: (drawing, shouldShow, selectedId, hoveredId) => {
+      // Fib-specific selection logic
+      if (drawing.setSelectedFibRetracementId) {
+        drawing.setSelectedFibRetracementId(selectedId);
+      }
+    },
+  });
 };
