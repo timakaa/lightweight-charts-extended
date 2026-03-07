@@ -33,7 +33,7 @@ function useRulerDrawingTool(
   // Update candleData on the existing tool when data changes
   useEffect(() => {
     if (rulerDrawingTool.current && candleData) {
-      rulerDrawingTool.current.candleData = candleData;
+      rulerDrawingTool.current.updateCandleData(candleData);
     }
   }, [candleData]);
 
