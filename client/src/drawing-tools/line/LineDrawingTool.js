@@ -1,22 +1,14 @@
 import { BaseDrawingTool } from "../BaseDrawingTool.js";
 import { Line, PreviewLine } from "./Line.js";
 
-/**
- * LineDrawingTool - Drawing tool for creating line primitives
- *
- * Extends BaseDrawingTool with line-specific logic:
- * - Creates Line and PreviewLine primitives
- * - Provides line-specific store data format
- */
 export class LineDrawingTool extends BaseDrawingTool {
-  // Expose _lines for backward compatibility with existing code
+  _isConstrained = false;
+  _lastCrosshairParam = null;
+
   get _lines() {
     return this._primitives;
   }
 
-  /**
-   * Create a new Line primitive
-   */
   createPrimitive(p1, p2) {
     return new Line(
       p1,
@@ -29,9 +21,6 @@ export class LineDrawingTool extends BaseDrawingTool {
     );
   }
 
-  /**
-   * Create a preview Line primitive
-   */
   createPreviewPrimitive(p1, p2) {
     return new PreviewLine(
       p1,
@@ -43,16 +32,10 @@ export class LineDrawingTool extends BaseDrawingTool {
     );
   }
 
-  /**
-   * Get the drawing type for store persistence
-   */
   getDrawingType() {
     return "line";
   }
 
-  /**
-   * Get the store data for a line primitive
-   */
   getStoreData(line) {
     return {
       startTime: new Date(line._p1.time * 1000).toISOString(),
@@ -67,30 +50,117 @@ export class LineDrawingTool extends BaseDrawingTool {
     };
   }
 
-  /**
-   * Set the selected line ID (backward compatibility)
-   */
   setSelectedLineId(selectedLineId) {
     this.setSelectedPrimitiveId(selectedLineId);
   }
 
-  /**
-   * Remove a line (backward compatibility)
-   */
+  _getSecondPoint(param) {
+    const p2 = this._getPoint(param);
+    if (!p2 || !this._isConstrained || !this._p1) return p2;
+    return { ...p2, price: this._p1.price };
+  }
+
+  startDrawing() {
+    super.startDrawing();
+    const el = this._chart.chartElement();
+    if (el)
+      el.addEventListener("mousedown", this._onMouseDown, { capture: true });
+  }
+
+  stopDrawing() {
+    const el = this._chart.chartElement();
+    if (el)
+      el.removeEventListener("mousedown", this._onMouseDown, { capture: true });
+    super.stopDrawing();
+  }
+
+  _onMouseDown = (e) => {
+    this._isConstrained = e.shiftKey;
+  };
+
+  _onKeyDown = (e) => {
+    if (e.key === "Escape") {
+      if (this._drawing && this._p1) {
+        this._p1 = null;
+        this._p2 = null;
+        this._removePreviewPrimitive();
+        if (this._onToolChanged) this._onToolChanged();
+        e.preventDefault();
+      }
+    }
+    if (e.key === "Control" || e.key === "Meta") this._isSnapping = true;
+    if (e.key === "Shift" && !this._isConstrained) {
+      this._isConstrained = true;
+      if (this._drawing && this._p1 && this._lastCrosshairParam)
+        this._onCrosshairMove(this._lastCrosshairParam);
+    }
+  };
+
+  _onKeyUp = (e) => {
+    if (e.key === "Control" || e.key === "Meta") this._isSnapping = false;
+    if (e.key === "Shift" && this._isConstrained) {
+      this._isConstrained = false;
+      if (this._drawing && this._p1 && this._lastCrosshairParam)
+        this._onCrosshairMove(this._lastCrosshairParam);
+    }
+  };
+
+  _onClick = (param) => {
+    if (!param.point) return;
+    if (!this._p1) {
+      this._p1 = this._getPoint(param);
+      if (!this._p1) return;
+    } else {
+      this._p2 = this._getSecondPoint(param);
+      if (!this._p2) return;
+
+      const newPrimitive = this.createPrimitive(this._p1, this._p2);
+      if (this._options && Object.keys(this._options).length > 0)
+        newPrimitive.applyOptions(this._options);
+
+      this._series.attachPrimitive(newPrimitive);
+      this._primitives.add(newPrimitive);
+      this._savePrimitiveToStore(newPrimitive);
+
+      if (this._onPrimitivesChange)
+        this._onPrimitivesChange([...this._primitives]);
+      if (this._onPrimitiveCreated) this._onPrimitiveCreated(newPrimitive);
+      if (this._onToolChanged) this._onToolChanged();
+
+      this._onDrawingFinished();
+      this._p1 = null;
+      this._p2 = null;
+      this._isSnapping = false;
+    }
+  };
+
+  _onCrosshairMove = (param) => {
+    if (!this._p1 || !param.point) return;
+    this._lastCrosshairParam = param;
+
+    this._p2 = this._getSecondPoint(param);
+    if (!this._p2) return;
+
+    if (!this._previewPrimitive) {
+      this._previewPrimitive = this.createPreviewPrimitive(this._p1, this._p2);
+      if (this._options && Object.keys(this._options).length > 0)
+        this._previewPrimitive.applyOptions(this._options);
+      this._series.attachPrimitive(this._previewPrimitive);
+    } else {
+      this._previewPrimitive.updateEndPoint(this._p2);
+      if (this._previewPrimitive.setSelectedLineId)
+        this._previewPrimitive.setSelectedLineId(this._selectedPrimitiveId);
+    }
+  };
+
   _removeLine(line) {
     this._removePrimitive(line);
   }
 
-  /**
-   * Remove a line from chart only (backward compatibility)
-   */
   _removeLineFromChartOnly(line) {
     this._removePrimitiveFromChartOnly(line);
   }
 
-  /**
-   * Remove preview line (backward compatibility)
-   */
   _removePreviewLine() {
     this._removePreviewPrimitive();
   }
