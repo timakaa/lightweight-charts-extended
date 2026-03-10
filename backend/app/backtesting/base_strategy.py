@@ -41,6 +41,10 @@ class BaseBacktestStrategy(ABC):
         
         # Chart generation flag
         self.save_charts = save_charts
+        
+        # Standardized tracking lists
+        self._balance_history: List[Dict[str, Any]] = []
+        self._trade_signals: List[Dict[str, Any]] = []
 
     @abstractmethod
     def create_strategy_class(self, data_dict: Dict[str, pd.DataFrame]) -> type:
@@ -119,6 +123,61 @@ class BaseBacktestStrategy(ABC):
             ]
         """
         return []
+
+    def track_balance(self, timestamp: Any, equity: float, price: float) -> None:
+        """
+        Track balance history for chart generation
+        Only tracks if save_charts is True
+        
+        Args:
+            timestamp: Current timestamp (datetime or similar)
+            equity: Current portfolio equity
+            price: Current asset price
+        """
+        if self.save_charts:
+            self._balance_history.append({
+                'time': timestamp,
+                'balance': equity,
+                'price': price
+            })
+    
+    def track_signal(
+        self,
+        timestamp: Any,
+        price: float,
+        signal_type: str,
+        description: str = "",
+        end_time: Any = None,
+        **extra_data
+    ) -> None:
+        """
+        Track trading signals for visualization
+        
+        Args:
+            timestamp: Signal timestamp
+            price: Price at signal
+            signal_type: Type of signal (e.g., 'macd_bullish_cross', 'buy_signal')
+            description: Human-readable description
+            end_time: Optional end time for range signals
+            **extra_data: Additional signal-specific data
+        """
+        signal_data = {
+            'time': timestamp,
+            'price': price,
+            'type': signal_type,
+            'description': description,
+            'end_time': end_time,
+            **extra_data
+        }
+        self._trade_signals.append(signal_data)
+    
+    def clear_tracking_data(self) -> None:
+        """
+        Clear all tracking data to free memory
+        Call this after chart generation is complete
+        """
+        self._balance_history.clear()
+        self._trade_signals.clear()
 
     def generate_charts(self, backtest_id: int) -> List[str]:
         """

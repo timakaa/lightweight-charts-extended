@@ -22,10 +22,7 @@ class RSIMACDComboStrategy(BaseBacktestStrategy):
     
     def __init__(self, parameters: Dict[str, Any] = None, timeframes: List[str] = None, save_charts: bool = False):
         super().__init__(parameters, timeframes, save_charts)
-        # Initialize detected signals storage
-        self._detected_signals = []
-        # Store balance history for chart generation
-        self._balance_history = []
+        # Tracking is now handled in base class via _trade_signals and _balance_history
     
     def validate_parameters(self, parameters: Dict[str, Any]) -> bool:
         """Validate parameters"""
@@ -39,7 +36,7 @@ class RSIMACDComboStrategy(BaseBacktestStrategy):
         """Create the RSI + MACD combo strategy class"""
         return create_strategy_class(
             params=self.parameters,
-            detected_signals_list=self._detected_signals,
+            detected_signals_list=self._trade_signals,  # Use standardized tracking
             balance_history_list=self._balance_history,
             should_track_balance=self.save_charts
         )
@@ -50,10 +47,16 @@ class RSIMACDComboStrategy(BaseBacktestStrategy):
             return []
         
         from .charts import generate_charts
-        return generate_charts(
+        chart_keys = generate_charts(
             backtest_id=backtest_id,
             balance_history=self._balance_history,
             strategy_name=self.name,
             initial_balance=self.parameters.get('cash', 10000),
             save_charts=self.save_charts
         )
+        
+        # Clear tracking data to free memory
+        if chart_keys:
+            self.clear_tracking_data()
+        
+        return chart_keys

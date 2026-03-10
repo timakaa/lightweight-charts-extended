@@ -116,8 +116,8 @@ def create_strategy_drawings(
             print(f"🔍 Found {len(levels)} swing levels from outer strategy instance")
         
         # Method 2: Try to get signals from the outer strategy instance (RSI+MACD)
-        elif hasattr(strategy_instance, '_detected_signals'):
-            levels = strategy_instance._detected_signals
+        elif hasattr(strategy_instance, '_trade_signals'):
+            levels = strategy_instance._trade_signals
             print(f"🔍 Found {len(levels)} signals from outer strategy instance")
         
         # Method 3: Try to get levels from the strategy class

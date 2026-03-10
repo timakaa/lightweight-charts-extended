@@ -32,10 +32,7 @@ class CrashBuyDCAStrategy(BaseBacktestStrategy):
 
     def __init__(self, parameters: Dict[str, Any] = None, timeframes: List[str] = None, save_charts: bool = False):
         super().__init__(parameters, timeframes, save_charts)
-        # Store detected buy signals for visualization
-        self._buy_signals = []
-        # Store balance history for chart generation
-        self._balance_history = []
+        # Buy signals tracked via _trade_signals in base class
 
     def validate_parameters(self, parameters: Dict[str, Any]) -> bool:
         """Validate parameters"""
@@ -56,7 +53,7 @@ class CrashBuyDCAStrategy(BaseBacktestStrategy):
         # Create and return the strategy class
         return create_strategy_class(
             params=self.parameters,
-            buy_signals_list=self._buy_signals,
+            buy_signals_list=self._trade_signals,  # Use standardized tracking
             balance_history_list=self._balance_history,
             should_track_balance=self.save_charts
         )

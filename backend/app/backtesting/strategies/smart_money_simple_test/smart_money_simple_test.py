@@ -21,8 +21,7 @@ class SmartMoneySimpleTestStrategy(BaseBacktestStrategy):
     
     def __init__(self, parameters: Dict[str, Any] = None, timeframes: List[str] = None, save_charts: bool = False):
         super().__init__(parameters, timeframes, save_charts)
-        # Initialize detected levels storage
-        self._detected_levels = []
+        # Detected levels tracked via _trade_signals in base class
     
     def validate_parameters(self, parameters: Dict[str, Any]) -> bool:
         """Validate parameters"""
@@ -36,5 +35,5 @@ class SmartMoneySimpleTestStrategy(BaseBacktestStrategy):
         """Create strategy class that identifies highs and lows"""
         return create_strategy_class(
             params=self.parameters,
-            detected_levels_list=self._detected_levels
+            detected_levels_list=self._trade_signals  # Use standardized tracking
         )
