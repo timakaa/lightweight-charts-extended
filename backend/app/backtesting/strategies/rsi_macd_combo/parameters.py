@@ -2,32 +2,112 @@
 RSI + MACD Combo Strategy - Parameters and Validation
 """
 from typing import Dict, Any
+from pydantic import BaseModel, Field, field_validator
+
+
+class RSIMACDComboParams(BaseModel):
+    """Pydantic model for RSI + MACD Combo Strategy parameters"""
+    
+    # RSI Parameters
+    rsi_length: int = Field(
+        default=14,
+        ge=2,
+        le=50,
+        description="RSI period length"
+    )
+    rsi_overbought: int = Field(
+        default=70,
+        ge=50,
+        le=90,
+        description="RSI overbought threshold"
+    )
+    rsi_oversold: int = Field(
+        default=30,
+        ge=10,
+        le=50,
+        description="RSI oversold threshold"
+    )
+    
+    # MACD Parameters
+    macd_fast: int = Field(
+        default=12,
+        ge=5,
+        le=50,
+        description="MACD fast period"
+    )
+    macd_slow: int = Field(
+        default=26,
+        ge=10,
+        le=100,
+        description="MACD slow period"
+    )
+    macd_signal: int = Field(
+        default=9,
+        ge=5,
+        le=30,
+        description="MACD signal period"
+    )
+    
+    # Display Options
+    show_rsi: bool = Field(
+        default=True,
+        description="Show RSI indicator"
+    )
+    show_macd: bool = Field(
+        default=True,
+        description="Show MACD indicator"
+    )
+    show_divergence: bool = Field(
+        default=True,
+        description="Show divergence signals"
+    )
+    
+    # Trading Parameters
+    risk_reward: float = Field(
+        default=2.0,
+        ge=0.5,
+        le=10.0,
+        description="Risk to reward ratio"
+    )
+    stop_loss_pct: float = Field(
+        default=0.02,
+        ge=0.005,
+        le=0.1,
+        description="Stop loss percentage"
+    )
+    commission: float = Field(
+        default=0.002,
+        ge=0.0,
+        le=0.01,
+        description="Commission per trade"
+    )
+    cash: float = Field(
+        default=1000000,
+        ge=1000,
+        le=1000000,
+        description="Initial capital amount"
+    )
+    
+    @field_validator('macd_slow')
+    @classmethod
+    def macd_slow_must_be_greater(cls, v, info):
+        """Validate that MACD slow is greater than fast"""
+        if 'macd_fast' in info.data and v <= info.data['macd_fast']:
+            raise ValueError(f'macd_slow ({v}) must be greater than macd_fast ({info.data["macd_fast"]})')
+        return v
+    
+    @field_validator('rsi_overbought')
+    @classmethod
+    def rsi_overbought_must_be_greater(cls, v, info):
+        """Validate that overbought is greater than oversold"""
+        if 'rsi_oversold' in info.data and v <= info.data['rsi_oversold']:
+            raise ValueError(f'rsi_overbought ({v}) must be greater than rsi_oversold ({info.data["rsi_oversold"]})')
+        return v
 
 
 def get_default_parameters() -> Dict[str, Any]:
     """Default parameters for RSI + MACD Combo Strategy"""
-    return {
-        # RSI Parameters
-        "rsi_length": 14,
-        "rsi_overbought": 70,
-        "rsi_oversold": 30,
-        
-        # MACD Parameters
-        "macd_fast": 12,
-        "macd_slow": 26,
-        "macd_signal": 9,
-        
-        # Display Options
-        "show_rsi": True,
-        "show_macd": True,
-        "show_divergence": True,
-        
-        # Trading Parameters
-        "risk_reward": 2.0,
-        "stop_loss_pct": 0.02,
-        "commission": 0.002,
-        "cash": 1000000,
-    }
+    return RSIMACDComboParams().model_dump()
 
 
 def get_parameter_schema() -> Dict[str, Any]:
@@ -132,20 +212,10 @@ def get_parameter_schema() -> Dict[str, Any]:
 
 
 def validate_parameters(parameters: Dict[str, Any]) -> bool:
-    """Validate parameters"""
-    required_params = ["rsi_length", "macd_fast", "macd_slow", "macd_signal"]
-    
-    for param in required_params:
-        if param not in parameters:
-            print(f"❌ Missing required parameter: {param}")
-            return False
-    
-    if parameters["rsi_length"] < 2:
-        print(f"❌ RSI length ({parameters['rsi_length']}) must be at least 2")
+    """Validate parameters using Pydantic model"""
+    try:
+        RSIMACDComboParams(**parameters)
+        return True
+    except Exception as e:
+        print(f"❌ Parameter validation failed: {e}")
         return False
-        
-    if parameters["macd_fast"] >= parameters["macd_slow"]:
-        print(f"❌ MACD fast ({parameters['macd_fast']}) must be less than slow ({parameters['macd_slow']})")
-        return False
-    
-    return True

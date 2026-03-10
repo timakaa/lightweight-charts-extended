@@ -2,22 +2,67 @@
 Smart Money Concepts Strategy - Parameters and Validation
 """
 from typing import Dict, Any
+from pydantic import BaseModel, Field
+
+
+class SmartMoneyParams(BaseModel):
+    """Pydantic model for Smart Money Concepts Strategy parameters"""
+    
+    swing_length: int = Field(
+        default=3,
+        ge=2,
+        le=10,
+        description="Number of bars to look for swing highs/lows"
+    )
+    min_swing_size: float = Field(
+        default=0.002,
+        ge=0.0001,
+        le=0.01,
+        description="Minimum swing size as percentage (0.002 = 0.2%)"
+    )
+    show_swing_highs: bool = Field(
+        default=True,
+        description="Create line drawings for swing highs"
+    )
+    show_swing_lows: bool = Field(
+        default=True,
+        description="Create line drawings for swing lows"
+    )
+    show_fvgs: bool = Field(
+        default=True,
+        description="Show Fair Value Gaps"
+    )
+    fvg_min_size: float = Field(
+        default=0.001,
+        ge=0.0001,
+        le=0.01,
+        description="Minimum FVG size as percentage (0.001 = 0.1%)"
+    )
+    show_order_blocks: bool = Field(
+        default=True,
+        description="Show Order Blocks"
+    )
+    ob_close_mitigation: bool = Field(
+        default=False,
+        description="Use high/low for OB mitigation instead of close"
+    )
+    commission: float = Field(
+        default=0.002,
+        ge=0.0,
+        le=0.01,
+        description="Commission per trade (not used - no trading)"
+    )
+    cash: float = Field(
+        default=1000000,
+        ge=1000,
+        le=1000000,
+        description="Initial capital amount (not used - no trading)"
+    )
 
 
 def get_default_parameters() -> Dict[str, Any]:
     """Default parameters for Smart Money Concepts Strategy"""
-    return {
-        "swing_length": 3,              # Number of bars to look for swing highs/lows
-        "min_swing_size": 0.002,        # Minimum swing size as percentage (0.2%)
-        "show_swing_highs": True,       # Create line drawings for swing highs
-        "show_swing_lows": True,        # Create line drawings for swing lows
-        "show_fvgs": True,              # Show Fair Value Gaps
-        "fvg_min_size": 0.001,          # Minimum FVG size as percentage (0.1%)
-        "show_order_blocks": True,      # Show Order Blocks
-        "ob_close_mitigation": False,   # Use high/low for OB mitigation instead of close
-        "commission": 0.002,            # Not used (no trading)
-        "cash": 1000000,                  # Not used (no trading)
-    }
+    return SmartMoneyParams().model_dump()
 
 
 def get_parameter_schema() -> Dict[str, Any]:
@@ -77,16 +122,10 @@ def get_parameter_schema() -> Dict[str, Any]:
 
 
 def validate_parameters(parameters: Dict[str, Any]) -> bool:
-    """Validate parameters"""
-    required_params = ["swing_length"]
-    
-    for param in required_params:
-        if param not in parameters:
-            print(f"❌ Missing required parameter: {param}")
-            return False
-    
-    if parameters["swing_length"] < 2:
-        print(f"❌ Swing length ({parameters['swing_length']}) must be at least 2")
+    """Validate parameters using Pydantic model"""
+    try:
+        SmartMoneyParams(**parameters)
+        return True
+    except Exception as e:
+        print(f"❌ Parameter validation failed: {e}")
         return False
-    
-    return True
