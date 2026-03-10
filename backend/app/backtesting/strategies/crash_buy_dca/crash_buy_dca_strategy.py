@@ -8,7 +8,6 @@ we simulate it by opening a single position and tracking buy signals separately.
 
 from typing import Dict, Any, List
 import pandas as pd
-from backtesting import Strategy
 
 from ...base_strategy import BaseBacktestStrategy
 from .parameters import (
@@ -42,7 +41,7 @@ class CrashBuyDCAStrategy(BaseBacktestStrategy):
         """Get parameter schema for UI"""
         return get_parameter_schema()
 
-    def create_strategy_class(self, data_dict: Dict[str, pd.DataFrame]) -> type:
+    def build_backtest_strategy(self, data_dict: Dict[str, pd.DataFrame]) -> type:
         """Create the actual Strategy class for backtesting"""
         main_timeframe = self.timeframes[0]
         main_data = data_dict[main_timeframe]

@@ -47,7 +47,7 @@ class BaseBacktestStrategy(ABC):
         self._trade_signals: List[Dict[str, Any]] = []
 
     @abstractmethod
-    def create_strategy_class(self, data_dict: Dict[str, pd.DataFrame]) -> type:
+    def build_backtest_strategy(self, data_dict: Dict[str, pd.DataFrame]) -> type:
         """
         Create a backtesting.Strategy class with the given data
 

@@ -32,7 +32,7 @@ class SimpleMACrossStrategy(BaseBacktestStrategy):
         """Get parameter schema for UI"""
         return get_parameter_schema()
 
-    def create_strategy_class(self, data_dict: Dict[str, pd.DataFrame]) -> type:
+    def build_backtest_strategy(self, data_dict: Dict[str, pd.DataFrame]) -> type:
         """Create the actual Strategy class for backtesting"""
         return create_strategy_class(
             params=self.parameters,

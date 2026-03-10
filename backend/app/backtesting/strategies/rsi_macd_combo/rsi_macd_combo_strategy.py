@@ -32,7 +32,7 @@ class RSIMACDComboStrategy(BaseBacktestStrategy):
         """Get parameter schema for UI"""
         return get_parameter_schema()
     
-    def create_strategy_class(self, data_dict: Dict[str, pd.DataFrame]) -> type:
+    def build_backtest_strategy(self, data_dict: Dict[str, pd.DataFrame]) -> type:
         """Create the RSI + MACD combo strategy class"""
         return create_strategy_class(
             params=self.parameters,
