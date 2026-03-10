@@ -1,10 +1,11 @@
 import { BaseDrawingTool } from "../BaseDrawingTool.js";
+import { ConstraintMixin } from "../mixins/ConstraintMixin.js";
 import { Line, PreviewLine } from "./Line.js";
 
-export class LineDrawingTool extends BaseDrawingTool {
-  _isConstrained = false;
-  _lastCrosshairParam = null;
+// Apply the ConstraintMixin to BaseDrawingTool
+const BaseWithConstraint = ConstraintMixin(BaseDrawingTool);
 
+export class LineDrawingTool extends BaseWithConstraint {
   get _lines() {
     return this._primitives;
   }
@@ -54,56 +55,8 @@ export class LineDrawingTool extends BaseDrawingTool {
     this.setSelectedPrimitiveId(selectedLineId);
   }
 
-  _getSecondPoint(param) {
-    const p2 = this._getPoint(param);
-    if (!p2 || !this._isConstrained || !this._p1) return p2;
-    return { ...p2, price: this._p1.price };
-  }
-
-  startDrawing() {
-    super.startDrawing();
-    const el = this._chart.chartElement();
-    if (el)
-      el.addEventListener("mousedown", this._onMouseDown, { capture: true });
-  }
-
-  stopDrawing() {
-    const el = this._chart.chartElement();
-    if (el)
-      el.removeEventListener("mousedown", this._onMouseDown, { capture: true });
-    super.stopDrawing();
-  }
-
-  _onMouseDown = (e) => {
-    this._isConstrained = e.shiftKey;
-  };
-
-  _onKeyDown = (e) => {
-    if (e.key === "Escape") {
-      if (this._drawing && this._p1) {
-        this._p1 = null;
-        this._p2 = null;
-        this._removePreviewPrimitive();
-        if (this._onToolChanged) this._onToolChanged();
-        e.preventDefault();
-      }
-    }
-    if (e.key === "Control" || e.key === "Meta") this._isSnapping = true;
-    if (e.key === "Shift" && !this._isConstrained) {
-      this._isConstrained = true;
-      if (this._drawing && this._p1 && this._lastCrosshairParam)
-        this._onCrosshairMove(this._lastCrosshairParam);
-    }
-  };
-
-  _onKeyUp = (e) => {
-    if (e.key === "Control" || e.key === "Meta") this._isSnapping = false;
-    if (e.key === "Shift" && this._isConstrained) {
-      this._isConstrained = false;
-      if (this._drawing && this._p1 && this._lastCrosshairParam)
-        this._onCrosshairMove(this._lastCrosshairParam);
-    }
-  };
+  // The mixin provides _getSecondPoint, startDrawing, stopDrawing,
+  // _onMouseDown, _onKeyDown, _onKeyUp automatically!
 
   _onClick = (param) => {
     if (!param.point) return;
@@ -136,6 +89,7 @@ export class LineDrawingTool extends BaseDrawingTool {
 
   _onCrosshairMove = (param) => {
     if (!this._p1 || !param.point) return;
+    // Store for constraint updates (mixin needs this)
     this._lastCrosshairParam = param;
 
     this._p2 = this._getSecondPoint(param);

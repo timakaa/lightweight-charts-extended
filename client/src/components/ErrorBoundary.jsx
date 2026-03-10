@@ -16,7 +16,7 @@ function ErrorFallback({ error, resetErrorBoundary, title, message }) {
             <summary className='cursor-pointer text-sm text-muted-foreground hover:text-foreground'>
               Error details
             </summary>
-            <pre className='mt-2 p-2 bg-muted rounded text-xs overflow-auto max-h-40'>
+            <pre className='mt-2 p-2 bg-muted text-primary rounded text-xs overflow-auto max-h-40'>
               {error.toString()}
               {error.stack && `\n${error.stack}`}
             </pre>

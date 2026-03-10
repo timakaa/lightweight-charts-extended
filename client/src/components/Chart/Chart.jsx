@@ -53,7 +53,6 @@ const Chart = ({ drawings, onChartReady, symbol }) => {
     if (backtestId && chart && candlestickSeries && candleData?.length > 0) {
       fitChartToRecentBars(chart, candlestickSeries, candleData);
     }
-    // Only run on mount or when backtestId changes, not when candleData updates
   }, [backtestId]);
 
   // Notify parent when chart is ready (only once)
