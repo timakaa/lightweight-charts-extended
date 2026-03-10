@@ -4,11 +4,6 @@ Simple MA Cross Strategy - Parameters and Validation
 from typing import Dict, Any
 from pydantic import BaseModel, Field, field_validator
 
-
-from typing import Dict, Any
-from pydantic import BaseModel, Field, field_validator
-
-
 class SimpleMACrossParams(BaseModel):
     """Pydantic model for Simple MA Cross Strategy parameters"""
     
@@ -131,9 +126,13 @@ def get_parameter_schema() -> Dict[str, Any]:
 
 def validate_parameters(parameters: Dict[str, Any]) -> bool:
     """Validate parameters using Pydantic model"""
+    import logging
+    logger = logging.getLogger("strategy.SimpleMACross.validation")
+    
     try:
         SimpleMACrossParams(**parameters)
+        logger.debug("Parameters validated successfully")
         return True
     except Exception as e:
-        print(f"❌ Parameter validation failed: {e}")
+        logger.error(f"Parameter validation failed: {e}")
         return False

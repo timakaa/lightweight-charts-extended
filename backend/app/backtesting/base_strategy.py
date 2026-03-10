@@ -6,6 +6,7 @@ Supports multiple timeframes, custom parameters, and strategy variations
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List, TypedDict, Literal, NotRequired
 import pandas as pd
+import logging
 
 
 class StrategyField(TypedDict):
@@ -44,6 +45,9 @@ class BaseBacktestStrategy(ABC):
             timeframes: List of timeframes to use (e.g., ["1h", "4h"])
             save_charts: Whether to generate and save charts
         """
+        # Set up logger for this strategy
+        self.logger = logging.getLogger(f"strategy.{self.__class__.__name__}")
+        
         # Merge provided parameters with class defaults
         self.parameters = {**self.default_parameters, **(parameters or {})}
         
@@ -56,6 +60,8 @@ class BaseBacktestStrategy(ABC):
         # Standardized tracking lists
         self._balance_history: List[Dict[str, Any]] = []
         self._trade_signals: List[Dict[str, Any]] = []
+        
+        self.logger.info(f"Initialized {self.name} with timeframes: {self.timeframes}")
 
     @abstractmethod
     def build_backtest_strategy(self, data_dict: Dict[str, pd.DataFrame]) -> type:
@@ -81,6 +87,7 @@ class BaseBacktestStrategy(ABC):
         Returns:
             True if parameters are valid, False otherwise
         """
+        self.logger.debug(f"Validating parameters: {parameters}")
         return True  # Default: all parameters are valid
     
     def get_parameter_schema(self) -> Dict[str, Any]:

@@ -3,8 +3,11 @@ Drawing Creation Module
 Creates visualization drawings for trades and strategy elements
 """
 
+from utils.symbol_utils import symbol_to_filename
+
 import sys
 import os
+import logging
 from typing import List, Dict, Any
 
 # Add app directory to path
@@ -12,7 +15,8 @@ app_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../app"
 if app_dir not in sys.path:
     sys.path.insert(0, app_dir)
 
-from utils.symbol_utils import symbol_to_filename
+
+logger = logging.getLogger("backtest.drawings")
 
 
 def create_trade_drawings(trades_list: List[Dict], symbol: str) -> List[Dict]:
@@ -31,7 +35,7 @@ def create_trade_drawings(trades_list: List[Dict], symbol: str) -> List[Dict]:
     
     drawings = []
     
-    print(f"📊 Creating drawings for {len(trades_list)} trades")
+    logger.info(f"Creating drawings for {len(trades_list)} trades")
     for i, trade in enumerate(trades_list):
         if trade["type"] == "long":
             drawing = {
@@ -114,18 +118,16 @@ def create_strategy_drawings(
         if hasattr(strategy_instance, 'get_custom_drawings'):
             custom_drawings = strategy_instance.get_custom_drawings(normalized_symbol)
             if custom_drawings:
-                print(f"✅ Strategy '{strategy_instance.name}' provided {len(custom_drawings)} custom drawings")
+                logger.info(f"Strategy '{strategy_instance.name}' provided {len(custom_drawings)} custom drawings")
                 drawings.extend(custom_drawings)
             else:
-                print(f"ℹ️  Strategy '{strategy_instance.name}' has no custom drawings")
+                logger.debug(f"Strategy '{strategy_instance.name}' has no custom drawings")
         else:
-            print(f"ℹ️  Strategy '{strategy_instance.name}' does not implement get_custom_drawings()")
+            logger.debug(f"Strategy '{strategy_instance.name}' does not implement get_custom_drawings()")
     except Exception as e:
-        print(f"⚠️  Warning: Could not get custom drawings from strategy: {e}")
-        import traceback
-        traceback.print_exc()
+        logger.error(f"Could not get custom drawings from strategy: {e}", exc_info=True)
     
-    print(f"📊 Total drawings created: {len(drawings)}")
+    logger.info(f"Total drawings created: {len(drawings)}")
     return drawings
 
 

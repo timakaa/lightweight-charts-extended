@@ -213,9 +213,13 @@ def get_parameter_schema() -> Dict[str, Any]:
 
 def validate_parameters(parameters: Dict[str, Any]) -> bool:
     """Validate parameters using Pydantic model"""
+    import logging
+    logger = logging.getLogger("strategy.RSIMACDCombo.validation")
+    
     try:
         RSIMACDComboParams(**parameters)
+        logger.debug("Parameters validated successfully")
         return True
     except Exception as e:
-        print(f"❌ Parameter validation failed: {e}")
+        logger.error(f"Parameter validation failed: {e}")
         return False
