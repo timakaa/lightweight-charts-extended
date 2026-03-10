@@ -1,20 +1,63 @@
 """
 Parameter definitions and validation for crash buy DCA strategy
 """
-from typing import Dict, Any
+from typing import Dict, Any, List, TYPE_CHECKING
+from pydantic import BaseModel, Field
+
+if TYPE_CHECKING:
+    from ...base_strategy import StrategySection
+
+
+class CrashBuyDCAParams(BaseModel):
+    """Pydantic model for Crash Buy DCA Strategy parameters"""
+    
+    base_amount: float = Field(
+        default=100,
+        ge=1,
+        le=10000,
+        description="Base investment amount per interval"
+    )
+    crash_multiplier: float = Field(
+        default=3.0,
+        ge=1.0,
+        le=10.0,
+        description="Multiply investment by this during crashes"
+    )
+    daily_crash_threshold: float = Field(
+        default=0.05,
+        ge=0.01,
+        le=0.5,
+        description="Daily drop percentage to trigger crash buying (0.05 = 5%)"
+    )
+    weekly_crash_threshold: float = Field(
+        default=0.10,
+        ge=0.01,
+        le=0.5,
+        description="Weekly drop percentage to trigger crash buying (0.10 = 10%)"
+    )
+    monthly_interval_days: int = Field(
+        default=30,
+        ge=1,
+        le=90,
+        description="Days between regular DCA purchases"
+    )
+    commission: float = Field(
+        default=0.002,
+        ge=0.0,
+        le=0.01,
+        description="Commission per trade (0.002 = 0.2%)"
+    )
+    cash: float = Field(
+        default=1000000,
+        ge=1000,
+        le=1000000,
+        description="Initial capital amount"
+    )
 
 
 def get_default_parameters() -> Dict[str, Any]:
     """Default parameters for crash buying DCA"""
-    return {
-        "base_amount": 100,           # Base monthly investment amount
-        "crash_multiplier": 3,        # Multiply investment by this during crashes
-        "daily_crash_threshold": 0.05,  # 5% daily drop threshold
-        "weekly_crash_threshold": 0.10, # 10% weekly drop threshold
-        "monthly_interval_days": 30,  # Buy every N days normally
-        "commission": 0.002,          # 0.2% commission per trade
-        "cash": 1000000,               # Initial cash
-    }
+    return CrashBuyDCAParams().model_dump()
 
 
 def get_parameter_schema() -> Dict[str, Any]:
@@ -92,37 +135,22 @@ def get_parameter_schema() -> Dict[str, Any]:
 
 
 def validate_parameters(parameters: Dict[str, Any]) -> bool:
-    """Validate parameters"""
-    required_params = ["base_amount", "crash_multiplier", "daily_crash_threshold", 
-                      "weekly_crash_threshold", "monthly_interval_days"]
-
-    for param in required_params:
-        if param not in parameters:
-            print(f"❌ Missing required parameter: {param}")
-            return False
-
-    if parameters["base_amount"] <= 0:
-        print(f"❌ Base amount must be greater than 0")
+    """Validate parameters using Pydantic model"""
+    import logging
+    logger = logging.getLogger("strategy.CrashBuyDCA.validation")
+    
+    try:
+        CrashBuyDCAParams(**parameters)
+        logger.debug("Parameters validated successfully")
+        return True
+    except Exception as e:
+        logger.error(f"Parameter validation failed: {e}")
         return False
 
-    if parameters["crash_multiplier"] < 1:
-        print(f"❌ Crash multiplier must be >= 1")
-        return False
 
-    if parameters["daily_crash_threshold"] <= 0 or parameters["daily_crash_threshold"] >= 1:
-        print(f"❌ Daily crash threshold must be between 0 and 1")
-        return False
-
-    if parameters["weekly_crash_threshold"] <= 0 or parameters["weekly_crash_threshold"] >= 1:
-        print(f"❌ Weekly crash threshold must be between 0 and 1")
-        return False
-
-    return True
-
-
-def format_strategy_fields(metrics: Dict[str, Any]) -> list:
+def format_strategy_fields(metrics: Dict[str, Any]) -> "List[StrategySection]":
     """Get formatted fields for UI display with subsections"""
-    sections = []
+    sections: List[Dict[str, Any]] = []
     
     if not metrics:
         return sections

@@ -20,10 +20,9 @@ class SimpleMACrossStrategy(BaseBacktestStrategy):
     default_parameters = get_default_parameters()
     default_timeframes = ["1h"]
 
-    def __init__(self, parameters: Dict[str, Any] = None, timeframes: List[str] = None, save_charts: bool = False):
+    def __init__(self, parameters: Dict[str, Any] | None = None, timeframes: List[str] | None = None, save_charts: bool = False):
         super().__init__(parameters, timeframes, save_charts)
-        # Store balance history for chart generation
-        self._balance_history = []
+        # Balance history is now tracked in base class
 
     def validate_parameters(self, parameters: Dict[str, Any]) -> bool:
         """Validate parameters"""
@@ -33,7 +32,7 @@ class SimpleMACrossStrategy(BaseBacktestStrategy):
         """Get parameter schema for UI"""
         return get_parameter_schema()
 
-    def create_strategy_class(self, data_dict: Dict[str, pd.DataFrame]) -> type:
+    def build_backtest_strategy(self, data_dict: Dict[str, pd.DataFrame]) -> type:
         """Create the actual Strategy class for backtesting"""
         return create_strategy_class(
             params=self.parameters,
@@ -51,8 +50,8 @@ class SimpleMACrossStrategy(BaseBacktestStrategy):
             save_charts=self.save_charts
         )
         
-        # Clear balance history to free memory
+        # Clear tracking data to free memory
         if chart_keys:
-            self._balance_history.clear()
+            self.clear_tracking_data()
         
         return chart_keys

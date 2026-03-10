@@ -8,9 +8,8 @@ we simulate it by opening a single position and tracking buy signals separately.
 
 from typing import Dict, Any, List
 import pandas as pd
-from backtesting import Strategy
 
-from ...base_strategy import BaseBacktestStrategy
+from ...base_strategy import BaseBacktestStrategy, StrategySection
 from .parameters import (
     get_default_parameters, 
     validate_parameters,
@@ -30,12 +29,9 @@ class CrashBuyDCAStrategy(BaseBacktestStrategy):
     default_parameters = get_default_parameters()
     default_timeframes = ["1d"]
 
-    def __init__(self, parameters: Dict[str, Any] = None, timeframes: List[str] = None, save_charts: bool = False):
+    def __init__(self, parameters: Dict[str, Any] | None = None, timeframes: List[str] | None = None, save_charts: bool = False):
         super().__init__(parameters, timeframes, save_charts)
-        # Store detected buy signals for visualization
-        self._buy_signals = []
-        # Store balance history for chart generation
-        self._balance_history = []
+        # Buy signals tracked via _trade_signals in base class
 
     def validate_parameters(self, parameters: Dict[str, Any]) -> bool:
         """Validate parameters"""
@@ -45,7 +41,7 @@ class CrashBuyDCAStrategy(BaseBacktestStrategy):
         """Get parameter schema for UI"""
         return get_parameter_schema()
 
-    def create_strategy_class(self, data_dict: Dict[str, pd.DataFrame]) -> type:
+    def build_backtest_strategy(self, data_dict: Dict[str, pd.DataFrame]) -> type:
         """Create the actual Strategy class for backtesting"""
         main_timeframe = self.timeframes[0]
         main_data = data_dict[main_timeframe]
@@ -56,7 +52,7 @@ class CrashBuyDCAStrategy(BaseBacktestStrategy):
         # Create and return the strategy class
         return create_strategy_class(
             params=self.parameters,
-            buy_signals_list=self._buy_signals,
+            buy_signals_list=self._trade_signals,  # Use standardized tracking
             balance_history_list=self._balance_history,
             should_track_balance=self.save_charts
         )
@@ -91,7 +87,7 @@ class CrashBuyDCAStrategy(BaseBacktestStrategy):
         
         return overrides
 
-    def get_strategy_related_fields(self) -> List[Dict[str, Any]]:
+    def get_strategy_related_fields(self) -> List[StrategySection]:
         """Get formatted fields for UI display with subsections"""
         metrics = getattr(self, '_dca_metrics', {})
         return format_strategy_fields(metrics)

@@ -2,18 +2,60 @@
 Simple MA Cross Strategy - Parameters and Validation
 """
 from typing import Dict, Any
+from pydantic import BaseModel, Field, field_validator
+
+class SimpleMACrossParams(BaseModel):
+    """Pydantic model for Simple MA Cross Strategy parameters"""
+    
+    fast_ma: int = Field(
+        default=28,
+        ge=5,
+        le=100,
+        description="Fast moving average period"
+    )
+    slow_ma: int = Field(
+        default=100,
+        ge=20,
+        le=200,
+        description="Slow moving average period"
+    )
+    risk_reward: float = Field(
+        default=2.0,
+        ge=0.5,
+        le=10.0,
+        description="Risk to reward ratio (e.g., 2 means 1:2)"
+    )
+    stop_loss_pct: float = Field(
+        default=0.02,
+        ge=0.005,
+        le=0.1,
+        description="Stop loss percentage (0.02 = 2%)"
+    )
+    commission: float = Field(
+        default=0.002,
+        ge=0.0,
+        le=0.01,
+        description="Commission per trade (0.002 = 0.2%)"
+    )
+    cash: float = Field(
+        default=1000000,
+        ge=1000,
+        le=1000000,
+        description="Initial capital amount"
+    )
+    
+    @field_validator('slow_ma')
+    @classmethod
+    def slow_must_be_greater_than_fast(cls, v, info):
+        """Validate that slow MA is greater than fast MA"""
+        if 'fast_ma' in info.data and v <= info.data['fast_ma']:
+            raise ValueError(f'slow_ma ({v}) must be greater than fast_ma ({info.data["fast_ma"]})')
+        return v
 
 
 def get_default_parameters() -> Dict[str, Any]:
     """Default parameters for Simple MA Cross Strategy"""
-    return {
-        "fast_ma": 28,          # Fast moving average period
-        "slow_ma": 100,         # Slow moving average period
-        "risk_reward": 2,       # Risk:Reward ratio (1:2)
-        "stop_loss_pct": 0.02,  # 2% stop loss
-        "commission": 0.002,    # 0.2% commission per trade
-        "cash": 1000000,          # Initial cash (can be overridden)
-    }
+    return SimpleMACrossParams().model_dump()
 
 
 def get_parameter_schema() -> Dict[str, Any]:
@@ -83,26 +125,14 @@ def get_parameter_schema() -> Dict[str, Any]:
 
 
 def validate_parameters(parameters: Dict[str, Any]) -> bool:
-    """Validate parameters"""
-    required_params = ["fast_ma", "slow_ma", "risk_reward", "stop_loss_pct"]
-
-    # Check if all required parameters are present
-    for param in required_params:
-        if param not in parameters:
-            print(f"❌ Missing required parameter: {param}")
-            return False
-
-    # Validation rules
-    if parameters["fast_ma"] >= parameters["slow_ma"]:
-        print(f"❌ Fast MA ({parameters['fast_ma']}) must be less than Slow MA ({parameters['slow_ma']})")
+    """Validate parameters using Pydantic model"""
+    import logging
+    logger = logging.getLogger("strategy.SimpleMACross.validation")
+    
+    try:
+        SimpleMACrossParams(**parameters)
+        logger.debug("Parameters validated successfully")
+        return True
+    except Exception as e:
+        logger.error(f"Parameter validation failed: {e}")
         return False
-
-    if parameters["risk_reward"] <= 0:
-        print(f"❌ Risk reward ratio ({parameters['risk_reward']}) must be greater than 0")
-        return False
-
-    if parameters["stop_loss_pct"] <= 0:
-        print(f"❌ Stop loss percentage ({parameters['stop_loss_pct']}) must be greater than 0")
-        return False
-
-    return True

@@ -4,8 +4,22 @@ Supports multiple timeframes, custom parameters, and strategy variations
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, Any, List
+from typing import Dict, Any, List, TypedDict, Literal, NotRequired
 import pandas as pd
+import logging
+
+
+class StrategyField(TypedDict):
+    """Type definition for a strategy field"""
+    label: str
+    value: str | int | float
+    color: NotRequired[Literal["green", "red"] | None]
+
+
+class StrategySection(TypedDict):
+    """Type definition for a strategy section with fields"""
+    title: str
+    fields: List[StrategyField]
 
 
 class BaseBacktestStrategy(ABC):
@@ -19,8 +33,8 @@ class BaseBacktestStrategy(ABC):
 
     def __init__(
         self,
-        parameters: Dict[str, Any] = None,
-        timeframes: List[str] = None,
+        parameters: Dict[str, Any] | None = None,
+        timeframes: List[str] | None = None,
         save_charts: bool = False
     ):
         """
@@ -31,19 +45,26 @@ class BaseBacktestStrategy(ABC):
             timeframes: List of timeframes to use (e.g., ["1h", "4h"])
             save_charts: Whether to generate and save charts
         """
+        # Set up logger for this strategy
+        self.logger = logging.getLogger(f"strategy.{self.__class__.__name__}")
+        
         # Merge provided parameters with class defaults
-        self.parameters = {**self.default_parameters}
-        if parameters:
-            self.parameters.update(parameters)
+        self.parameters = {**self.default_parameters, **(parameters or {})}
         
         # Set timeframes (use provided or class default)
-        self.timeframes = timeframes if timeframes is not None else self.default_timeframes
+        self.timeframes = timeframes if timeframes is not None else self.default_timeframes.copy()
         
         # Chart generation flag
         self.save_charts = save_charts
+        
+        # Standardized tracking lists
+        self._balance_history: List[Dict[str, Any]] = []
+        self._trade_signals: List[Dict[str, Any]] = []
+        
+        self.logger.info(f"Initialized {self.name} with timeframes: {self.timeframes}")
 
     @abstractmethod
-    def create_strategy_class(self, data_dict: Dict[str, pd.DataFrame]) -> type:
+    def build_backtest_strategy(self, data_dict: Dict[str, pd.DataFrame]) -> type:
         """
         Create a backtesting.Strategy class with the given data
 
@@ -66,6 +87,7 @@ class BaseBacktestStrategy(ABC):
         Returns:
             True if parameters are valid, False otherwise
         """
+        self.logger.debug(f"Validating parameters: {parameters}")
         return True  # Default: all parameters are valid
     
     def get_parameter_schema(self) -> Dict[str, Any]:
@@ -102,7 +124,7 @@ class BaseBacktestStrategy(ABC):
         """
         return {}
     
-    def get_strategy_related_fields(self) -> List[Dict[str, Any]]:
+    def get_strategy_related_fields(self) -> List[StrategySection]:
         """
         Get strategy-specific fields to display in the UI with subsections.
         Override this method in subclasses to provide custom fields.
@@ -115,6 +137,86 @@ class BaseBacktestStrategy(ABC):
                     "fields": [
                         {"label": "Field Name", "value": "Field Value", "color": "green"}
                     ]
+                }
+            ]
+        """
+        return []
+
+    def track_balance(self, timestamp: Any, equity: float, price: float) -> None:
+        """
+        Track balance history for chart generation
+        Only tracks if save_charts is True
+        
+        Args:
+            timestamp: Current timestamp (datetime or similar)
+            equity: Current portfolio equity
+            price: Current asset price
+        """
+        if self.save_charts:
+            self._balance_history.append({
+                'time': timestamp,
+                'balance': equity,
+                'price': price
+            })
+    
+    def track_signal(
+        self,
+        timestamp: Any,
+        price: float,
+        signal_type: str,
+        description: str = "",
+        end_time: Any = None,
+        **extra_data
+    ) -> None:
+        """
+        Track trading signals for visualization
+        
+        Args:
+            timestamp: Signal timestamp
+            price: Price at signal
+            signal_type: Type of signal (e.g., 'macd_bullish_cross', 'buy_signal')
+            description: Human-readable description
+            end_time: Optional end time for range signals
+            **extra_data: Additional signal-specific data
+        """
+        signal_data = {
+            'time': timestamp,
+            'price': price,
+            'type': signal_type,
+            'description': description,
+            'end_time': end_time,
+            **extra_data
+        }
+        self._trade_signals.append(signal_data)
+    
+    def clear_tracking_data(self) -> None:
+        """
+        Clear all tracking data to free memory
+        Call this after chart generation is complete
+        """
+        self._balance_history.clear()
+        self._trade_signals.clear()
+
+    def get_custom_drawings(self, symbol: str) -> List[Dict[str, Any]]:
+        """
+        Get custom drawings for this strategy (levels, signals, etc.)
+        Override this method in subclasses to provide strategy-specific drawings.
+        
+        Args:
+            symbol: Trading symbol (normalized to DB format, e.g., BTCUSDT)
+            
+        Returns:
+            List of drawing objects in the format expected by the frontend
+            Example: [
+                {
+                    "type": "line",
+                    "id": "signal_1",
+                    "ticker": "BTCUSDT",
+                    "startTime": "2024-01-01T00:00:00Z",
+                    "endTime": "relative",
+                    "startPrice": 50000,
+                    "endPrice": 50000,
+                    "style": {"color": "#00C851", "width": 1}
                 }
             ]
         """

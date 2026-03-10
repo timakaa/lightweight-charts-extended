@@ -25,14 +25,14 @@ def run_backtest(
         Tuple of (stats, bt) or (None, None) if failed
     """
     # Create strategy class for backtesting
-    BacktestStrategy = strategy_instance.create_strategy_class(prepared_data)
+    BacktestStrategy = strategy_instance.build_backtest_strategy(prepared_data)
     
     # Use main timeframe for backtesting engine
     main_timeframe = timeframes[0]
     main_data = prepared_data[main_timeframe]
     
     # Run backtest
-    print(f"\n🔄 Running backtest...")
+    print("\n🔄 Running backtest...")
     bt = Backtest(
         main_data,
         BacktestStrategy,

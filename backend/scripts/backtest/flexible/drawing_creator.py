@@ -3,8 +3,11 @@ Drawing Creation Module
 Creates visualization drawings for trades and strategy elements
 """
 
+from utils.symbol_utils import symbol_to_filename
+
 import sys
 import os
+import logging
 from typing import List, Dict, Any
 
 # Add app directory to path
@@ -12,7 +15,8 @@ app_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../app"
 if app_dir not in sys.path:
     sys.path.insert(0, app_dir)
 
-from utils.symbol_utils import symbol_to_filename
+
+logger = logging.getLogger("backtest.drawings")
 
 
 def create_trade_drawings(trades_list: List[Dict], symbol: str) -> List[Dict]:
@@ -31,7 +35,7 @@ def create_trade_drawings(trades_list: List[Dict], symbol: str) -> List[Dict]:
     
     drawings = []
     
-    print(f"📊 Creating drawings for {len(trades_list)} trades")
+    logger.info(f"Creating drawings for {len(trades_list)} trades")
     for i, trade in enumerate(trades_list):
         if trade["type"] == "long":
             drawing = {
@@ -91,61 +95,39 @@ def create_strategy_drawings(
     existing_drawings: List[Dict]
 ) -> List[Dict]:
     """
-    Create drawings for strategy-specific elements (levels, signals, etc.)
+    Get custom drawings from strategy instance
     
     Args:
         strategy_instance: Strategy instance
-        backtest_instance: Backtest instance
+        backtest_instance: Backtest instance (unused, kept for compatibility)
         symbol: Trading symbol (will be normalized to DB format)
         existing_drawings: Existing drawings to append to
         
     Returns:
         Combined list of drawings
     """
+    from utils.symbol_utils import symbol_to_filename
+    
     # Normalize symbol to DB format: BTC/USDT:USDT -> BTCUSDT
     normalized_symbol = symbol_to_filename(symbol)
     
     drawings = existing_drawings.copy()
     
+    # Get custom drawings from strategy
     try:
-        levels = None
-        
-        # Method 1: Try to get levels from the outer strategy instance (Smart Money Concepts)
-        if hasattr(strategy_instance, '_detected_levels'):
-            levels = strategy_instance._detected_levels
-            print(f"🔍 Found {len(levels)} swing levels from outer strategy instance")
-        
-        # Method 2: Try to get signals from the outer strategy instance (RSI+MACD)
-        elif hasattr(strategy_instance, '_detected_signals'):
-            levels = strategy_instance._detected_signals
-            print(f"🔍 Found {len(levels)} signals from outer strategy instance")
-        
-        # Method 3: Try to get levels from the strategy class
-        elif hasattr(backtest_instance, '_strategy'):
-            strategy_class = backtest_instance._strategy
-            if hasattr(strategy_class, '_collected_levels'):
-                levels = strategy_class._collected_levels
-                print(f"🔍 Found {len(levels)} levels from strategy class")
-            elif hasattr(strategy_class, '_collected_signals'):
-                levels = strategy_class._collected_signals
-                print(f"🔍 Found {len(levels)} signals from strategy class")
-        
-        if levels and len(levels) > 0:
-            print(f"✅ Processing {len(levels)} strategy elements")
-            for level in levels:
-                drawing = _create_level_drawing(level, normalized_symbol, len(drawings))  # Use normalized symbol
-                if drawing:
-                    drawings.append(drawing)
-                    _print_drawing_info(level, drawing)
+        if hasattr(strategy_instance, 'get_custom_drawings'):
+            custom_drawings = strategy_instance.get_custom_drawings(normalized_symbol)
+            if custom_drawings:
+                logger.info(f"Strategy '{strategy_instance.name}' provided {len(custom_drawings)} custom drawings")
+                drawings.extend(custom_drawings)
+            else:
+                logger.debug(f"Strategy '{strategy_instance.name}' has no custom drawings")
         else:
-            print("❌ Could not find any strategy elements")
-            
+            logger.debug(f"Strategy '{strategy_instance.name}' does not implement get_custom_drawings()")
     except Exception as e:
-        print(f"⚠️  Warning: Could not extract custom drawings from strategy: {e}")
-        import traceback
-        traceback.print_exc()
+        logger.error(f"Could not get custom drawings from strategy: {e}", exc_info=True)
     
-    print(f"📊 Total drawings created: {len(drawings)}")
+    logger.info(f"Total drawings created: {len(drawings)}")
     return drawings
 
 
