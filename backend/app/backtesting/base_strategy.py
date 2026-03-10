@@ -16,7 +16,6 @@ class BaseBacktestStrategy(ABC):
     description: str = "Base strategy class"
     default_parameters: Dict[str, Any] = {}
     default_timeframes: List[str] = ["1h"]
-    supports_drawings: bool = True  # Set to False in strategies that don't generate drawings
 
     def __init__(
         self,
@@ -179,6 +178,31 @@ class BaseBacktestStrategy(ABC):
         """
         self._balance_history.clear()
         self._trade_signals.clear()
+
+    def get_custom_drawings(self, symbol: str) -> List[Dict[str, Any]]:
+        """
+        Get custom drawings for this strategy (levels, signals, etc.)
+        Override this method in subclasses to provide strategy-specific drawings.
+        
+        Args:
+            symbol: Trading symbol (normalized to DB format, e.g., BTCUSDT)
+            
+        Returns:
+            List of drawing objects in the format expected by the frontend
+            Example: [
+                {
+                    "type": "line",
+                    "id": "signal_1",
+                    "ticker": "BTCUSDT",
+                    "startTime": "2024-01-01T00:00:00Z",
+                    "endTime": "relative",
+                    "startPrice": 50000,
+                    "endPrice": 50000,
+                    "style": {"color": "#00C851", "width": 1}
+                }
+            ]
+        """
+        return []
 
     def generate_charts(self, backtest_id: int) -> List[str]:
         """

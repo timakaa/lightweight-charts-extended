@@ -29,7 +29,6 @@ class CrashBuyDCAStrategy(BaseBacktestStrategy):
     description = "Dollar Cost Averaging with increased buying during market crashes (Buy & Hold simulation)"
     default_parameters = get_default_parameters()
     default_timeframes = ["1d"]
-    supports_drawings = False  # This strategy doesn't need drawings
 
     def __init__(self, parameters: Dict[str, Any] = None, timeframes: List[str] = None, save_charts: bool = False):
         super().__init__(parameters, timeframes, save_charts)

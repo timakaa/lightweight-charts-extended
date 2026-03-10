@@ -60,3 +60,40 @@ class RSIMACDComboStrategy(BaseBacktestStrategy):
             self.clear_tracking_data()
         
         return chart_keys
+    
+    def get_custom_drawings(self, symbol: str) -> List[Dict[str, Any]]:
+        """Generate custom drawings for MACD signals and divergences"""
+        import sys
+        import os
+        # Add scripts directory to path for drawing helpers
+        scripts_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../scripts/backtest/flexible"))
+        if scripts_dir not in sys.path:
+            sys.path.insert(0, scripts_dir)
+        
+        from drawing_helpers import create_vertical_line
+        
+        drawings = []
+        
+        for i, signal in enumerate(self._trade_signals):
+            signal_type = signal.get('type')
+            signal_time = signal['time'].tz_localize("UTC").isoformat()
+            price = signal['price']
+            
+            # Create vertical line for signals
+            if signal_type in ['macd_bullish_cross', 'macd_bearish_cross', 'bullish_divergence', 'bearish_divergence']:
+                price_offset = price * 0.001  # 0.1% offset for visibility
+                signal_color = "#00C851" if 'bullish' in signal_type else "#FF4444"
+                
+                drawing = create_vertical_line(
+                    drawing_id=f"signal_{signal_type}_{i}",
+                    ticker=symbol,
+                    time=signal_time,
+                    start_price=price - price_offset,
+                    end_price=price + price_offset,
+                    color=signal_color,
+                    width=1,
+                    line_style="dotted"
+                )
+                drawings.append(drawing)
+        
+        return drawings
