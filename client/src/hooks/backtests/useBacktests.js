@@ -1,4 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  useInfiniteQuery,
+} from "@tanstack/react-query";
 import { API_BASE_URL } from "../../config/api";
 
 const fetchBacktestsSummarized = async (
@@ -31,6 +36,20 @@ export const useBacktestsSummarized = (page, pageSize, search) => {
   });
 };
 
+export const useBacktestsSummarizedInfinite = (pageSize = 10, search = "") => {
+  return useInfiniteQuery({
+    queryKey: ["backtestsSummarizedInfinite", pageSize, search],
+    queryFn: ({ pageParam = 1 }) =>
+      fetchBacktestsSummarized(pageParam, pageSize, search),
+    getNextPageParam: (lastPage) => {
+      return lastPage.pagination?.has_next
+        ? lastPage.pagination.page + 1
+        : undefined;
+    },
+    initialPageParam: 1,
+  });
+};
+
 const deleteBacktest = async (backtestId) => {
   const response = await fetch(`${API_BASE_URL}/backtest/${backtestId}`, {
     method: "DELETE",
@@ -47,6 +66,9 @@ export const useDeleteBacktest = () => {
     mutationFn: deleteBacktest,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["backtestsSummarized"] });
+      queryClient.invalidateQueries({
+        queryKey: ["backtestsSummarizedInfinite"],
+      });
     },
   });
 };
@@ -77,6 +99,21 @@ export const useUpdateBacktest = () => {
         queryKey: ["backtestStats", variables.id],
       });
     },
+  });
+};
+
+export const useTradesByBacktestIdInfinite = (backtestId, pageSize = 10) => {
+  return useInfiniteQuery({
+    queryKey: ["tradesInfinite", backtestId, pageSize],
+    queryFn: ({ pageParam = 1 }) =>
+      fetchTradesByBacktestId(backtestId, pageParam, pageSize),
+    getNextPageParam: (lastPage) => {
+      return lastPage.pagination?.has_next
+        ? lastPage.pagination.page + 1
+        : undefined;
+    },
+    initialPageParam: 1,
+    enabled: !!backtestId,
   });
 };
 

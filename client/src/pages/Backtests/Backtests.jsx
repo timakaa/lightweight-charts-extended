@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useBacktestsSummarized } from "@hooks/backtests/useBacktests";
+import { useState, useMemo } from "react";
+import { useBacktestsSummarizedInfinite } from "@hooks/backtests/useBacktests";
 import { useDebounce } from "@hooks/useDebounce";
 import BacktestList from "./components/BacktestList";
 import SearchBar from "./components/SearchBar";
@@ -7,23 +7,16 @@ import LoadingSpinner from "./components/LoadingSpinner";
 import ErrorState from "./components/ErrorState";
 
 const Backtests = () => {
-  const [page, setPage] = useState(1);
   const [searchInput, setSearchInput] = useState("");
   const debouncedSearch = useDebounce(searchInput, 300);
   const pageSize = 50;
 
-  // Reset page when search changes
-  useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch]);
+  const { data, isLoading, error, fetchNextPage, hasNextPage, isFetching } =
+    useBacktestsSummarizedInfinite(pageSize, debouncedSearch);
 
-  const { data, isLoading, error } = useBacktestsSummarized(
-    page,
-    pageSize,
-    debouncedSearch,
-  );
-  const backtests = data?.backtests || [];
-  const hasNextPage = data?.pagination?.total_pages > page;
+  const backtests = useMemo(() => {
+    return data?.pages?.flatMap((page) => page.backtests) ?? [];
+  }, [data]);
 
   return (
     <div className='min-h-screen bg-background p-6'>
@@ -38,7 +31,7 @@ const Backtests = () => {
         {error && <ErrorState message={error.message} />}
 
         {/* Initial Loading State */}
-        {isLoading && page === 1 && (
+        {isLoading && (
           <div className='flex justify-center py-12'>
             <LoadingSpinner />
           </div>
@@ -48,9 +41,9 @@ const Backtests = () => {
         {!error && (
           <BacktestList
             backtests={backtests}
-            isLoading={isLoading}
+            isLoading={isFetching}
             hasNextPage={hasNextPage}
-            onLoadMore={() => setPage((p) => p + 1)}
+            onLoadMore={fetchNextPage}
           />
         )}
       </div>

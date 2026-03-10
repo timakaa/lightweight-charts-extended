@@ -1,42 +1,28 @@
-import React, { useState, useEffect, memo } from "react";
+import React, { memo, useMemo } from "react";
 import { useParams } from "react-router-dom";
-import { useTradesByBacktestId } from "@hooks/backtests/useBacktests";
+import { useTradesByBacktestIdInfinite } from "@hooks/backtests/useBacktests";
 import { useInfiniteScroll } from "@hooks/useInfiniteScroll";
 import { useTradeNavigation } from "@hooks/useTradeNavigation";
 
 const Trades = memo(
   ({ chart, candleData, chartDataInfo }) => {
     const { backtestId } = useParams();
-    const [page, setPage] = useState(1);
-    const [trades, setTrades] = useState([]);
-    const [hasNext, setHasNext] = useState(true);
     const pageSize = 10;
 
-    const { data, isLoading, error, isFetching } = useTradesByBacktestId(
-      parseInt(backtestId),
-      page,
-      pageSize,
-    );
+    const { data, isLoading, error, isFetching, fetchNextPage, hasNextPage } =
+      useTradesByBacktestIdInfinite(parseInt(backtestId), pageSize);
 
-    useEffect(() => {
-      setPage(1);
-      setTrades([]);
-      setHasNext(true);
-    }, [backtestId]);
+    const trades = useMemo(() => {
+      return data?.pages?.flatMap((page) => page.trades) ?? [];
+    }, [data]);
 
-    useEffect(() => {
-      if (data?.trades) {
-        setTrades((prev) =>
-          page === 1 ? data.trades : [...prev, ...data.trades],
-        );
-        setHasNext(data.pagination?.has_next);
-      }
-    }, [data, page]);
+    const totalCount =
+      data?.pages?.[0]?.pagination?.total_count || trades.length;
 
     const { loaderRef } = useInfiniteScroll({
-      hasNext,
+      hasNext: hasNextPage,
       isFetching,
-      onLoadMore: () => setPage((prev) => prev + 1),
+      onLoadMore: fetchNextPage,
       offset: 200,
     });
 
@@ -47,7 +33,7 @@ const Trades = memo(
       navigateToTrade(trade, chartDataInfo?.loadMore);
     };
 
-    if (isLoading && page === 1) {
+    if (isLoading) {
       return (
         <div className='border-t-[4px] cursor-default z-10 h-[350px] border-t-border bg-background text-foreground p-4 overflow-auto'>
           <div className='flex justify-center items-center h-full'>
@@ -80,7 +66,7 @@ const Trades = memo(
             )}
           </div>
           <span className='text-xs text-muted-foreground'>
-            {data?.pagination?.total_count || trades.length} trades
+            {totalCount} trades
           </span>
         </div>
 
@@ -125,8 +111,7 @@ const Trades = memo(
                       {trade.trade_type.toUpperCase()}
                     </span>
                     <h3 className='text-xs text-foreground font-medium'>
-                      {trade.symbol}{" "}
-                      <span>#{data?.pagination?.total_count - index}</span>
+                      {trade.symbol} <span>#{totalCount - index}</span>
                     </h3>
                   </div>
                   <span
@@ -173,7 +158,7 @@ const Trades = memo(
             );
           })}
         </div>
-        {hasNext && (
+        {hasNextPage && (
           <div
             ref={loaderRef}
             className='h-10 flex justify-center items-center mt-4'

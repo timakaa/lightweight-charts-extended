@@ -1,7 +1,7 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import BacktestCard from "../pages/Backtests/components/BacktestCard";
-import { useBacktestsSummarized } from "../hooks/backtests/useBacktests";
+import { useBacktestsSummarizedInfinite } from "../hooks/backtests/useBacktests";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -11,9 +11,6 @@ const BacktestModalContent = ({ onClose }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const inputRef = useRef(null);
-  const [page, setPage] = useState(1);
-  const [backtests, setBacktests] = useState([]);
-  const [hasNext, setHasNext] = useState(true);
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -22,38 +19,25 @@ const BacktestModalContent = ({ onClose }) => {
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchTerm);
-    }, 300); // 300ms delay
+    }, 300);
 
     return () => {
       clearTimeout(handler);
     };
   }, [searchTerm]);
 
-  const { data, isLoading, error, isFetching } = useBacktestsSummarized(
-    page,
-    10,
-    debouncedSearch,
-  );
+  const { data, isLoading, error, isFetching, fetchNextPage, hasNextPage } =
+    useBacktestsSummarizedInfinite(10, debouncedSearch);
 
-  useEffect(() => {
-    setPage(1);
-    setBacktests([]);
-    setHasNext(true);
-  }, [debouncedSearch]);
-
-  useEffect(() => {
-    if (data?.backtests) {
-      setBacktests((prev) =>
-        page === 1 ? data.backtests : [...prev, ...data.backtests],
-      );
-      setHasNext(data.pagination?.has_next);
-    }
-  }, [data, page]);
+  // Flatten all pages into a single array
+  const backtests = useMemo(() => {
+    return data?.pages?.flatMap((page) => page.backtests) ?? [];
+  }, [data]);
 
   const { loaderRef } = useInfiniteScroll({
-    hasNext,
+    hasNext: hasNextPage,
     isFetching,
-    onLoadMore: () => setPage((prev) => prev + 1),
+    onLoadMore: fetchNextPage,
     offset: 200,
   });
 
@@ -91,7 +75,7 @@ const BacktestModalContent = ({ onClose }) => {
       </div>
 
       <div className='flex-1 overflow-y-auto p-4 min-h-0'>
-        {isLoading && page === 1 ? (
+        {isLoading ? (
           <div className='flex items-center justify-center p-8'>
             <div className='text-primary'>Loading...</div>
           </div>
@@ -102,15 +86,15 @@ const BacktestModalContent = ({ onClose }) => {
         ) : backtests.length > 0 ? (
           <>
             <div className='space-y-3'>
-              {backtests.map((backtest, index) => (
+              {backtests.map((backtest) => (
                 <BacktestCard
-                  key={`${backtest.id}-${index}`}
+                  key={backtest.id}
                   backtest={backtest}
                   onClick={() => handleBacktestSelect(backtest)}
                 />
               ))}
             </div>
-            {hasNext && (
+            {hasNextPage && (
               <div
                 ref={loaderRef}
                 className='h-10 flex justify-center items-center'
