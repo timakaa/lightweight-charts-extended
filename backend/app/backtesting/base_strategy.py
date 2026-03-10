@@ -16,6 +16,7 @@ class BaseBacktestStrategy(ABC):
     description: str = "Base strategy class"
     default_parameters: Dict[str, Any] = {}
     default_timeframes: List[str] = ["1h"]
+    supports_drawings: bool = True  # Set to False in strategies that don't generate drawings
 
     def __init__(
         self,

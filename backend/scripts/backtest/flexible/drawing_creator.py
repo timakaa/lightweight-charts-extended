@@ -92,6 +92,7 @@ def create_strategy_drawings(
 ) -> List[Dict]:
     """
     Create drawings for strategy-specific elements (levels, signals, etc.)
+    Only creates drawings if strategy supports them.
     
     Args:
         strategy_instance: Strategy instance
@@ -102,6 +103,11 @@ def create_strategy_drawings(
     Returns:
         Combined list of drawings
     """
+    # Check if strategy supports drawings
+    if not getattr(strategy_instance, 'supports_drawings', False):
+        print(f"ℹ️  Strategy '{strategy_instance.name}' does not support drawings, skipping")
+        return existing_drawings
+    
     # Normalize symbol to DB format: BTC/USDT:USDT -> BTCUSDT
     normalized_symbol = symbol_to_filename(symbol)
     
