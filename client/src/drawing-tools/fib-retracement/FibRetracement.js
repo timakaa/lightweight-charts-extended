@@ -140,6 +140,41 @@ export class FibRetracement extends PluginBase {
   }
 
   /**
+   * Returns price axis label views
+   * Shows labels for all fib levels when selected or preview
+   * @returns {Array} Array of price axis views
+   */
+  priceAxisViews() {
+    // Show all fib level labels when selected or preview
+    if (
+      (this.isTargeted && this.isTargeted(this._selectedFibRetracementId)) ||
+      this.constructor.name === "PreviewFibRetracement"
+    ) {
+      const fibLevels = this._options.fibLevels || [];
+      const views = [];
+      for (const level of fibLevels) {
+        // Calculate price for this level using the same formula as renderer
+        const price =
+          this._p1.price + (this._p2.price - this._p1.price) * (1 - level);
+        views.push({
+          update: () => {},
+          coordinate: () => this._series.priceToCoordinate(price),
+          visible: () => true,
+          tickVisible: () => true,
+          textColor: () => this._options.labelTextColor,
+          backColor: () => this._options.labelColor,
+          text: () => this._options.priceLabelFormatter(price),
+          movePoint: () => {},
+        });
+      }
+      return views;
+    }
+
+    // Not selected - return empty array
+    return [];
+  }
+
+  /**
    * Returns time axis pane views if selected or preview (blue background rectangle)
    * @returns {Array} Array of time axis pane views
    */
@@ -154,37 +189,7 @@ export class FibRetracement extends PluginBase {
   }
 
   /**
-   * Returns price axis label views for all fib levels (the big blue labels)
-   * Creates a view for every fib level at the correct price position
-   * @returns {Array} Array of price axis views
-   */
-  priceAxisViews() {
-    // Add a view for every level (including 1 and 0) at the correct price
-    const fibLevels = this._options.fibLevels || [];
-    const views = [];
-    for (const level of fibLevels) {
-      // Calculate price for this level using the same formula as renderer
-      const price =
-        this._p1.price + (this._p2.price - this._p1.price) * (1 - level);
-      views.push({
-        update: () => {},
-        coordinate: () => this._series.priceToCoordinate(price),
-        visible: () =>
-          (this.isTargeted &&
-            this.isTargeted(this._selectedFibRetracementId)) ||
-          this.constructor.name === "PreviewFibRetracement",
-        tickVisible: () => true,
-        textColor: () => this._options.labelTextColor,
-        backColor: () => this._options.labelColor,
-        text: () => this._options.priceLabelFormatter(price),
-        movePoint: () => {},
-      });
-    }
-    return views;
-  }
-
-  /**
-   * Returns time axis label views
+   * Returns time axis label views (the big blue labels for endpoints)
    * @returns {Array} Array of time axis views
    */
   timeAxisViews() {

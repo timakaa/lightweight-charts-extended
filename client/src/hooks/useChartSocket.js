@@ -1,25 +1,11 @@
 import { useEffect, useRef } from "react";
-import { io } from "socket.io-client";
 import { useParams } from "react-router-dom";
+import { useSocket } from "@/contexts/SocketContext";
+import { INTERVAL_MAP, SOCKET_EVENTS } from "@/constants/chart";
 
-const SOCKET_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
-
-const INTERVAL_MAP = {
-  "1m": "1",
-  "3m": "3",
-  "5m": "5",
-  "15m": "15",
-  "30m": "30",
-  "1h": "60",
-  "2h": "120",
-  "4h": "240",
-  "6h": "360",
-  "12h": "720",
-  "1d": "D",
-  "1w": "W",
-  "1M": "M",
-};
-
+/**
+ * Hook to manage chart-specific socket subscriptions
+ */
 export function useChartSocket({
   symbol,
   interval,
@@ -28,11 +14,11 @@ export function useChartSocket({
   onDrawingDeleted,
   onDrawingUpdated,
 }) {
-  const socketRef = useRef(null);
-  const currentRoomRef = useRef(null);
+  const { subscribe, joinRoom, leaveRoom, socket } = useSocket();
   const { backtestId } = useParams();
 
-  const latestProps = useRef({
+  // Keep latest callbacks in ref to avoid re-subscribing
+  const callbacksRef = useRef({
     symbol,
     interval,
     onCandle,
@@ -40,8 +26,9 @@ export function useChartSocket({
     onDrawingDeleted,
     onDrawingUpdated,
   });
+
   useEffect(() => {
-    latestProps.current = {
+    callbacksRef.current = {
       symbol,
       interval,
       onCandle,
@@ -51,87 +38,86 @@ export function useChartSocket({
     };
   });
 
+  // Subscribe to socket events (only if not in backtest mode)
   useEffect(() => {
-    const socket = io(SOCKET_URL, {
-      transports: ["websocket"],
-      reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
-    });
-    socketRef.current = socket;
+    if (backtestId) return;
 
-    socket.on("disconnect", () => {});
+    const unsubscribers = [];
 
-    if (!backtestId) {
-      socket.on("chart_data_updated", (msg) => {
-        const { symbol, interval, onCandle } = latestProps.current;
-        const backendInterval = INTERVAL_MAP[interval] || interval;
+    // Subscribe to chart data updates
+    if (onCandle) {
+      const unsubscribe = subscribe(SOCKET_EVENTS.CHART_DATA_UPDATED, (msg) => {
+        const {
+          symbol: currentSymbol,
+          interval: currentInterval,
+          onCandle: currentOnCandle,
+        } = callbacksRef.current;
+        const backendInterval =
+          INTERVAL_MAP[currentInterval] || currentInterval;
+
         if (
-          onCandle &&
-          msg.symbol === symbol.replace("/", "") &&
+          msg.symbol === currentSymbol?.replace("/", "") &&
           msg.timeframe === backendInterval
         ) {
-          onCandle(msg.data);
+          currentOnCandle?.(msg.data);
         }
       });
-
-      socket.on("chart_drawing_received", (msg) => {
-        const { onDrawing } = latestProps.current;
-        if (onDrawing) {
-          onDrawing(msg, socket);
-        }
-      });
-
-      socket.on("chart_drawing_updated", (msg) => {
-        const { onDrawingUpdated } = latestProps.current;
-        if (onDrawingUpdated) {
-          onDrawingUpdated(msg, socket);
-        }
-      });
-
-      socket.on("chart_drawing_deleted", (msg) => {
-        const { onDrawingDeleted } = latestProps.current;
-        if (onDrawingDeleted) {
-          onDrawingDeleted(msg, socket);
-        }
-      });
+      unsubscribers.push(unsubscribe);
     }
 
-    const handleVisibilityChange = () => {
-      if (!document.hidden && socket.disconnected) {
-        socket.connect();
-      }
-    };
+    // Subscribe to drawing events
+    if (onDrawing) {
+      const unsubscribe = subscribe(
+        SOCKET_EVENTS.CHART_DRAWING_RECEIVED,
+        (msg) => {
+          callbacksRef.current.onDrawing?.(msg, socket);
+        },
+      );
+      unsubscribers.push(unsubscribe);
+    }
 
-    document.addEventListener("visibilitychange", handleVisibilityChange);
+    if (onDrawingUpdated) {
+      const unsubscribe = subscribe(
+        SOCKET_EVENTS.CHART_DRAWING_UPDATED,
+        (msg) => {
+          callbacksRef.current.onDrawingUpdated?.(msg, socket);
+        },
+      );
+      unsubscribers.push(unsubscribe);
+    }
 
+    if (onDrawingDeleted) {
+      const unsubscribe = subscribe(
+        SOCKET_EVENTS.CHART_DRAWING_DELETED,
+        (msg) => {
+          callbacksRef.current.onDrawingDeleted?.(msg, socket);
+        },
+      );
+      unsubscribers.push(unsubscribe);
+    }
+
+    // Cleanup subscriptions
     return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      socket.disconnect();
+      unsubscribers.forEach((unsubscribe) => unsubscribe());
     };
-  }, []);
+  }, [
+    backtestId,
+    subscribe,
+    socket,
+    onCandle,
+    onDrawing,
+    onDrawingUpdated,
+    onDrawingDeleted,
+  ]);
 
+  // Join/leave rooms based on symbol and interval
   useEffect(() => {
-    if (!socketRef.current || !symbol || !interval) {
-      return;
-    }
+    if (!symbol || !interval || backtestId) return;
 
-    const socket = socketRef.current;
-    const backendInterval = INTERVAL_MAP[interval] || interval;
-    const room = `${symbol.replace("/", "")}-${backendInterval}`;
-
-    if (currentRoomRef.current) {
-      socket.emit("leave_room", { room: currentRoomRef.current });
-    }
-
-    currentRoomRef.current = room;
-    socket.emit("join_room", { room });
+    joinRoom(symbol, interval);
 
     return () => {
-      if (currentRoomRef.current) {
-        socket.emit("leave_room", { room: currentRoomRef.current });
-        currentRoomRef.current = null;
-      }
+      leaveRoom();
     };
-  }, [symbol, interval]);
+  }, [symbol, interval, backtestId, joinRoom, leaveRoom]);
 }

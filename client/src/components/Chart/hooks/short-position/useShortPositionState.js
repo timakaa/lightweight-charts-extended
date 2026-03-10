@@ -1,8 +1,6 @@
-// useShortPositionState.js - React hook for managing short position state (data, selection, hover)
 import { useState } from "react";
 import { useSelectedPositionStore } from "@store/selectedPosition";
 
-// Handles short positions data, selection, and hover state
 function useShortPositionState() {
   const [positionsData, setPositionsData] = useState([]);
   const store = useSelectedPositionStore();

@@ -7,6 +7,7 @@ import Sidebar from "@components/Sidebar/Sidebar";
 import Backtest from "@pages/Backtest/Backtest";
 import Backtests from "@pages/Backtests/Backtests";
 import NotFound404 from "@components/404/404";
+import ErrorBoundary from "@components/ErrorBoundary";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -29,22 +30,61 @@ function App() {
             path='/'
             element={
               <div className='fixed inset-0 flex flex-col bg-background overflow-hidden'>
-                <TopBar />
+                <ErrorBoundary
+                  title='TopBar Error'
+                  message='The top bar encountered an error. Please refresh the page.'
+                >
+                  <TopBar />
+                </ErrorBoundary>
                 <div className='flex-1 flex overflow-hidden'>
-                  {drawingTools && <Sidebar {...drawingTools} />}
+                  {drawingTools && (
+                    <ErrorBoundary
+                      title='Sidebar Error'
+                      message='The sidebar encountered an error.'
+                      onReset={() => setDrawingTools(null)}
+                    >
+                      <Sidebar {...drawingTools} />
+                    </ErrorBoundary>
+                  )}
                   <div className='flex-1 overflow-hidden'>
-                    <Chart
-                      onChartReady={(data) =>
-                        setDrawingTools(data.drawingTools)
-                      }
-                    />
+                    <ErrorBoundary
+                      title='Chart Error'
+                      message='The chart encountered an error. Try refreshing the page or changing the symbol.'
+                      onReset={() => setDrawingTools(null)}
+                    >
+                      <Chart
+                        onChartReady={(data) =>
+                          setDrawingTools(data.drawingTools)
+                        }
+                      />
+                    </ErrorBoundary>
                   </div>
                 </div>
               </div>
             }
           />
-          <Route path='/backtest' element={<Backtests />} />
-          <Route path='/backtest/:backtestId' element={<Backtest />} />
+          <Route
+            path='/backtest'
+            element={
+              <ErrorBoundary
+                title='Backtests Error'
+                message='Failed to load backtests page.'
+              >
+                <Backtests />
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path='/backtest/:backtestId'
+            element={
+              <ErrorBoundary
+                title='Backtest Error'
+                message='Failed to load backtest details.'
+              >
+                <Backtest />
+              </ErrorBoundary>
+            }
+          />
           <Route path='*' element={<NotFound404 />} />
         </Routes>
       </Router>
