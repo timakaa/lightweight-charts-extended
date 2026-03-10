@@ -20,7 +20,7 @@ class RSIMACDComboStrategy(BaseBacktestStrategy):
     default_parameters = get_default_parameters()
     default_timeframes = ["1h"]
     
-    def __init__(self, parameters: Dict[str, Any] = None, timeframes: List[str] = None, save_charts: bool = False):
+    def __init__(self, parameters: Dict[str, Any] | None = None, timeframes: List[str] | None = None, save_charts: bool = False):
         super().__init__(parameters, timeframes, save_charts)
         # Tracking is now handled in base class via _trade_signals and _balance_history
     

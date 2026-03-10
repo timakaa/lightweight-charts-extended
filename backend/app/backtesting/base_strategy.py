@@ -19,8 +19,8 @@ class BaseBacktestStrategy(ABC):
 
     def __init__(
         self,
-        parameters: Dict[str, Any] = None,
-        timeframes: List[str] = None,
+        parameters: Dict[str, Any] | None = None,
+        timeframes: List[str] | None = None,
         save_charts: bool = False
     ):
         """
@@ -32,12 +32,10 @@ class BaseBacktestStrategy(ABC):
             save_charts: Whether to generate and save charts
         """
         # Merge provided parameters with class defaults
-        self.parameters = {**self.default_parameters}
-        if parameters:
-            self.parameters.update(parameters)
+        self.parameters = {**self.default_parameters, **(parameters or {})}
         
         # Set timeframes (use provided or class default)
-        self.timeframes = timeframes if timeframes is not None else self.default_timeframes
+        self.timeframes = timeframes if timeframes is not None else self.default_timeframes.copy()
         
         # Chart generation flag
         self.save_charts = save_charts

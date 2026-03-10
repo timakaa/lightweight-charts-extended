@@ -20,7 +20,7 @@ class SimpleMACrossStrategy(BaseBacktestStrategy):
     default_parameters = get_default_parameters()
     default_timeframes = ["1h"]
 
-    def __init__(self, parameters: Dict[str, Any] = None, timeframes: List[str] = None, save_charts: bool = False):
+    def __init__(self, parameters: Dict[str, Any] | None = None, timeframes: List[str] | None = None, save_charts: bool = False):
         super().__init__(parameters, timeframes, save_charts)
         # Balance history is now tracked in base class
 
