@@ -4,8 +4,21 @@ Supports multiple timeframes, custom parameters, and strategy variations
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, Any, List
+from typing import Dict, Any, List, TypedDict, Literal, NotRequired
 import pandas as pd
+
+
+class StrategyField(TypedDict):
+    """Type definition for a strategy field"""
+    label: str
+    value: str | int | float
+    color: NotRequired[Literal["green", "red"] | None]
+
+
+class StrategySection(TypedDict):
+    """Type definition for a strategy section with fields"""
+    title: str
+    fields: List[StrategyField]
 
 
 class BaseBacktestStrategy(ABC):
@@ -104,7 +117,7 @@ class BaseBacktestStrategy(ABC):
         """
         return {}
     
-    def get_strategy_related_fields(self) -> List[Dict[str, Any]]:
+    def get_strategy_related_fields(self) -> List[StrategySection]:
         """
         Get strategy-specific fields to display in the UI with subsections.
         Override this method in subclasses to provide custom fields.

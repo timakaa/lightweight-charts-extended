@@ -1,8 +1,11 @@
 """
 Parameter definitions and validation for crash buy DCA strategy
 """
-from typing import Dict, Any
-from pydantic import BaseModel, Field, field_validator
+from typing import Dict, Any, List, TYPE_CHECKING
+from pydantic import BaseModel, Field
+
+if TYPE_CHECKING:
+    from ...base_strategy import StrategySection
 
 
 class CrashBuyDCAParams(BaseModel):
@@ -141,9 +144,9 @@ def validate_parameters(parameters: Dict[str, Any]) -> bool:
         return False
 
 
-def format_strategy_fields(metrics: Dict[str, Any]) -> list:
+def format_strategy_fields(metrics: Dict[str, Any]) -> "List[StrategySection]":
     """Get formatted fields for UI display with subsections"""
-    sections = []
+    sections: List[Dict[str, Any]] = []
     
     if not metrics:
         return sections

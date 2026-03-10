@@ -9,7 +9,7 @@ we simulate it by opening a single position and tracking buy signals separately.
 from typing import Dict, Any, List
 import pandas as pd
 
-from ...base_strategy import BaseBacktestStrategy
+from ...base_strategy import BaseBacktestStrategy, StrategySection
 from .parameters import (
     get_default_parameters, 
     validate_parameters,
@@ -87,7 +87,7 @@ class CrashBuyDCAStrategy(BaseBacktestStrategy):
         
         return overrides
 
-    def get_strategy_related_fields(self) -> List[Dict[str, Any]]:
+    def get_strategy_related_fields(self) -> List[StrategySection]:
         """Get formatted fields for UI display with subsections"""
         metrics = getattr(self, '_dca_metrics', {})
         return format_strategy_fields(metrics)
