@@ -5,6 +5,7 @@ import BacktestList from "./components/BacktestList";
 import SearchBar from "./components/SearchBar";
 import LoadingSpinner from "./components/LoadingSpinner";
 import ErrorState from "./components/ErrorState";
+import ActiveBacktests from "@components/ActiveBacktests";
 
 const Backtests = () => {
   const [searchInput, setSearchInput] = useState("");
@@ -29,6 +30,9 @@ const Backtests = () => {
 
         {/* Error State */}
         {error && <ErrorState message={error.message} />}
+
+        {/* Active Backtests */}
+        <ActiveBacktests />
 
         {/* Initial Loading State */}
         {isLoading && (

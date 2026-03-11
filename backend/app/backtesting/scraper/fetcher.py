@@ -63,6 +63,7 @@ async def fetch_data_for_range(
     start_date: str,
     end_date: str,
     timeframe_ms: int,
+    progress_callback=None,
 ) -> List[List[Union[int, float]]]:
     """Fetch all data for a given date range"""
     print(f"Fetching data from {start_date} to {end_date} for {timeframe_value}")
@@ -90,6 +91,7 @@ async def fetch_data_for_range(
         bar_format="{l_bar}{bar:30}{r_bar}",
     )
 
+    chunk_count = 0
     while current_timestamp < end_timestamp:
         ohlcv = await fetch_ohlcv_chunk(
             exchange,
@@ -105,10 +107,18 @@ async def fetch_data_for_range(
 
         all_data.extend(ohlcv)
         current_timestamp = int(ohlcv[-1][0]) + timeframe_ms
+        chunk_count += 1
         pbar.update(1)
+        
+        # Call progress callback if provided
+        if progress_callback:
+            progress_pct = int((chunk_count / total_chunks) * 100)
+            progress_callback(progress_pct)
 
     if pbar.n < pbar.total:
         pbar.update(pbar.total - pbar.n)
+        if progress_callback:
+            progress_callback(100)
 
     await asyncio.sleep(0.1)
     pbar.close()
@@ -122,6 +132,7 @@ async def fetch_and_save_historical_data(params_obj: Dict[str, Any]) -> None:
     start_date: str = params_obj["start_date"]
     end_date: str = params_obj["end_date"]
     exchange_id: str = params_obj["exchange"]
+    progress_callback = params_obj.get("progress_callback")
 
     if not isinstance(timeframes, list):
         timeframes = [timeframes]
@@ -147,7 +158,7 @@ async def fetch_and_save_historical_data(params_obj: Dict[str, Any]) -> None:
 
         tasks = [
             process_timeframe(
-                exchange, symbol, timeframe, start_date, end_date, min_date
+                exchange, symbol, timeframe, start_date, end_date, min_date, progress_callback
             )
             for timeframe in timeframes
         ]

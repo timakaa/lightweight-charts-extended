@@ -8,6 +8,7 @@ import Backtest from "@pages/Backtest/Backtest";
 import Backtests from "@pages/Backtests/Backtests";
 import NotFound404 from "@components/404/404";
 import ErrorBoundary from "@components/ErrorBoundary";
+import BacktestProgressContainer from "@components/BacktestProgressContainer";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -87,6 +88,9 @@ function App() {
           />
           <Route path='*' element={<NotFound404 />} />
         </Routes>
+
+        {/* Global backtest progress toasts */}
+        <BacktestProgressContainer />
       </Router>
     </QueryClientProvider>
   );

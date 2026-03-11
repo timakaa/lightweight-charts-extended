@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import BacktestCard from "../pages/Backtests/components/BacktestCard";
+import RunningBacktestCard from "./RunningBacktestCard";
 import { useBacktestsSummarizedInfinite } from "../hooks/backtests/useBacktests";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,7 @@ const BacktestModalContent = ({ onClose }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const inputRef = useRef(null);
+  const [runningBacktests, setRunningBacktests] = useState([]);
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -25,6 +27,51 @@ const BacktestModalContent = ({ onClose }) => {
       clearTimeout(handler);
     };
   }, [searchTerm]);
+
+  // Listen for new backtest events
+  useEffect(() => {
+    const handleNewBacktest = (event) => {
+      const { backtestId } = event.detail;
+      console.log("Backtest started event received:", backtestId);
+      setRunningBacktests((prev) => {
+        if (prev.includes(backtestId)) return prev;
+        // Add new backtest at the beginning (newest first)
+        return [backtestId, ...prev];
+      });
+    };
+
+    window.addEventListener("backtest:started", handleNewBacktest);
+    return () => {
+      window.removeEventListener("backtest:started", handleNewBacktest);
+    };
+  }, []);
+
+  // Fetch active backtests on mount
+  useEffect(() => {
+    const fetchActiveBacktests = async () => {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL || "http://localhost:8000"}/api/v1/backtest/progress/active`,
+        );
+        if (response.ok) {
+          const data = await response.json();
+          const activeIds = Object.keys(data);
+          console.log("Active backtests on mount:", activeIds);
+          // Reverse to show newest first
+          setRunningBacktests(activeIds.reverse());
+        }
+      } catch (error) {
+        console.error("Failed to fetch active backtests:", error);
+      }
+    };
+
+    fetchActiveBacktests();
+  }, []);
+
+  const handleBacktestComplete = (backtestId) => {
+    // Remove from running list immediately
+    setRunningBacktests((prev) => prev.filter((id) => id !== backtestId));
+  };
 
   const { data, isLoading, error, isFetching, fetchNextPage, hasNextPage } =
     useBacktestsSummarizedInfinite(10, debouncedSearch);
@@ -83,32 +130,50 @@ const BacktestModalContent = ({ onClose }) => {
           <div className='flex items-center justify-center p-8'>
             <div className='text-red-500'>Error: {error.message}</div>
           </div>
-        ) : backtests.length > 0 ? (
+        ) : (
           <>
-            <div className='space-y-3'>
-              {backtests.map((backtest) => (
-                <BacktestCard
-                  key={backtest.id}
-                  backtest={backtest}
-                  onClick={() => handleBacktestSelect(backtest)}
-                />
-              ))}
-            </div>
-            {hasNextPage && (
-              <div
-                ref={loaderRef}
-                className='h-10 flex justify-center items-center'
-              >
-                {isFetching && (
-                  <div className='text-primary'>Loading more...</div>
+            {/* Running backtests */}
+            {runningBacktests.length > 0 && (
+              <div className='space-y-3 mb-4'>
+                {runningBacktests.map((backtestId) => (
+                  <RunningBacktestCard
+                    key={backtestId}
+                    backtestId={backtestId}
+                    onComplete={handleBacktestComplete}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Completed backtests */}
+            {backtests.length > 0 ? (
+              <>
+                <div className='space-y-3'>
+                  {backtests.map((backtest) => (
+                    <BacktestCard
+                      key={backtest.id}
+                      backtest={backtest}
+                      onClick={() => handleBacktestSelect(backtest)}
+                    />
+                  ))}
+                </div>
+                {hasNextPage && (
+                  <div
+                    ref={loaderRef}
+                    className='h-10 flex justify-center items-center'
+                  >
+                    {isFetching && (
+                      <div className='text-primary'>Loading more...</div>
+                    )}
+                  </div>
                 )}
+              </>
+            ) : (
+              <div className='flex items-center justify-center p-8'>
+                <div className='text-primary'>No backtests found</div>
               </div>
             )}
           </>
-        ) : (
-          <div className='flex items-center justify-center p-8'>
-            <div className='text-primary'>No backtests found</div>
-          </div>
         )}
       </div>
     </div>

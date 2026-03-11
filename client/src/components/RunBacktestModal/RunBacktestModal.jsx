@@ -1,9 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import BacktestForm from "./BacktestForm";
 import { Button } from "@/components/ui/button";
 import { useRunBacktest } from "@hooks/backtests/useRunBacktest";
 import { Loader2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 
 const RunBacktestModalContent = ({ onClose }) => {
   const [strategy, setStrategy] = useState("");
@@ -18,8 +17,6 @@ const RunBacktestModalContent = ({ onClose }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    console.log("Submitting with parameters:", parameters); // Debug log
-
     runBacktest(
       {
         strategy,
@@ -31,9 +28,17 @@ const RunBacktestModalContent = ({ onClose }) => {
       },
       {
         onSuccess: (data) => {
+          // Close modal immediately
           onClose();
-          // Show success message - backtest is running in background
-          alert(data.message || "Backtest started successfully!");
+
+          // Dispatch event to show progress toast
+          if (data.backtest_id) {
+            window.dispatchEvent(
+              new CustomEvent("backtest:started", {
+                detail: { backtestId: data.backtest_id },
+              }),
+            );
+          }
         },
         onError: (error) => {
           console.error("Error running backtest:", error);

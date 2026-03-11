@@ -29,6 +29,7 @@ async def process_timeframe(
     start_date: str,
     end_date: str,
     min_date: datetime,
+    progress_callback=None,
 ) -> None:
     """Process data for a single timeframe"""
     if isinstance(timeframe, Timeframe):
@@ -108,6 +109,7 @@ async def process_timeframe(
             date_range["start"],
             date_range["end"],
             timeframe_ms,
+            progress_callback=progress_callback,
         )
         all_new_data.extend(chunk_data)
         await asyncio.sleep(0.2)

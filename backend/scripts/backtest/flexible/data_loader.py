@@ -22,7 +22,8 @@ def check_and_scrape_data(
     timeframes: List[str],
     start_date: str,
     end_date: str,
-    charts_dir: str
+    charts_dir: str,
+    progress_callback=None
 ) -> bool:
     """
     Check if data exists for the symbol and date range, scrape if needed
@@ -96,7 +97,8 @@ def check_and_scrape_data(
                 "timeframe": timeframe,
                 "start_date": start_date,
                 "end_date": end_date,
-                "exchange": "bybit"
+                "exchange": "bybit",
+                "progress_callback": progress_callback
             }
             
             asyncio.run(fetch_and_save_historical_data(params))

@@ -1,13 +1,17 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
-from fastapi.responses import Response
+from fastapi.responses import Response, StreamingResponse
 from app.services.backtest_service import backtest_service
 from app.core.storage import storage
+from app.core.backtest_progress import backtest_progress, BacktestStage
 from app.backtesting.strategies import list_strategies, get_strategy_info
 from typing import Optional, Dict, Any, List
 from pydantic import BaseModel, Field
 from app.utils.symbol_utils import normalize_symbol_for_api
 import sys
 import os
+import uuid
+import asyncio
+import json
 
 
 # Add scripts directory to path for flexible backtest imports
@@ -40,8 +44,12 @@ class RunBacktestRequest(BaseModel):
 async def run_backtest(request: RunBacktestRequest, background_tasks: BackgroundTasks):
     """
     Run a backtest with the specified parameters in the background
+    Returns a backtest_id for tracking progress
     """
     try:
+        # Generate unique backtest ID
+        backtest_id = str(uuid.uuid4())
+        
         # Convert timeframe to list (flexible_backtest expects a list)
         timeframes = [request.timeframe]
 
@@ -50,6 +58,9 @@ async def run_backtest(request: RunBacktestRequest, background_tasks: Background
         
         # Use cash from strategy parameters if provided, otherwise use request.cash
         cash = request.parameters.get('cash', request.cash)
+        
+        # Initialize progress tracker
+        backtest_progress.create_backtest(backtest_id, request.strategy, symbol)
         
         # Run the backtest in the background
         background_tasks.add_task(
@@ -61,17 +72,80 @@ async def run_backtest(request: RunBacktestRequest, background_tasks: Background
             cash=cash,
             save_to_db=True,
             start_date=request.start_date,
-            end_date=request.end_date
+            end_date=request.end_date,
+            progress_id=backtest_id
         )
         
         return {
             "success": True,
-            "message": "Backtest started successfully. It will appear in the list once completed.",
+            "backtest_id": backtest_id,
+            "message": "Backtest started successfully. Use the backtest_id to track progress.",
         }
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error starting backtest: {str(e)}")
+
+
+@router.get("/backtest/progress/active")
+async def get_active_backtests():
+    """
+    Get all currently active (running) backtests
+    """
+    active = backtest_progress.get_all_active()
+    return active
+
+
+@router.get("/backtest/progress/{backtest_id}")
+async def get_backtest_progress(backtest_id: str):
+    """
+    Get current progress of a running backtest
+    """
+    progress = backtest_progress.get_progress(backtest_id)
+    if not progress:
+        raise HTTPException(status_code=404, detail="Backtest not found")
+    return progress
+
+
+@router.get("/backtest/progress/{backtest_id}/stream")
+async def stream_backtest_progress(backtest_id: str):
+    """
+    Server-Sent Events endpoint for real-time backtest progress updates
+    """
+    progress = backtest_progress.get_progress(backtest_id)
+    if not progress:
+        raise HTTPException(status_code=404, detail="Backtest not found")
+    
+    async def event_generator():
+        """Generate SSE events for backtest progress"""
+        try:
+            while True:
+                progress = backtest_progress.get_progress(backtest_id)
+                if not progress:
+                    break
+                
+                # Send progress update
+                yield f"data: {json.dumps(progress)}\n\n"
+                
+                # Check if backtest is completed or failed
+                if progress["stage"] in [BacktestStage.COMPLETED, BacktestStage.FAILED]:
+                    break
+                
+                # Wait before next update
+                await asyncio.sleep(0.5)
+        except asyncio.CancelledError:
+            # Client disconnected
+            pass
+    
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",  # Disable nginx buffering
+        }
+    )
 
 
 @router.get("/backtest/summarized")
