@@ -75,6 +75,28 @@ class BaseBacktestStrategy(ABC):
             Strategy class ready for backtesting
         """
         pass
+    
+    def build_paper_trading_strategy(self):
+        """
+        Create a paper trading strategy instance
+        Override in subclass if strategy supports paper trading
+        
+        Returns:
+            Paper trading strategy instance with methods:
+                - update_indicators(candle)
+                - should_enter_long(current_data)
+                - should_enter_short(current_data)
+                - should_exit(position_type, current_data)
+                - calculate_stop_loss(entry_price, position_type)
+                - calculate_take_profit(entry_price, position_type)
+        
+        Raises:
+            NotImplementedError: If strategy doesn't support paper trading
+        """
+        raise NotImplementedError(
+            f"Strategy '{self.name}' does not support paper trading. "
+            "Override build_paper_trading_strategy() to add support."
+        )
 
     def validate_parameters(self, parameters: Dict[str, Any]) -> bool:
         """

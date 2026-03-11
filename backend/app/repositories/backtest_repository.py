@@ -17,7 +17,6 @@ class BacktestRepository:
         # Create backtest instance
         backtest = BacktestResult(
             title=backtest_data.get("title"),
-            is_live=backtest_data.get("is_live", False),
             start_date=backtest_data.get("start_date"),
             end_date=backtest_data.get("end_date"),
             initial_balance=backtest_data.get("initial_balance"),

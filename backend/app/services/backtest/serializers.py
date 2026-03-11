@@ -41,7 +41,6 @@ class BacktestSerializer:
                 backtest.end_date.isoformat() if backtest.end_date is not None else None
             ),
             "title": backtest.title,
-            "is_live": backtest.is_live,
             "initial_balance": backtest.initial_balance,
             "final_balance": backtest.final_balance,
             "total_trades": backtest.total_trades,
@@ -100,7 +99,6 @@ class BacktestSerializer:
                 else None
             ),
             "total_pnl_percentage": backtest.total_pnl_percentage,
-            "is_live": backtest.is_live,
             "symbols": [
                 {
                     "ticker": symbol.ticker,

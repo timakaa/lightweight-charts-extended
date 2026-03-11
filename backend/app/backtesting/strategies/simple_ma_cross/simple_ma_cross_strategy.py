@@ -9,6 +9,7 @@ from ...base_strategy import BaseBacktestStrategy
 from .parameters import get_default_parameters, validate_parameters, get_parameter_schema
 from .strategy_class import create_strategy_class
 from .charts import generate_charts as generate_strategy_charts
+from .paper_trading_strategy import SimpleMACrossPaperStrategy
 
 
 class SimpleMACrossStrategy(BaseBacktestStrategy):
@@ -39,6 +40,10 @@ class SimpleMACrossStrategy(BaseBacktestStrategy):
             balance_history_list=self._balance_history,
             should_track_balance=self.save_charts
         )
+    
+    def build_paper_trading_strategy(self):
+        """Create paper trading strategy instance"""
+        return SimpleMACrossPaperStrategy(self.parameters)
     
     def generate_charts(self, backtest_id: int) -> List[str]:
         """Generate and upload charts to MinIO"""

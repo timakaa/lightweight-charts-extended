@@ -3,7 +3,6 @@ Results Builder Module
 Constructs the final results dictionary with all metrics
 """
 
-import json
 import sys
 import os
 import pandas as pd
@@ -148,7 +147,6 @@ def build_results_dict(
         "long_trades": long_trades,
         "short_trades": short_trades,
         "drawings": drawings,
-        "is_live": False,  # Always False for backtests
         "symbols": [
             {
                 "ticker": symbol_to_filename(symbol),  # Convert to DB format: BTC/USDT:USDT -> BTCUSDT
@@ -164,7 +162,7 @@ def build_results_dict(
 
 def print_results_summary(results: Dict[str, Any]):
     """Print a summary of backtest results"""
-    print(f"\n📊 Results Summary:")
+    print("\n📊 Results Summary:")
     print(f"Total Trades: {results['total_trades']}")
     print(f"Win Rate: {results['win_rate']:.2%}")
     print(f"Total P&L: ${results['total_pnl']:,.2f}")

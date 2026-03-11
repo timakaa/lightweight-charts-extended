@@ -1,10 +1,12 @@
 """
 Simple MA Cross Strategy - Strategy Class Implementation
+Uses SimpleMACrossLogic for SL/TP calculations
 """
 from typing import Dict, Any, List
 import pandas as pd
 from backtesting.lib import crossover
 from backtesting import Strategy
+from .logic import SimpleMACrossLogic
 
 
 def create_strategy_class(
@@ -24,14 +26,20 @@ def create_strategy_class(
         Strategy class ready for backtesting
     """
     
+    # Create logic instance for SL/TP calculations
+    logic = SimpleMACrossLogic(
+        fast_ma=params["fast_ma"],
+        slow_ma=params["slow_ma"],
+        stop_loss_pct=params["stop_loss_pct"],
+        risk_reward=params["risk_reward"]
+    )
+    
     class SimpleMACrossBacktestStrategy(Strategy):
         """Simple Moving Average Crossover Strategy"""
 
         # Define parameters
         fast_ma = params["fast_ma"]
         slow_ma = params["slow_ma"]
-        risk_reward = params["risk_reward"]
-        stop_loss_pct = params["stop_loss_pct"]
         return_trades = True
 
         def init(self):
@@ -57,18 +65,18 @@ def create_strategy_class(
 
             # Long position when fast crosses above slow
             if crossover(list(self.fast), list(self.slow)) and not self.position:
-                # Calculate stop loss and take profit levels for long
-                stop_loss = entry_price * (1 - self.stop_loss_pct)
-                take_profit = entry_price * (1 + (self.stop_loss_pct * self.risk_reward))
+                # Use shared logic for SL/TP calculation
+                stop_loss = logic.calculate_stop_loss(entry_price, 'long')
+                take_profit = logic.calculate_take_profit(entry_price, 'long')
 
                 # Enter long position with stop loss and take profit
                 self.buy(sl=stop_loss, tp=take_profit)
 
             # Short position when fast crosses below slow
             elif crossover(list(self.slow), list(self.fast)) and not self.position:
-                # Calculate stop loss and take profit levels for short
-                stop_loss = entry_price * (1 + self.stop_loss_pct)
-                take_profit = entry_price * (1 - (self.stop_loss_pct * self.risk_reward))
+                # Use shared logic for SL/TP calculation
+                stop_loss = logic.calculate_stop_loss(entry_price, 'short')
+                take_profit = logic.calculate_take_profit(entry_price, 'short')
 
                 # Enter short position with stop loss and take profit
                 self.sell(sl=stop_loss, tp=take_profit)

@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Query, BackgroundTasks
 from fastapi.responses import Response, StreamingResponse
 from app.services.backtest_service import backtest_service
 from app.core.storage import storage
 from app.core.backtest_progress import backtest_progress, BacktestStage
-from app.backtesting.strategies import list_strategies, get_strategy_info
-from typing import Optional, Dict, Any, List
+from app.backtesting.strategies import list_strategies
+from typing import Optional, Dict, Any
 from pydantic import BaseModel, Field
 from app.utils.symbol_utils import normalize_symbol_for_api
 import sys

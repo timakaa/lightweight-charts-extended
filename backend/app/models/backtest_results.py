@@ -1,8 +1,7 @@
-from sqlalchemy import Column, Integer, Float, String, JSON, DateTime, Boolean
+from sqlalchemy import Column, Integer, Float, String, JSON, DateTime
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.db.database import Base
-from app.models.trade import Trade
 
 
 class BacktestResult(Base):
@@ -11,7 +10,7 @@ class BacktestResult(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     title = Column(String)
-    is_live = Column(Boolean, default=False)
+    status = Column(String, nullable=True)  # running, stopped
 
     start_date = Column(DateTime, nullable=True)
     end_date = Column(DateTime, nullable=True)

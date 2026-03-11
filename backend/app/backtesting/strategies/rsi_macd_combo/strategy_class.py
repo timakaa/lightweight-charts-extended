@@ -72,7 +72,7 @@ def create_strategy_class(
             self.bull_pivots = self.I(calculate_bull_pivots, self.rsi)
             self.bear_pivots = self.I(calculate_bear_pivots, self.rsi)
             
-            print(f"🔧 RSI+MACD Strategy initialized")
+            print("🔧 RSI+MACD Strategy initialized")
         
         def next(self):
             """Trading logic based on MACD crossovers and RSI divergences"""
