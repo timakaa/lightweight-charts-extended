@@ -62,7 +62,7 @@ const PresetsSection = ({ timeframe, startDate, endDate, onPresetClick }) => {
                 <Info className='h-3.5 w-3.5' />
               </button>
             </TooltipTrigger>
-            <TooltipContent side='top' className='max-w-[250px]'>
+            <TooltipContent side='right' className='max-w-[250px]'>
               <p>
                 Save your current timeframe and date range to quickly apply it
                 later in one click

@@ -11,6 +11,7 @@ const RunBacktestModalContent = ({ onClose }) => {
   const [startDate, setStartDate] = useState("2024-01-01");
   const [endDate, setEndDate] = useState("2025-01-01");
   const [parameters, setParameters] = useState({});
+  const [isLive, setIsLive] = useState(false);
 
   const { mutate: runBacktest, isPending } = useRunBacktest();
 
@@ -25,6 +26,7 @@ const RunBacktestModalContent = ({ onClose }) => {
         start_date: startDate,
         end_date: endDate,
         parameters: parameters,
+        is_live: isLive,
       },
       {
         onSuccess: (data) => {
@@ -79,6 +81,8 @@ const RunBacktestModalContent = ({ onClose }) => {
         setEndDate={setEndDate}
         parameters={parameters}
         setParameters={setParameters}
+        isLive={isLive}
+        setIsLive={setIsLive}
         onSubmit={handleSubmit}
       />
 
