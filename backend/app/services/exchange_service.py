@@ -1,19 +1,17 @@
-import asyncio
-from typing import List, Dict, Any, Optional
+from typing import Dict, Any, Optional
 
 from .exchange import TickerHandler, CandleHandler
 from app.utils.precision_utils import precision_to_decimals
 from app.utils.market_cache import get_exchange
+from app.config import settings
 
 
 class ExchangeService:
     """Service for handling exchange operations with Bybit"""
 
-    def __init__(self, exchange_id: str = "bybit"):
-        self.exchange_id = exchange_id
-        # Exchange instance is managed by the registry in market_cache
-        # — shared, cached, and thread-safe
-        self.exchange = get_exchange(exchange_id)
+    def __init__(self, exchange_id: str = None):
+        self.exchange_id = exchange_id or settings.DEFAULT_EXCHANGE
+        self.exchange = get_exchange(self.exchange_id)
 
         # Initialize handlers
         self.ticker_handler = TickerHandler(self.exchange)
@@ -71,13 +69,11 @@ class ExchangeService:
         from app.utils.market_cache import get_market_info
         from app.utils.symbol_utils import normalize_symbol_for_api
         
-        exchange_id = "bybit"
-        
         # Convert frontend format to backend format (BTC/USDT -> BTC/USDT:USDT)
         api_symbol = normalize_symbol_for_api(symbol, market_type="swap")
         
         # Get market info using the API format
-        market = get_market_info(exchange_id, api_symbol)
+        market = get_market_info(self.exchange_id, api_symbol)
         
         if not market:
             return None
@@ -101,22 +97,19 @@ class ExchangeService:
         """Get price and amount precision for a symbol"""
         from app.utils.market_cache import get_market_info
         from app.utils.symbol_utils import normalize_symbol_for_api
-        import math
-        
-        exchange_id = "bybit"
         
         # Convert frontend format to backend format
         api_symbol = normalize_symbol_for_api(symbol, market_type="swap")
         
         # Get market info
-        market = get_market_info(exchange_id, api_symbol)
+        market = get_market_info(self.exchange_id, api_symbol)
         
         if not market:
             return None
         
         # Extract precision info from market
         precision = market.get("precision", {})
-        price_precision = market["info"]["priceScale"] or 2
+        price_precision = market["info"]["priceScale"] or market["info"]["szDecimals"] or 2
         
         return {
             "symbol": symbol,

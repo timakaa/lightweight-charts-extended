@@ -27,6 +27,9 @@ class Settings:
         "http://100.76.193.76:3000",
     ]
 
+    # Exchange Settings
+    DEFAULT_EXCHANGE: str = os.getenv("DEFAULT_EXCHANGE", "bybit")
+
     # Database Settings (for future use)
     DATABASE_URL: str = os.getenv("DATABASE_URL", "")
 
