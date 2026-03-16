@@ -1,32 +1,34 @@
-import ccxt
 import asyncio
 from typing import List, Dict, Any, Optional
 
 from .exchange import TickerHandler, CandleHandler
 from app.utils.precision_utils import precision_to_decimals
+from app.utils.market_cache import get_exchange
 
 
 class ExchangeService:
     """Service for handling exchange operations with Bybit"""
 
-    def __init__(self):
-        self.exchange = ccxt.bybit(
-            {"enableRateLimit": True, "options": {"defaultType": "swap"}}
-        )
-        self._markets_loaded = False
-        self._markets_lock = asyncio.Lock()
+    def __init__(self, exchange_id: str = "bybit"):
+        self.exchange_id = exchange_id
+        # Exchange instance is managed by the registry in market_cache
+        # — shared, cached, and thread-safe
+        self.exchange = get_exchange(exchange_id)
 
         # Initialize handlers
         self.ticker_handler = TickerHandler(self.exchange)
         self.candle_handler = CandleHandler(self.exchange)
 
+    def set_exchange(self, exchange_id: str) -> None:
+        """Switch to a different exchange (e.g. from a frontend request)"""
+        self.exchange_id = exchange_id
+        self.exchange = get_exchange(exchange_id)
+        self.ticker_handler = TickerHandler(self.exchange)
+        self.candle_handler = CandleHandler(self.exchange)
+
     async def ensure_markets_loaded(self):
-        """Ensure markets are loaded only once per process"""
-        if not self._markets_loaded:
-            async with self._markets_lock:
-                if not self._markets_loaded:
-                    await asyncio.to_thread(self.exchange.load_markets)
-                    self._markets_loaded = True
+        """Markets are already loaded by get_exchange() — no-op kept for compatibility"""
+        pass
 
     async def get_tickers_paginated(
         self,

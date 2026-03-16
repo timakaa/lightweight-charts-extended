@@ -20,7 +20,6 @@ class TickerHandler:
 
         # Fetch new data
         try:
-            await asyncio.to_thread(self.exchange.load_markets)
             tickers = await asyncio.to_thread(self.exchange.fetch_tickers)
 
             formatted_tickers = self._format_tickers(tickers)
