@@ -58,7 +58,9 @@ const BacktestCard = ({ backtest, onClick }) => {
         <span className='text-primary font-medium'>{backtest.title}</span>
         <div className='flex items-center gap-2'>
           <span className={getProfitLossColor(backtest.total_pnl_percentage)}>
-            {backtest.total_pnl_percentage.toFixed(2)}%
+            {backtest.total_pnl_percentage != null
+              ? `${backtest.total_pnl_percentage.toFixed(2)}%`
+              : "—"}
           </span>
           <OptionsDropdown backtest={backtest} />
         </div>
@@ -67,7 +69,7 @@ const BacktestCard = ({ backtest, onClick }) => {
         <span className='text-sm text-primary/70'>
           {formatDate(backtest.created_at)}
         </span>
-        {backtest.is_live && (
+        {backtest.status === "running" && (
           <span className='text-xs text-red-500 flex items-center gap-1'>
             <span className='relative flex h-3 w-3 items-center justify-center'>
               <span className='absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping-slow bg-red-500'></span>

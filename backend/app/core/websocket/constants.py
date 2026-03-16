@@ -18,3 +18,6 @@ BYBIT_INTERVAL_MAP = {
     "1w": "W",
     "1M": "M",
 }
+
+# Reverse map: Bybit interval -> app timeframe
+BYBIT_INTERVAL_REVERSE_MAP = {v: k for k, v in BYBIT_INTERVAL_MAP.items()}

@@ -123,6 +123,29 @@ class BybitWSManager:
             room=room,
         )
 
+        # Forward to paper trading sessions if candle is closed
+        from app.services.paper_trading_service import paper_trading_service
+        from app.core.websocket.constants import BYBIT_INTERVAL_REVERSE_MAP
+
+        # Convert Bybit interval back to app timeframe (e.g., "60" -> "1h")
+        timeframe = BYBIT_INTERVAL_REVERSE_MAP.get(interval, interval)
+
+        candle = {
+            "open": float(kline["open"]),
+            "high": float(kline["high"]),
+            "low": float(kline["low"]),
+            "close": float(kline["close"]),
+            "volume": float(kline["volume"]),
+            "timestamp": kline["start"],
+        }
+
+        await paper_trading_service.handle_candle(
+            symbol=symbol,
+            timeframe=timeframe,
+            candle=candle,
+            is_closed=kline.get("confirm", False),
+        )
+
     async def ensure_connected(self):
         """Ensure WebSocket connection is active"""
         if not self.is_connected or not self.ws:

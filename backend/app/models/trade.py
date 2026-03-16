@@ -14,7 +14,8 @@ class Trade(Base):
     __tablename__ = "trades"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    backtest_id = Column(Integer, ForeignKey("backtest_results.id"), nullable=False)
+    backtest_id = Column(Integer, ForeignKey("backtest_results.id"), nullable=True)
+    session_id = Column(Integer, ForeignKey("trading_sessions.id"), nullable=True)
 
     entry_time = Column(DateTime, nullable=False)
     symbol = Column(String, nullable=False)
@@ -30,3 +31,4 @@ class Trade(Base):
     exit_reason = Column(String, nullable=True)
 
     backtest = relationship("BacktestResult", back_populates="trades")
+    session = relationship("TradingSession", back_populates="trades")

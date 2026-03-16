@@ -8,6 +8,8 @@ from app.core.socket_instance import sio
 from app.core.socket_manager import bybit_ws_manager
 from app.db.database import engine
 from app.models.undelivered_drawings import Base
+# Import all models so SQLAlchemy mapper can resolve relationships
+from app.models import backtest_results, trading_session, trade, backtest_symbol  # noqa
 
 
 # Create FastAPI app

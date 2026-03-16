@@ -17,11 +17,9 @@ depends_on = None
 
 
 def upgrade():
-    op.add_column('backtest_results', sa.Column('status', sa.String(), nullable=True))
-    
-    # Remove is_live if it exists
-    op.drop_column('backtest_results', 'is_live')
+    # status was added here but removed in 009 (moved to trading_sessions)
+    # is_live was never in the migration chain, skip both operations
+    pass
 
 def downgrade():
-    op.add_column('backtest_results', sa.Column('is_live', sa.Boolean(), nullable=True))
-    op.drop_column('backtest_results', 'status')
+    pass

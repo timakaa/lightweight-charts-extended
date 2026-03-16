@@ -53,7 +53,7 @@ const BacktestForm = ({
           <div className='flex items-center justify-between p-3 bg-background rounded-lg border border-border'>
             <div className='flex items-center gap-2'>
               <label className='text-sm font-medium text-primary/80 cursor-pointer'>
-                Live Backtest
+                Paper Trading
               </label>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -66,10 +66,9 @@ const BacktestForm = ({
                 </TooltipTrigger>
                 <TooltipContent side='right' className='max-w-xs'>
                   <p className='text-xs'>
-                    Simulates real-time trading by processing bars with delays
-                    proportional to the timeframe. Watch your strategy execute
-                    as if trading live, with real-time chart updates and trade
-                    notifications.
+                    Run your strategy on live market data in real-time using
+                    paper money. No date range needed — it trades as the market
+                    moves right now.
                   </p>
                 </TooltipContent>
               </Tooltip>
