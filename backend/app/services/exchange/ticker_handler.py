@@ -20,7 +20,8 @@ class TickerHandler:
 
         # Fetch new data
         try:
-            await asyncio.to_thread(self.exchange.load_markets)
+            from app.utils.market_cache import ensure_markets_loaded_with_cache
+            await asyncio.to_thread(ensure_markets_loaded_with_cache, self.exchange, "bybit")
             tickers = await asyncio.to_thread(self.exchange.fetch_tickers)
 
             formatted_tickers = self._format_tickers(tickers)

@@ -35,6 +35,7 @@ def save_markets_cache(exchange_id: str, markets_data: Dict[str, Any]) -> None:
     """Save entire markets dictionary to cache"""
     cache_file = os.path.join(CACHE_DIR, f"{exchange_id}_markets.json")
     try:
+        os.makedirs(CACHE_DIR, exist_ok=True)
         with open(cache_file, 'w') as f:
             json.dump(markets_data, f)
     except Exception as e:
@@ -53,13 +54,8 @@ def load_markets_with_cache(exchange_id: str) -> Dict[str, Any]:
     sync_exchange = getattr(ccxt, exchange_id)()
     
     if cached_markets:
-        # Set markets directly from cache, skip load_markets()
-        sync_exchange.markets = cached_markets
-        sync_exchange.markets_by_id = {
-            m['id']: m for m in cached_markets.values() 
-            if isinstance(m, dict) and 'id' in m
-        }
-        sync_exchange.symbols = list(cached_markets.keys())
+        # Use set_markets so ccxt rebuilds markets_by_id, symbols, ids, etc. correctly
+        sync_exchange.set_markets(cached_markets)
     else:
         # Load markets from exchange (slow operation)
         sync_exchange.load_markets()
@@ -68,6 +64,19 @@ def load_markets_with_cache(exchange_id: str) -> Dict[str, Any]:
         save_markets_cache(exchange_id, sync_exchange.markets)
     
     return sync_exchange
+
+
+def ensure_markets_loaded_with_cache(exchange, exchange_id: str) -> None:
+    """
+    Load markets into an existing exchange instance using cache.
+    Use this when you already have an exchange object (e.g. in a service).
+    """
+    cached_markets = get_cached_markets(exchange_id)
+    if cached_markets:
+        exchange.set_markets(cached_markets)
+    else:
+        exchange.load_markets()
+        save_markets_cache(exchange_id, exchange.markets)
 
 
 def get_market_info(exchange_id: str, symbol: str) -> Optional[Dict[str, Any]]:

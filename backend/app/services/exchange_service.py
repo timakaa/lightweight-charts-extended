@@ -25,7 +25,8 @@ class ExchangeService:
         if not self._markets_loaded:
             async with self._markets_lock:
                 if not self._markets_loaded:
-                    await asyncio.to_thread(self.exchange.load_markets)
+                    from app.utils.market_cache import ensure_markets_loaded_with_cache
+                    await asyncio.to_thread(ensure_markets_loaded_with_cache, self.exchange, "bybit")
                     self._markets_loaded = True
 
     async def get_tickers_paginated(
