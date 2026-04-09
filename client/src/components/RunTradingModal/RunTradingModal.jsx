@@ -6,8 +6,9 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogClose,
 } from "@/components/ui/dialog";
-import { Loader2 } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useStartPaperTrading } from "@hooks/useStartPaperTrading";
 import AsyncStrategySelect from "@components/RunBacktestModal/AsyncStrategySelect";
@@ -52,9 +53,18 @@ const RunTradingModalContent = ({ onClose }) => {
 
   return (
     <>
-      <DialogHeader className='p-4 border-b border-border flex-shrink-0'>
-        <DialogTitle className='text-primary'>Run Strategy Live</DialogTitle>
-      </DialogHeader>
+      <div className='p-4 flex items-center justify-between border-b border-border flex-shrink-0'>
+        <DialogTitle className='text-primary'>Run Backtest</DialogTitle>
+        <DialogClose asChild>
+          <Button
+            variant='ghost'
+            size='icon'
+            className='text-primary/70 hover:text-primary h-8 w-8'
+          >
+            <X className='h-4 w-4' />
+          </Button>
+        </DialogClose>
+      </div>
 
       <TooltipProvider delayDuration={0}>
         <form onSubmit={handleSubmit} className='flex-1 overflow-y-auto p-4'>
@@ -127,7 +137,10 @@ const RunTradingModalContent = ({ onClose }) => {
 
 const RunTradingModal = ({ isOpen, onClose }) => (
   <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-    <DialogContent className='p-0 gap-0 w-[500px] max-w-[500px] max-h-[80vh] flex flex-col overflow-hidden cursor-default' showCloseButton={false}>
+    <DialogContent
+      className='p-0 gap-0 w-[500px] max-w-[500px] max-h-[80vh] flex flex-col overflow-hidden cursor-default'
+      showCloseButton={false}
+    >
       <RunTradingModalContent onClose={onClose} />
     </DialogContent>
   </Dialog>

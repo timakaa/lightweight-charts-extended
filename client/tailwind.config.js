@@ -5,10 +5,6 @@ export default {
   theme: {
     extend: {
       colors: {
-        modal: {
-          DEFAULT: "#ff0000",
-          border: "#ff0000",
-        },
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {

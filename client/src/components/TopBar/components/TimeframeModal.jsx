@@ -1,4 +1,18 @@
-import React, { useEffect, useRef } from "react";
+import React from "react";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+
+const getReadableTimeframe = (timeframe) => {
+  if (!timeframe) return "";
+  if (timeframe === "D") return "1 day";
+  if (timeframe === "W") return "1 week";
+  const match = timeframe.match(/^(\d+)([mh])$/);
+  if (match) {
+    const [, number, unit] = match;
+    const unitName = unit === "m" ? "minute" : "hour";
+    return `${number} ${unitName}${number === "1" ? "" : "s"}`;
+  }
+  return timeframe;
+};
 
 const TimeframeModal = ({
   isOpen,
@@ -9,89 +23,41 @@ const TimeframeModal = ({
   onInputChange,
   getPreviewTimeframe,
 }) => {
-  const inputRef = useRef(null);
+  const previewTimeframe = getPreviewTimeframe?.();
 
-  useEffect(() => {
-    if (isOpen && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [isOpen]);
-
-  // Handle keyboard shortcuts
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (e) => {
-      if (e.key === "Enter" && isValid && inputValue) {
-        onApply();
-      } else if (e.key === "Escape") {
-        onClose();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onApply, onClose, isValid, inputValue]);
-
-  if (!isOpen) return null;
-
-  const previewTimeframe = getPreviewTimeframe();
-
-  // Convert timeframe to readable format
-  const getReadableTimeframe = (timeframe) => {
-    if (!timeframe) return "";
-
-    if (timeframe === "D") return "1 day";
-    if (timeframe === "W") return "1 week";
-
-    const match = timeframe.match(/^(\d+)([mh])$/);
-    if (match) {
-      const [, number, unit] = match;
-      const unitName = unit === "m" ? "minute" : "hour";
-      const plural = number === "1" ? "" : "s";
-      return `${number} ${unitName}${plural}`;
-    }
-
-    return timeframe;
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && isValid && inputValue) onApply();
   };
 
   return (
-    <div
-      className='fixed inset-0 cursor-default bg-black bg-opacity-50 flex items-center justify-center z-50'
-      onClick={onClose}
-    >
-      <div
-        className='bg-background border border-border rounded-lg p-6 w-[350px]'
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h2 className='text-primary text-lg font-medium mb-4 text-center'>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className='w-[350px] max-w-[350px] text-center'>
+        <DialogTitle className='text-primary text-lg font-medium text-center'>
           Change interval
-        </h2>
+        </DialogTitle>
 
-        <div className='mb-4'>
+        <div className='mt-2'>
           <input
-            ref={inputRef}
             type='text'
             value={inputValue}
             onChange={(e) => onInputChange(e.target.value)}
+            onKeyDown={handleKeyDown}
+            autoFocus
             className={`w-full px-3 py-3 text-lg text-center bg-background border-2 rounded-lg text-primary transition-colors outline-none duration-200 ${
               isValid ? "border-[#4A90E2]" : "border-red-500"
             }`}
-            placeholder=''
           />
         </div>
 
-        <div className='text-center'>
-          <div
-            className={`text-sm ${isValid ? "text-primary/70" : "text-red-400"}`}
-          >
-            {inputValue && isValid && previewTimeframe
-              ? getReadableTimeframe(previewTimeframe)
-              : "Not applicable"}
-          </div>
+        <div
+          className={`text-sm ${isValid ? "text-primary/70" : "text-red-400"}`}
+        >
+          {inputValue && isValid && previewTimeframe
+            ? getReadableTimeframe(previewTimeframe)
+            : "Not applicable"}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
