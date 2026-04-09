@@ -6,6 +6,7 @@ import { TickerModalSearch } from "./TickerModalSearch";
 import { TickerModalSort } from "./TickerModalSort";
 import { TickerModalTable } from "./TickerModalTable";
 import { TickerModalLoader } from "./TickerModalLoader";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 const TickerModalContent = ({ onClose, onSelectTicker, initialLetter }) => {
   const [searchInput, setSearchInput] = useState(initialLetter || "");
@@ -67,7 +68,7 @@ const TickerModalContent = ({ onClose, onSelectTicker, initialLetter }) => {
   };
 
   return (
-    <div className='bg-background border border-border rounded-lg w-[600px] max-h-[80vh] flex flex-col'>
+    <div className='w-full max-h-[80vh] flex flex-col'>
       <TickerModalHeader onClose={onClose} />
       <TickerModalSearch search={searchInput} onChange={setSearchInput} />
       <TickerModalSort
@@ -98,39 +99,16 @@ const TickerModalContent = ({ onClose, onSelectTicker, initialLetter }) => {
   );
 };
 
-const TickerModal = ({ isOpen, onClose, onSelectTicker, initialLetter }) => {
-  // Close modal if click outside content
-  const handleBackdropClick = (e) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
-
-  // Close modal on Escape key
-  useEffect(() => {
-    const handleEscape = (e) => {
-      if (e.key === "Escape" && isOpen) {
-        onClose();
-      }
-    };
-    document.addEventListener("keydown", handleEscape);
-    return () => document.removeEventListener("keydown", handleEscape);
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
-
-  return (
-    <div
-      className='fixed cursor-default inset-0 bg-black/50 flex items-center justify-center z-50'
-      onClick={handleBackdropClick}
-    >
+const TickerModal = ({ isOpen, onClose, onSelectTicker, initialLetter }) => (
+  <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <DialogContent className='p-0 gap-0 w-[600px] max-w-[600px] max-h-[80vh] flex flex-col overflow-hidden cursor-default' showCloseButton={false}>
       <TickerModalContent
         onClose={onClose}
         onSelectTicker={onSelectTicker}
         initialLetter={initialLetter}
       />
-    </div>
-  );
-};
+    </DialogContent>
+  </Dialog>
+);
 
 export default TickerModal;

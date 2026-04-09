@@ -4,7 +4,14 @@ import { useTradingSessionsInfinite } from "@hooks/useTradingSessions";
 import { useInfiniteScroll } from "@hooks/useInfiniteScroll";
 import TradingSessionCard from "./TradingSessionCard";
 import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogClose,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
 
 const TradingSessionsModalContent = ({ onClose }) => {
   const navigate = useNavigate();
@@ -23,7 +30,6 @@ const TradingSessionsModalContent = ({ onClose }) => {
     [data],
   );
 
-  // Client-side search filter (backend doesn't support search on sessions yet)
   const filtered = useMemo(() => {
     if (!searchTerm.trim()) return sessions;
     const q = searchTerm.toLowerCase();
@@ -48,19 +54,22 @@ const TradingSessionsModalContent = ({ onClose }) => {
   };
 
   return (
-    <div className='flex flex-col h-full max-h-[80vh]'>
-      <div className='p-4 border-b border-border flex-shrink-0'>
-        <div className='flex justify-between items-center mb-4'>
-          <h2 className='text-xl font-bold text-primary'>Live Sessions</h2>
+    <>
+      <div className='flex items-center justify-between p-4 border-b border-border flex-shrink-0'>
+        <DialogTitle className='text-lg font-semibold text-primary'>
+          Live Sessions
+        </DialogTitle>
+        <DialogClose asChild>
           <Button
             variant='ghost'
             size='icon'
-            onClick={onClose}
             className='text-primary/70 hover:text-primary h-8 w-8'
           >
-            ✕
+            <X className='h-4 w-4' />
           </Button>
-        </div>
+        </DialogClose>
+      </div>
+      <div className='p-4 border-b border-border flex-shrink-0'>
         <Input
           ref={inputRef}
           type='text'
@@ -108,23 +117,16 @@ const TradingSessionsModalContent = ({ onClose }) => {
           </div>
         )}
       </div>
-    </div>
+    </>
   );
 };
 
-const TradingSessionsModal = ({ isOpen, onClose }) => {
-  if (!isOpen) return null;
-
-  return (
-    <div
-      className='fixed cursor-default inset-0 bg-black/50 flex items-center justify-center z-[999]'
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <div className='bg-background border border-border rounded-lg w-[500px] max-h-[80vh] flex flex-col'>
-        <TradingSessionsModalContent onClose={onClose} />
-      </div>
-    </div>
-  );
-};
+const TradingSessionsModal = ({ isOpen, onClose }) => (
+  <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <DialogContent className='p-0 gap-0 w-[500px] max-w-[500px] max-h-[80vh] flex flex-col overflow-hidden cursor-default' showCloseButton={false}>
+      <TradingSessionsModalContent onClose={onClose} />
+    </DialogContent>
+  </Dialog>
+);
 
 export default TradingSessionsModal;

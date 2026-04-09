@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useStartPaperTrading } from "@hooks/useStartPaperTrading";
@@ -45,46 +51,32 @@ const RunTradingModalContent = ({ onClose }) => {
   };
 
   return (
-    <div className='flex flex-col h-full max-h-[80vh]'>
-      <div className='p-4 border-b border-border flex justify-between items-center'>
-        <h2 className='text-primary text-lg font-semibold'>
-          Run Strategy Live
-        </h2>
-        <Button
-          variant='ghost'
-          size='icon'
-          onClick={onClose}
-          className='text-primary/70 hover:text-primary h-8 w-8'
-        >
-          ✕
-        </Button>
-      </div>
+    <>
+      <DialogHeader className='p-4 border-b border-border flex-shrink-0'>
+        <DialogTitle className='text-primary'>Run Strategy Live</DialogTitle>
+      </DialogHeader>
 
       <TooltipProvider delayDuration={0}>
         <form onSubmit={handleSubmit} className='flex-1 overflow-y-auto p-4'>
           <div className='space-y-4'>
-            {/* Paper trading toggle */}
             <div className='flex items-center justify-between p-3 bg-background rounded-lg border border-border'>
               <label className='text-sm font-medium text-primary/80'>
                 Paper Trading
               </label>
               <Switch checked={isPaper} onCheckedChange={setIsPaper} />
             </div>
-
             <div>
               <label className='block text-sm font-medium text-primary/80 mb-2'>
                 Strategy
               </label>
               <AsyncStrategySelect value={strategy} onChange={setStrategy} />
             </div>
-
             <div>
               <label className='block text-sm font-medium text-primary/80 mb-2'>
                 Symbol
               </label>
               <AsyncSymbolSelect value={symbol} onChange={setSymbol} />
             </div>
-
             <div>
               <label className='block text-sm font-medium text-primary/80 mb-2'>
                 Timeframe
@@ -95,7 +87,6 @@ const RunTradingModalContent = ({ onClose }) => {
                 options={TIMEFRAMES}
               />
             </div>
-
             <StrategyParameters
               strategy={strategy}
               parameters={parameters}
@@ -105,7 +96,7 @@ const RunTradingModalContent = ({ onClose }) => {
         </form>
       </TooltipProvider>
 
-      <div className='p-4 border-t border-border flex justify-end gap-3'>
+      <div className='p-4 border-t border-border flex justify-end gap-3 flex-shrink-0'>
         <Button
           type='button'
           variant='ghost'
@@ -130,23 +121,16 @@ const RunTradingModalContent = ({ onClose }) => {
           )}
         </Button>
       </div>
-    </div>
+    </>
   );
 };
 
-const RunTradingModal = ({ isOpen, onClose }) => {
-  if (!isOpen) return null;
-
-  return (
-    <div
-      className='fixed cursor-default inset-0 bg-black/50 flex items-center justify-center z-[999]'
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <div className='bg-background border border-border rounded-lg w-[500px] max-h-[80vh] flex flex-col'>
-        <RunTradingModalContent onClose={onClose} />
-      </div>
-    </div>
-  );
-};
+const RunTradingModal = ({ isOpen, onClose }) => (
+  <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <DialogContent className='p-0 gap-0 w-[500px] max-w-[500px] max-h-[80vh] flex flex-col overflow-hidden cursor-default' showCloseButton={false}>
+      <RunTradingModalContent onClose={onClose} />
+    </DialogContent>
+  </Dialog>
+);
 
 export default RunTradingModal;

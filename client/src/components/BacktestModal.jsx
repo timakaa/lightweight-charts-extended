@@ -5,7 +5,14 @@ import RunningBacktestCard from "./RunningBacktestCard";
 import { useBacktestsSummarizedInfinite } from "../hooks/backtests/useBacktests";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
 
 const BacktestModalContent = ({ onClose }) => {
   const navigate = useNavigate();
@@ -19,34 +26,22 @@ const BacktestModalContent = ({ onClose }) => {
   }, []);
 
   useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearch(searchTerm);
-    }, 300);
-
-    return () => {
-      clearTimeout(handler);
-    };
+    const handler = setTimeout(() => setDebouncedSearch(searchTerm), 300);
+    return () => clearTimeout(handler);
   }, [searchTerm]);
 
-  // Listen for new backtest events
   useEffect(() => {
     const handleNewBacktest = (event) => {
       const { backtestId } = event.detail;
-      console.log("Backtest started event received:", backtestId);
-      setRunningBacktests((prev) => {
-        if (prev.includes(backtestId)) return prev;
-        // Add new backtest at the beginning (newest first)
-        return [backtestId, ...prev];
-      });
+      setRunningBacktests((prev) =>
+        prev.includes(backtestId) ? prev : [backtestId, ...prev],
+      );
     };
-
     window.addEventListener("backtest:started", handleNewBacktest);
-    return () => {
+    return () =>
       window.removeEventListener("backtest:started", handleNewBacktest);
-    };
   }, []);
 
-  // Fetch active backtests on mount
   useEffect(() => {
     const fetchActiveBacktests = async () => {
       try {
@@ -55,31 +50,25 @@ const BacktestModalContent = ({ onClose }) => {
         );
         if (response.ok) {
           const data = await response.json();
-          const activeIds = Object.keys(data);
-          console.log("Active backtests on mount:", activeIds);
-          // Reverse to show newest first
-          setRunningBacktests(activeIds.reverse());
+          setRunningBacktests(Object.keys(data).reverse());
         }
       } catch (error) {
         console.error("Failed to fetch active backtests:", error);
       }
     };
-
     fetchActiveBacktests();
   }, []);
 
-  const handleBacktestComplete = (backtestId) => {
-    // Remove from running list immediately
+  const handleBacktestComplete = (backtestId) =>
     setRunningBacktests((prev) => prev.filter((id) => id !== backtestId));
-  };
 
   const { data, isLoading, error, isFetching, fetchNextPage, hasNextPage } =
     useBacktestsSummarizedInfinite(10, debouncedSearch);
 
-  // Flatten all pages into a single array
-  const backtests = useMemo(() => {
-    return data?.pages?.flatMap((page) => page.backtests) ?? [];
-  }, [data]);
+  const backtests = useMemo(
+    () => data?.pages?.flatMap((page) => page.backtests) ?? [],
+    [data],
+  );
 
   const { loaderRef } = useInfiniteScroll({
     hasNext: hasNextPage,
@@ -89,28 +78,28 @@ const BacktestModalContent = ({ onClose }) => {
   });
 
   const handleBacktestSelect = (backtest) => {
-    const { id, symbols } = backtest;
-    // Get the first symbol from the backtest (normalized format: BTCUSDT)
-    const ticker = symbols?.[0]?.ticker;
+    const ticker = backtest.symbols?.[0]?.ticker;
     onClose();
-    // Navigate with ticker as query parameter (consistent with TopBar)
-    navigate(`/backtest/${id}${ticker ? `?ticker=${ticker}` : ""}`);
+    navigate(`/backtest/${backtest.id}${ticker ? `?ticker=${ticker}` : ""}`);
   };
 
   return (
-    <div className='flex flex-col h-full max-h-[80vh]'>
-      <div className='p-4 border-b border-border flex-shrink-0'>
-        <div className='flex justify-between items-center mb-4'>
-          <h2 className='text-xl font-bold text-primary'>Backtests</h2>
+    <>
+      <div className='flex items-center justify-between p-4 border-b border-border flex-shrink-0'>
+        <DialogTitle className='text-lg font-semibold text-primary'>
+          Backtests
+        </DialogTitle>
+        <DialogClose asChild>
           <Button
             variant='ghost'
             size='icon'
-            onClick={onClose}
             className='text-primary/70 hover:text-primary h-8 w-8'
           >
-            ✕
+            <X className='h-4 w-4' />
           </Button>
-        </div>
+        </DialogClose>
+      </div>
+      <div className='p-4 border-b border-border flex-shrink-0'>
         <Input
           ref={inputRef}
           type='text'
@@ -132,7 +121,6 @@ const BacktestModalContent = ({ onClose }) => {
           </div>
         ) : (
           <>
-            {/* Running backtests */}
             {runningBacktests.length > 0 && (
               <div className='space-y-3 mb-4'>
                 {runningBacktests.map((backtestId) => (
@@ -144,8 +132,6 @@ const BacktestModalContent = ({ onClose }) => {
                 ))}
               </div>
             )}
-
-            {/* Completed backtests */}
             {backtests.length > 0 ? (
               <>
                 <div className='space-y-3'>
@@ -176,29 +162,16 @@ const BacktestModalContent = ({ onClose }) => {
           </>
         )}
       </div>
-    </div>
+    </>
   );
 };
 
-const BacktestModal = ({ isOpen, onClose }) => {
-  if (!isOpen) return null;
-
-  const handleBackdropClick = (e) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
-
-  return (
-    <div
-      className='fixed cursor-default inset-0 bg-black/50 flex items-center justify-center z-[999]'
-      onClick={handleBackdropClick}
-    >
-      <div className='bg-background border border-border rounded-lg w-[500px] max-h-[80vh] flex flex-col'>
-        <BacktestModalContent onClose={onClose} />
-      </div>
-    </div>
-  );
-};
+const BacktestModal = ({ isOpen, onClose }) => (
+  <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <DialogContent className='p-0 gap-0 w-[500px] max-w-[500px] max-h-[80vh] flex flex-col overflow-hidden cursor-default' showCloseButton={false}>
+      <BacktestModalContent onClose={onClose} />
+    </DialogContent>
+  </Dialog>
+);
 
 export default BacktestModal;

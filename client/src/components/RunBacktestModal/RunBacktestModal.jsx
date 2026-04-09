@@ -1,6 +1,12 @@
 import { useState } from "react";
 import BacktestForm from "./BacktestForm";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useRunBacktest } from "@hooks/backtests/useRunBacktest";
 import { Loader2 } from "lucide-react";
 
@@ -37,7 +43,6 @@ const RunBacktestModalContent = ({ onClose }) => {
           }
         },
         onError: (error) => {
-          console.error("Error running backtest:", error);
           alert(error.message || "Failed to run backtest. Please try again.");
         },
       },
@@ -45,23 +50,11 @@ const RunBacktestModalContent = ({ onClose }) => {
   };
 
   return (
-    <div className='flex flex-col h-full max-h-[80vh]'>
-      {/* Header */}
-      <div className='p-4 border-b border-border'>
-        <div className='flex justify-between items-center'>
-          <h2 className='text-primary text-lg font-semibold'>Run Backtest</h2>
-          <Button
-            variant='ghost'
-            size='icon'
-            onClick={onClose}
-            className='text-primary/70 hover:text-primary h-8 w-8'
-          >
-            ✕
-          </Button>
-        </div>
-      </div>
+    <>
+      <DialogHeader className='p-4 border-b border-border flex-shrink-0'>
+        <DialogTitle className='text-primary'>Run Backtest</DialogTitle>
+      </DialogHeader>
 
-      {/* Form */}
       <BacktestForm
         strategy={strategy}
         setStrategy={setStrategy}
@@ -78,8 +71,7 @@ const RunBacktestModalContent = ({ onClose }) => {
         onSubmit={handleSubmit}
       />
 
-      {/* Footer */}
-      <div className='p-4 border-t border-border flex justify-end gap-3'>
+      <div className='p-4 border-t border-border flex justify-end gap-3 flex-shrink-0'>
         <Button
           type='button'
           variant='ghost'
@@ -111,29 +103,16 @@ const RunBacktestModalContent = ({ onClose }) => {
           )}
         </Button>
       </div>
-    </div>
+    </>
   );
 };
 
-const RunBacktestModal = ({ isOpen, onClose }) => {
-  if (!isOpen) return null;
-
-  const handleBackdropClick = (e) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
-
-  return (
-    <div
-      className='fixed cursor-default inset-0 bg-black/50 flex items-center justify-center z-[999]'
-      onClick={handleBackdropClick}
-    >
-      <div className='bg-background border border-border rounded-lg w-[500px] max-h-[80vh] flex flex-col'>
-        <RunBacktestModalContent onClose={onClose} />
-      </div>
-    </div>
-  );
-};
+const RunBacktestModal = ({ isOpen, onClose }) => (
+  <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <DialogContent className='p-0 gap-0 w-[500px] max-w-[500px] max-h-[80vh] flex flex-col overflow-hidden cursor-default' showCloseButton={false}>
+      <RunBacktestModalContent onClose={onClose} />
+    </DialogContent>
+  </Dialog>
+);
 
 export default RunBacktestModal;
