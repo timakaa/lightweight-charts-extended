@@ -2,7 +2,6 @@ import { useState } from "react";
 import BacktestForm from "./BacktestForm";
 import { Button } from "@/components/ui/button";
 import { useRunBacktest } from "@hooks/backtests/useRunBacktest";
-import { useStartPaperTrading } from "@hooks/useStartPaperTrading";
 import { Loader2 } from "lucide-react";
 
 const RunBacktestModalContent = ({ onClose }) => {
@@ -12,67 +11,37 @@ const RunBacktestModalContent = ({ onClose }) => {
   const [startDate, setStartDate] = useState("2024-01-01");
   const [endDate, setEndDate] = useState("2025-01-01");
   const [parameters, setParameters] = useState({});
-  const [isLive, setIsLive] = useState(false);
 
-  const { mutate: runBacktest, isPending: isBacktestPending } =
-    useRunBacktest();
-  const { mutate: startPaperTrading, isPending: isPaperPending } =
-    useStartPaperTrading();
-  const isPending = isBacktestPending || isPaperPending;
+  const { mutate: runBacktest, isPending } = useRunBacktest();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    if (isLive) {
-      startPaperTrading(
-        {
-          strategy,
-          symbol,
-          timeframe,
-          parameters,
-          initial_balance: 10000,
-        },
-        {
-          onSuccess: () => {
-            onClose();
-          },
-          onError: (error) => {
-            console.error("Error starting paper trading:", error);
-            alert(
-              error.message ||
-                "Failed to start paper trading. Please try again.",
+    runBacktest(
+      {
+        strategy,
+        symbol,
+        timeframe,
+        start_date: startDate,
+        end_date: endDate,
+        parameters,
+      },
+      {
+        onSuccess: (data) => {
+          onClose();
+          if (data.backtest_id) {
+            window.dispatchEvent(
+              new CustomEvent("backtest:started", {
+                detail: { backtestId: data.backtest_id },
+              }),
             );
-          },
+          }
         },
-      );
-    } else {
-      runBacktest(
-        {
-          strategy,
-          symbol,
-          timeframe,
-          start_date: startDate,
-          end_date: endDate,
-          parameters,
+        onError: (error) => {
+          console.error("Error running backtest:", error);
+          alert(error.message || "Failed to run backtest. Please try again.");
         },
-        {
-          onSuccess: (data) => {
-            onClose();
-            if (data.backtest_id) {
-              window.dispatchEvent(
-                new CustomEvent("backtest:started", {
-                  detail: { backtestId: data.backtest_id },
-                }),
-              );
-            }
-          },
-          onError: (error) => {
-            console.error("Error running backtest:", error);
-            alert(error.message || "Failed to run backtest. Please try again.");
-          },
-        },
-      );
-    }
+      },
+    );
   };
 
   return (
@@ -80,9 +49,7 @@ const RunBacktestModalContent = ({ onClose }) => {
       {/* Header */}
       <div className='p-4 border-b border-border'>
         <div className='flex justify-between items-center'>
-          <h2 className='text-primary text-lg font-semibold'>
-            {isLive ? "Paper Trading" : "Run Backtest"}
-          </h2>
+          <h2 className='text-primary text-lg font-semibold'>Run Backtest</h2>
           <Button
             variant='ghost'
             size='icon'
@@ -108,8 +75,6 @@ const RunBacktestModalContent = ({ onClose }) => {
         setEndDate={setEndDate}
         parameters={parameters}
         setParameters={setParameters}
-        isLive={isLive}
-        setIsLive={setIsLive}
         onSubmit={handleSubmit}
       />
 
@@ -131,17 +96,16 @@ const RunBacktestModalContent = ({ onClose }) => {
             !strategy ||
             !symbol ||
             !timeframe ||
-            (!isLive && (!startDate || !endDate))
+            !startDate ||
+            !endDate
           }
           className='bg-primary text-primary-foreground hover:bg-primary/90'
         >
           {isPending ? (
             <>
               <Loader2 className='h-4 w-4 animate-spin mr-2' />
-              {isLive ? "Starting..." : "Running..."}
+              Running...
             </>
-          ) : isLive ? (
-            "Start Paper Trading"
           ) : (
             "Run Backtest"
           )}

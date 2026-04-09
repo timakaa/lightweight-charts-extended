@@ -123,8 +123,8 @@ class BybitWSManager:
             room=room,
         )
 
-        # Forward to paper trading sessions if candle is closed
-        from app.services.paper_trading_service import paper_trading_service
+        # Forward to trading sessions if candle is closed
+        from app.services.trading_session_service import trading_session_service
         from app.core.websocket.constants import BYBIT_INTERVAL_REVERSE_MAP
 
         # Convert Bybit interval back to app timeframe (e.g., "60" -> "1h")
@@ -139,7 +139,7 @@ class BybitWSManager:
             "timestamp": kline["start"],
         }
 
-        await paper_trading_service.handle_candle(
+        await trading_session_service.handle_candle(
             symbol=symbol,
             timeframe=timeframe,
             candle=candle,

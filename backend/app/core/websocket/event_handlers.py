@@ -62,20 +62,20 @@ def register_socketio_handlers(bybit_manager):
             await sio.emit("room_left", {"room": room}, room=sid)
 
     @sio.event
-    async def paper_trading_subscribe(sid, data):
-        """Subscribe to paper trading updates for a session"""
-        backtest_id = data.get("backtest_id")
-        if backtest_id:
-            room = f"paper_trading:{backtest_id}"
+    async def trading_subscribe(sid, data):
+        """Subscribe to live trading updates for a session"""
+        session_id = data.get("session_id")
+        if session_id:
+            room = f"trading:{session_id}"
             await sio.enter_room(sid, room)
-            await sio.emit("paper_trading_subscribed", {"backtest_id": backtest_id}, room=sid)
+            await sio.emit("trading_subscribed", {"session_id": session_id}, room=sid)
 
     @sio.event
-    async def paper_trading_unsubscribe(sid, data):
-        """Unsubscribe from paper trading updates"""
-        backtest_id = data.get("backtest_id")
-        if backtest_id:
-            room = f"paper_trading:{backtest_id}"
+    async def trading_unsubscribe(sid, data):
+        """Unsubscribe from live trading updates"""
+        session_id = data.get("session_id")
+        if session_id:
+            room = f"trading:{session_id}"
             await sio.leave_room(sid, room)
 
     @sio.event

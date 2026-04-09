@@ -5,6 +5,8 @@ import { useChartStore } from "@store/chart";
 import TimeframeSelector from "./components/TimeframeSelector";
 import BacktestModal from "@components/BacktestModal";
 import RunBacktestModal from "@components/RunBacktestModal/RunBacktestModal";
+import RunTradingModal from "@components/RunTradingModal/RunTradingModal";
+import TradingSessionsModal from "@components/TradingSessionsModal/TradingSessionsModal";
 import SettingsModal from "@components/SettingsModal/SettingsModal";
 import TimeframeModal from "./components/TimeframeModal";
 import TickerModal from "./components/TickerModal/TickerModal";
@@ -22,6 +24,9 @@ const TopBar = () => {
   const navigate = useNavigate();
   const [isBacktestModalOpen, setIsBacktestModalOpen] = useState(false);
   const [isRunBacktestModalOpen, setIsRunBacktestModalOpen] = useState(false);
+  const [isRunTradingModalOpen, setIsRunTradingModalOpen] = useState(false);
+  const [isTradingSessionsModalOpen, setIsTradingSessionsModalOpen] =
+    useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const ticker = useChartStore((state) => state.ticker);
   const setTicker = useChartStore((state) => state.setTicker);
@@ -32,7 +37,9 @@ const TopBar = () => {
   const tickerModal = useTickerModal();
   const { theme, toggleTheme } = useTheme();
 
-  const isBacktestPage = location.pathname.startsWith("/backtest");
+  const isBacktestPage =
+    location.pathname.startsWith("/backtest") ||
+    location.pathname.startsWith("/trading");
 
   // On mount, set ticker and timeframe from URL if present, otherwise set defaults if store is null
   useEffect(() => {
@@ -110,6 +117,19 @@ const TopBar = () => {
               Run Backtest
             </Button>
             <Button
+              onClick={() => setIsRunTradingModalOpen(true)}
+              variant='outline'
+              className='border-primary/40 text-primary hover:bg-foreground/10'
+            >
+              Run Strategy
+            </Button>
+            <Button
+              onClick={() => setIsTradingSessionsModalOpen(true)}
+              className='flex justify-center items-center p-2 bg-transparent text-primary hover:bg-foreground/10 duration-100 rounded-md text-sm font-[600]'
+            >
+              Sessions
+            </Button>
+            <Button
               variant='ghost'
               size='icon'
               onClick={() => setIsSettingsModalOpen(true)}
@@ -141,6 +161,14 @@ const TopBar = () => {
       <RunBacktestModal
         isOpen={isRunBacktestModalOpen}
         onClose={() => setIsRunBacktestModalOpen(false)}
+      />
+      <RunTradingModal
+        isOpen={isRunTradingModalOpen}
+        onClose={() => setIsRunTradingModalOpen(false)}
+      />
+      <TradingSessionsModal
+        isOpen={isTradingSessionsModalOpen}
+        onClose={() => setIsTradingSessionsModalOpen(false)}
       />
       <SettingsModal
         isOpen={isSettingsModalOpen}

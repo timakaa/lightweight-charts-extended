@@ -6,6 +6,7 @@ import TopBar from "@components/TopBar/TopBar";
 import Sidebar from "@components/Sidebar/Sidebar";
 import Backtest from "@pages/Backtest/Backtest";
 import Backtests from "@pages/Backtests/Backtests";
+import Trading from "@pages/Trading/Trading";
 import NotFound404 from "@components/404/404";
 import ErrorBoundary from "@components/ErrorBoundary";
 import BacktestProgressContainer from "@components/BacktestProgressContainer";
@@ -83,6 +84,17 @@ function App() {
                 message='Failed to load backtest details.'
               >
                 <Backtest />
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path='/trading/:sessionId'
+            element={
+              <ErrorBoundary
+                title='Trading Error'
+                message='Failed to load trading session.'
+              >
+                <Trading />
               </ErrorBoundary>
             }
           />
