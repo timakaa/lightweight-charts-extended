@@ -55,17 +55,13 @@ const AsyncSelect = ({
     }
   }, [value, items, getItemValue, getItemDisplay]);
 
-  // Handle search input change
   const handleSearchChange = (e) => {
-    const newValue = e.target.value;
-    setSearchInput(newValue);
+    setSearchInput(e.target.value);
   };
 
-  // Handle scroll for pagination
   const handleScroll = useCallback(
     (e) => {
       const { scrollTop, scrollHeight, clientHeight } = e.target;
-
       if (
         scrollHeight - scrollTop <= clientHeight * 1.5 &&
         !isFetching &&
@@ -77,7 +73,6 @@ const AsyncSelect = ({
     [isFetching, onLoadMore],
   );
 
-  // Handle item selection
   const handleSelect = (item) => {
     const itemValue = getItemValue ? getItemValue(item) : item;
     onChange(itemValue);
@@ -85,19 +80,16 @@ const AsyncSelect = ({
     setSearchInput("");
   };
 
-  // Get display text for selected value
   const getDisplayText = () => {
     if (!value) return placeholder;
     return selectedDisplayText || value;
   };
 
-  // Close dropdown
   const handleClose = () => {
     setIsOpen(false);
     setSearchInput("");
   };
 
-  // Expose close function to parent via callback
   useEffect(() => {
     if (onCloseRequest) {
       onCloseRequest(handleClose);
@@ -105,7 +97,7 @@ const AsyncSelect = ({
   }, [onCloseRequest]);
 
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
+    <Popover open={isOpen} onOpenChange={setIsOpen} modal={false}>
       <PopoverTrigger asChild>
         <Button
           type='button'
@@ -120,13 +112,11 @@ const AsyncSelect = ({
         className='w-[var(--radix-popover-trigger-width)] p-0'
         align='start'
       >
-        {/* Header Buttons (if provided) */}
         {headerButtons && (
           <div className='p-2 border-b border-border cursor-default'>
             {headerButtons}
           </div>
         )}
-
         <div className='p-2 border-b border-border cursor-default'>
           <Input
             type='text'
@@ -140,6 +130,7 @@ const AsyncSelect = ({
         <div
           ref={scrollRef}
           onScroll={handleScroll}
+          onWheel={(e) => e.stopPropagation()}
           className='max-h-[250px] overflow-y-auto'
         >
           {isLoading ? (
@@ -155,7 +146,6 @@ const AsyncSelect = ({
                 const key = getItemKey ? getItemKey(item) : item;
                 const itemValue = getItemValue ? getItemValue(item) : item;
                 const isSelected = value === itemValue;
-
                 return (
                   <button
                     key={key}
