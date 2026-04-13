@@ -4,13 +4,16 @@ Business logic for starting/stopping live/paper trading sessions
 """
 from datetime import datetime
 from typing import Dict, Any
+import logging
 
 from app.backtesting.strategies import get_strategy
 from app.core.trading_session_manager import trading_session_manager
 from app.core.socket_instance import sio
 from app.db.database import get_db
 from app.repositories.trading_session_repository import TradingSessionRepository
-from app.utils.symbol_utils import normalize_symbol_for_api, normalize_symbol_for_display
+from app.utils.symbol_utils import normalize_symbol_for_api, normalize_symbol_for_display, symbol_to_filename
+
+logger = logging.getLogger("trading_session.service")
 
 
 class TradingSessionService:
@@ -27,16 +30,16 @@ class TradingSessionService:
         initial_balance: float = 10000,
         is_paper: bool = True,
     ) -> Dict[str, Any]:
-        # Normalize symbol: display format for DB, API format for WebSocket
+        # Normalize symbol: display format for DB, Bybit format for in-memory session/WS
         symbol_display = normalize_symbol_for_display(normalize_symbol_for_api(symbol))
-        symbol_api = normalize_symbol_for_api(symbol)
+        symbol_bybit = symbol_to_filename(symbol)  # BNBUSDT — matches Bybit WS topics
 
         # Build paper trading strategy
         StrategyClass = get_strategy(strategy_name)
         wrapper = StrategyClass(parameters=parameters)
         paper_strategy = wrapper.build_paper_trading_strategy()
 
-        # Create DB record (store display format: BTC/USDT)
+        # Create DB record (store display format: BNB/USDT)
         session_record = self._get_repo().create({
             "title": f"{wrapper.name} - {symbol_display}",
             "symbol": symbol_display,
@@ -47,18 +50,23 @@ class TradingSessionService:
             "initial_balance": initial_balance,
         })
 
-        # Register in-memory session (use API format for matching Bybit candles)
+        # Register in-memory session with Bybit format so candle matching works
         trading_session_manager.create_session(
             session_id=session_record.id,
             strategy=paper_strategy,
-            symbol=symbol_api,
+            symbol=symbol_bybit,
             timeframe=timeframe,
             initial_balance=initial_balance,
         )
 
-        # Subscribe to Bybit WebSocket (API format)
+        # Subscribe to Bybit WebSocket
         from app.core.socket_manager import bybit_ws_manager
-        await bybit_ws_manager.subscribe(symbol_api, timeframe, f"trading:{session_record.id}")
+        await bybit_ws_manager.subscribe(symbol_bybit, timeframe, f"trading:{session_record.id}")
+
+        logger.info(
+            f"[#{session_record.id}] Session started | strategy={strategy_name} "
+            f"symbol={symbol_bybit} tf={timeframe} balance={initial_balance}"
+        )
 
         return {
             "session_id": session_record.id,
@@ -87,12 +95,21 @@ class TradingSessionService:
         candle: Dict[str, Any],
         is_closed: bool,
     ) -> None:
-        for session_id, session in trading_session_manager.get_all_active().items():
+        active = trading_session_manager.get_all_active()
+        if not active:
+            return
+
+        for session_id, session in active.items():
             if session.symbol != symbol or session.timeframe != timeframe:
+                logger.debug(
+                    f"[#{session_id}] Skipping candle — "
+                    f"session={session.symbol}/{session.timeframe} incoming={symbol}/{timeframe}"
+                )
                 continue
             if not session.is_running:
                 continue
 
+            logger.debug(f"[#{session_id}] Tick | price={candle['close']} is_closed={is_closed}")
             tick_data = {"price": candle["close"], "timestamp": candle["timestamp"]}
             tick_update = await session.on_tick(tick_data)
 
@@ -101,8 +118,10 @@ class TradingSessionService:
                 await self._save_metrics(session_id, session)
 
             if is_closed:
+                logger.info(f"[#{session_id}] Candle closed | price={candle['close']}")
                 candle_update = await session.on_candle_close(candle)
                 if candle_update:
+                    logger.info(f"[#{session_id}] Update: {candle_update.get('type')}")
                     await self._emit_update(session_id, candle_update)
                     await self._save_trade(session_id, candle_update, session)
                     await self._save_metrics(session_id, session)

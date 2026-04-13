@@ -61,7 +61,7 @@ class BaseBacktestStrategy(ABC):
         self._balance_history: List[Dict[str, Any]] = []
         self._trade_signals: List[Dict[str, Any]] = []
         
-        self.logger.info(f"Initialized {self.name} with timeframes: {self.timeframes}")
+        self.logger.info(f"Initialized {self.name} | backtest timeframes: {self.timeframes}")
 
     @abstractmethod
     def build_backtest_strategy(self, data_dict: Dict[str, pd.DataFrame]) -> type:

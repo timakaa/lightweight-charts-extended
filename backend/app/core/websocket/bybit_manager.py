@@ -139,11 +139,13 @@ class BybitWSManager:
             "timestamp": kline["start"],
         }
 
+        is_closed = kline.get("confirm", False)
+
         await trading_session_service.handle_candle(
             symbol=symbol,
             timeframe=timeframe,
             candle=candle,
-            is_closed=kline.get("confirm", False),
+            is_closed=is_closed,
         )
 
     async def ensure_connected(self):

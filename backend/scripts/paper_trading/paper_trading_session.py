@@ -5,7 +5,10 @@ Runs a strategy on real-time market data
 
 from typing import Dict, Any, Optional
 from datetime import datetime
+import logging
 from .metrics_calculator import MetricsCalculator
+
+logger = logging.getLogger("paper_trading.session")
 
 
 class PaperTradingSession:
@@ -49,6 +52,8 @@ class PaperTradingSession:
         
         # Buy & hold tracking
         self.buy_hold_entry_price: Optional[float] = None
+        
+        logger.info(f"[#{backtest_id}] Session created | {symbol} {timeframe} | balance={initial_balance}")
     
     async def on_tick(self, price_data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -67,9 +72,11 @@ class PaperTradingSession:
         
         # Check SL/TP
         if self._check_stop_loss_hit(current_price):
+            logger.info(f"[#{self.backtest_id}] STOP LOSS hit at {current_price}")
             return await self.close_position(price_data, reason='stop_loss')
         
         if self._check_take_profit_hit(current_price):
+            logger.info(f"[#{self.backtest_id}] TAKE PROFIT hit at {current_price}")
             return await self.close_position(price_data, reason='take_profit')
         
         # Update unrealized PnL
@@ -106,15 +113,25 @@ class PaperTradingSession:
         if self.buy_hold_entry_price is None:
             self.buy_hold_entry_price = candle['close']
         
+        logger.debug(
+            f"[#{self.backtest_id}] Candle close | price={candle['close']} "
+            f"in_position={bool(self.current_position)}"
+        )
+
         if not self.current_position:
             # Check for entry signals
             if self.strategy.should_enter_long(candle):
+                logger.info(f"[#{self.backtest_id}] LONG signal at {candle['close']}")
                 return await self.open_position('long', candle)
             elif self.strategy.should_enter_short(candle):
+                logger.info(f"[#{self.backtest_id}] SHORT signal at {candle['close']}")
                 return await self.open_position('short', candle)
+            else:
+                logger.debug(f"[#{self.backtest_id}] No entry signal")
         else:
             # Check strategy exit signal
             if self.strategy.should_exit(self.current_position['type'], candle):
+                logger.info(f"[#{self.backtest_id}] Strategy exit signal")
                 return await self.close_position(candle, reason='strategy_signal')
         
         return None
@@ -152,6 +169,11 @@ class PaperTradingSession:
             'entry_time': candle['timestamp'],
             'entry_fee': entry_fee,
         }
+        
+        logger.info(
+            f"[#{self.backtest_id}] OPENED {direction.upper()} | "
+            f"entry={entry_price} sl={stop_loss:.4f} tp={take_profit:.4f} size={size:.6f}"
+        )
         
         # Update metrics
         self.metrics.on_trade_open(direction)
@@ -215,6 +237,11 @@ class PaperTradingSession:
         }
         
         self.closed_trades.append(closed_trade)
+        
+        logger.info(
+            f"[#{self.backtest_id}] CLOSED {closed_trade['type'].upper()} | "
+            f"exit={exit_price} pnl={net_pnl:.4f} reason={reason}"
+        )
         
         # Update metrics
         trade_date = exit_time_dt.strftime('%Y-%m-%d')

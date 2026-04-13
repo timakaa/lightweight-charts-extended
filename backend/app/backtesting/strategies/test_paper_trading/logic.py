@@ -1,12 +1,10 @@
 """
 Test Paper Trading Strategy - Pure Logic Module
 Shared between backtesting and paper trading.
-
-Behavior:
-  - Enter on candle 1 (LONG first)
-  - After SL/TP closes the trade, wait 10 candles then flip direction
-  - Repeat forever: LONG → SHORT → LONG → ...
 """
+import logging
+
+logger = logging.getLogger("paper_trading.test_strategy")
 
 
 class TestCycleLogic:
@@ -27,27 +25,33 @@ class TestCycleLogic:
     def update(self, close_price: float) -> None:
         """Call on every closed candle."""
         self._candle_count += 1
+        logger.debug(
+            f"candle={self._candle_count} in_trade={self._in_trade} "
+            f"next={self._next_direction} close_candle={self._trade_close_candle} "
+            f"ready={self._ready()}"
+        )
 
     def on_trade_closed(self) -> None:
-        """
-        Call this when a trade closes (SL/TP hit).
-        Starts the 10-candle cooldown countdown.
-        """
         self._in_trade = False
         self._trade_close_candle = self._candle_count
+        logger.info(f"Trade closed at candle {self._candle_count}, waiting 10 candles before next entry")
 
     def should_enter_long(self) -> bool:
         if self._next_direction == "long" and self._ready():
             self._in_trade = True
             self._next_direction = "short"
+            logger.info(f"should_enter_long=True at candle {self._candle_count}")
             return True
+        logger.debug(f"should_enter_long=False (dir={self._next_direction} ready={self._ready()})")
         return False
 
     def should_enter_short(self) -> bool:
         if self._next_direction == "short" and self._ready():
             self._in_trade = True
             self._next_direction = "long"
+            logger.info(f"should_enter_short=True at candle {self._candle_count}")
             return True
+        logger.debug(f"should_enter_short=False (dir={self._next_direction} ready={self._ready()})")
         return False
 
     def calculate_stop_loss(self, entry_price: float, position_type: str) -> float:

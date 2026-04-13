@@ -8,13 +8,20 @@ services:
       - redis_data:/data
     command: redis-server --appendonly yes
     restart: unless-stopped
+    networks:
+      - monitoring
+    logging: &loki-logging
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   minio:
     container_name: "minio"
     image: minio/minio:latest
     ports:
-      - "9000:9000" # API
-      - "9001:9001" # Web UI
+      - "9000:9000"
+      - "9001:9001"
     volumes:
       - minio_data:/data
     environment:
@@ -22,6 +29,9 @@ services:
       - MINIO_ROOT_PASSWORD=minioadmin123
     command: server /data --console-address ":9001"
     restart: unless-stopped
+    networks:
+      - monitoring
+    logging: *loki-logging
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 30s
@@ -50,6 +60,9 @@ services:
       - MINIO_SECRET_KEY=minioadmin123
       - MINIO_SECURE=false
     restart: unless-stopped
+    networks:
+      - monitoring
+    logging: *loki-logging
 
   frontend:
     container_name: "frontend"
@@ -57,8 +70,6 @@ services:
     build:
       context: ./client
       dockerfile: Dockerfile
-      # args:
-      #   - VITE_API_URL=${VITE_API_URL:-http://100.76.193.76:8000}
     ports:
       - "3000:80"
     depends_on:
@@ -68,8 +79,73 @@ services:
     env_file:
       - ./client/.env
     restart: unless-stopped
+    networks:
+      - monitoring
+    logging: *loki-logging
+
+  loki:
+    container_name: "loki"
+    image: grafana/loki:3.0.0
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./monitoring/loki-config.yml:/etc/loki/local-config.yaml
+      - loki_data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    restart: unless-stopped
+    networks:
+      - monitoring
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -q --tries=1 -O- http://localhost:3100/ready || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  promtail:
+    container_name: "promtail"
+    image: grafana/promtail:3.0.0
+    volumes:
+      - ./monitoring/promtail-config.yml:/etc/promtail/config.yml
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      loki:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - monitoring
+
+  grafana:
+    container_name: "grafana"
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+    depends_on:
+      loki:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - monitoring
+
+networks:
+  monitoring:
+    driver: bridge
 
 volumes:
   backend_data:
   redis_data:
   minio_data:
+  loki_data:
+  grafana_data:
