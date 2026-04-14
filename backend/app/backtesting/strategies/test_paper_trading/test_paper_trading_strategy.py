@@ -19,7 +19,7 @@ class TestPaperTradingBacktestStrategy(BaseBacktestStrategy):
     name = "Test Paper Trading"
     description = "Cycling long/short every 10 candles — for paper trading engine tests"
     default_parameters = {
-        "stop_loss_pct": 0.01,
+        "stop_loss_pct": 0.0025,
         "risk_reward": 2.0,
         "commission": 0.002,
         "cash": 10000,

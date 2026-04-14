@@ -4,7 +4,10 @@ import Sidebar from "@components/Sidebar/Sidebar";
 import Trades from "@components/Trades/Trades";
 import TradingSidebar from "./components/TradingSidebar/TradingSidebar";
 import { useParams, useSearchParams } from "react-router-dom";
-import { useTradingSession } from "@hooks/useTradingSession";
+import {
+  useTradingSession,
+  useTradingSessionDrawings,
+} from "@hooks/useTradingSession";
 import { useState } from "react";
 import NotFound404 from "@components/404/404";
 import { normalizeSymbol } from "@/helpers/symbol";
@@ -15,6 +18,7 @@ const Trading = () => {
   const { sessionId } = useParams();
   const [searchParams] = useSearchParams();
   const { data: session, error } = useTradingSession(sessionId);
+  const { data: sessionDrawings } = useTradingSessionDrawings(sessionId);
   const [chartData, setChartData] = useState(null);
   const { emit } = useSocket();
 
@@ -44,7 +48,7 @@ const Trading = () => {
           <div className='flex-1 flex flex-col overflow-hidden'>
             <div className='flex-1 overflow-hidden'>
               <Chart
-                drawings={null}
+                drawings={sessionDrawings}
                 onChartReady={setChartData}
                 symbol={sessionSymbol}
               />

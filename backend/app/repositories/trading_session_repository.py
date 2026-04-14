@@ -60,10 +60,17 @@ class TradingSessionRepository(BaseRepository[TradingSession]):
 
     def add_trade(self, session_id: int, trade_data: dict) -> Trade:
         """Insert an open trade for a session"""
+        entry_time = trade_data["entry_time"]
+        if isinstance(entry_time, (int, float)):
+            from datetime import datetime, timezone
+            entry_time = datetime.fromtimestamp(entry_time / 1000, tz=timezone.utc)
+        else:
+            entry_time = datetime.fromisoformat(entry_time)
+
         trade = Trade(
             session_id=session_id,
             symbol=trade_data.get("symbol"),
-            entry_time=datetime.fromisoformat(trade_data["entry_time"]),
+            entry_time=entry_time,
             entry_price=trade_data["entry_price"],
             size=trade_data["size"],
             trade_type=trade_data["type"],
@@ -85,7 +92,14 @@ class TradingSessionRepository(BaseRepository[TradingSession]):
         if not trade:
             return None
 
-        trade.exit_time = datetime.fromisoformat(trade_data["exit_time"])
+        exit_time = trade_data["exit_time"]
+        if isinstance(exit_time, (int, float)):
+            from datetime import datetime, timezone
+            exit_time = datetime.fromtimestamp(exit_time / 1000, tz=timezone.utc)
+        else:
+            exit_time = datetime.fromisoformat(exit_time)
+
+        trade.exit_time = exit_time
         trade.exit_price = trade_data["exit_price"]
         trade.pnl = trade_data["pnl"]
         trade.pnl_percentage = trade_data["pnl_percent"]

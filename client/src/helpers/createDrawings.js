@@ -143,6 +143,21 @@ function resolveDrawingPositions(drawingData, candleData) {
     }
     case "long_position":
     case "short_position": {
+      // Resolve flat startTime/endTime (same format as rectangle/line)
+      if (drawingData.startTime) {
+        startTimeResolved = resolveTime(drawingData.startTime);
+        if (startTimeResolved === null) return null;
+        resolved.startTime = startTimeResolved;
+      }
+      if (drawingData.endTime) {
+        if (drawingData.endTime === "relative") {
+          resolved.endTime = resolveTime(drawingData.endTime);
+          if (resolved.endTime === null) return null;
+        } else {
+          resolved.endTime = toUnixSeconds(drawingData.endTime);
+        }
+      }
+      // Also handle legacy nested format (entry.time / target.time / stop.time)
       if (drawingData.entry?.time) {
         startTimeResolved = resolveTime(drawingData.entry.time);
         if (startTimeResolved === null) {

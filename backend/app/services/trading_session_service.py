@@ -115,6 +115,8 @@ class TradingSessionService:
 
             if tick_update:
                 await self._emit_update(session_id, tick_update)
+                if tick_update.get("type") == "trade_close":
+                    await self._save_trade(session_id, tick_update, session)
                 await self._save_metrics(session_id, session)
 
             if is_closed:
@@ -166,6 +168,7 @@ class TradingSessionService:
                 "stop_loss": trade_data["stop_loss"],
                 "take_profit": trade_data["take_profit"],
             })
+            self._add_drawing(session_id, trade_data, session.symbol)
         elif update["type"] == "trade_close":
             repo.close_trade(session_id, {
                 "exit_time": trade_data["exit_time"],
@@ -174,6 +177,62 @@ class TradingSessionService:
                 "pnl_percent": trade_data["pnl_percent"],
                 "exit_reason": trade_data["exit_reason"],
             })
+            self._close_drawing(session_id, trade_data)
+
+    def _add_drawing(self, session_id: int, trade_data: Dict[str, Any], symbol: str) -> None:
+        """Append an open position drawing when a trade opens."""
+        from app.utils.symbol_utils import symbol_to_filename
+        from datetime import datetime, timezone
+        ticker = symbol_to_filename(symbol)
+        direction = trade_data["type"]
+
+        # entry_time is a Unix ms timestamp from Bybit — convert to ISO
+        entry_ts = trade_data["entry_time"]
+        if isinstance(entry_ts, (int, float)):
+            entry_iso = datetime.fromtimestamp(entry_ts / 1000, tz=timezone.utc).isoformat()
+        else:
+            entry_iso = entry_ts
+
+        drawing = {
+            "type": f"{direction}_position",
+            "id": f"trade_{session_id}_{entry_ts}",
+            "ticker": ticker,
+            "startTime": entry_iso,
+            "endTime": "relative",
+            "entryPrice": trade_data["entry_price"],
+            "targetPrice": trade_data.get("take_profit"),
+            "stopPrice": trade_data.get("stop_loss"),
+        }
+        repo = self._get_repo()
+        db_session = repo.get_by_id(session_id)
+        if db_session is None:
+            return
+        existing = list(db_session.drawings or [])
+        existing.append(drawing)
+        repo.update(session_id, {"drawings": existing})
+        logger.info(f"[#{session_id}] Drawing added: {direction} @ {trade_data['entry_price']}")
+
+    def _close_drawing(self, session_id: int, trade_data: Dict[str, Any]) -> None:
+        """Update the open drawing's endTime when the trade closes."""
+        from datetime import datetime, timezone
+        repo = self._get_repo()
+        db_session = repo.get_by_id(session_id)
+        if db_session is None:
+            return
+        drawings = list(db_session.drawings or [])
+
+        exit_ts = trade_data["exit_time"]
+        if isinstance(exit_ts, (int, float)):
+            exit_iso = datetime.fromtimestamp(exit_ts / 1000, tz=timezone.utc).isoformat()
+        else:
+            exit_iso = exit_ts
+
+        for d in drawings:
+            if d.get("endTime") == "relative":
+                d["endTime"] = exit_iso
+                break
+        repo.update(session_id, {"drawings": drawings})
+        logger.info(f"[#{session_id}] Drawing closed @ {exit_iso}")
 
 
 trading_session_service = TradingSessionService()

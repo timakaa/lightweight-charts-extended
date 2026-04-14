@@ -82,6 +82,15 @@ def get_session(session_id: int):
     return _serialize(session)
 
 
+@router.get("/trading/{session_id}/drawings")
+def get_session_drawings(session_id: int):
+    repo = TradingSessionRepository(next(get_db()))
+    session = repo.get_by_id(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return session.drawings or []
+
+
 @router.get("/trading/{session_id}/trades")
 def get_session_trades(session_id: int):
     repo = TradingSessionRepository(next(get_db()))

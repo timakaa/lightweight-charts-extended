@@ -4,7 +4,7 @@ Runs a strategy on real-time market data
 """
 
 from typing import Dict, Any, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 from .metrics_calculator import MetricsCalculator
 
@@ -191,20 +191,30 @@ class PaperTradingSession:
     ) -> Dict[str, Any]:
         """
         Close current position
-        
+
         Args:
             price_data: Current price data
             reason: 'stop_loss', 'take_profit', or 'strategy_signal'
-            
+
         Returns:
             Update data for WebSocket emission
         """
         if not self.current_position:
             return {}
-        
+
         exit_price = price_data.get('close') or price_data.get('price')
-        exit_time = price_data['timestamp']
-        
+        exit_ts = price_data['timestamp']
+
+        # Normalize timestamps — Bybit sends Unix ms integers, not ISO strings
+        def to_dt(ts):
+            if isinstance(ts, (int, float)):
+                return datetime.fromtimestamp(ts / 1000, tz=timezone.utc)
+            return datetime.fromisoformat(ts)
+
+        entry_time_dt = to_dt(self.current_position['entry_time'])
+        exit_time_dt = to_dt(exit_ts)
+        exit_time_iso = exit_time_dt.isoformat()
+
         # Calculate PnL
         gross_pnl = self._calculate_pnl(
             entry_price=self.current_position['entry_price'],
@@ -212,44 +222,42 @@ class PaperTradingSession:
             size=self.current_position['size'],
             position_type=self.current_position['type']
         )
-        
+
         # Calculate exit fee
         exit_fee = self._calculate_fee(exit_price, self.current_position['size'])
-        
+
         # Net PnL after fees
         net_pnl = gross_pnl - self.current_position['entry_fee'] - exit_fee
-        
+
         # Calculate duration
-        entry_time = datetime.fromisoformat(self.current_position['entry_time'])
-        exit_time_dt = datetime.fromisoformat(exit_time)
-        duration_seconds = int((exit_time_dt - entry_time).total_seconds())
-        
+        duration_seconds = int((exit_time_dt - entry_time_dt).total_seconds())
+
         # Create closed trade record
         closed_trade = {
             **self.current_position,
             'exit_price': exit_price,
-            'exit_time': exit_time,
+            'exit_time': exit_time_iso,
             'exit_fee': exit_fee,
             'pnl': net_pnl,
             'pnl_percent': (net_pnl / self.initial_balance) * 100,
             'duration_seconds': duration_seconds,
             'exit_reason': reason,
         }
-        
+
         self.closed_trades.append(closed_trade)
-        
+
         logger.info(
             f"[#{self.backtest_id}] CLOSED {closed_trade['type'].upper()} | "
             f"exit={exit_price} pnl={net_pnl:.4f} reason={reason}"
         )
-        
+
         # Update metrics
         trade_date = exit_time_dt.strftime('%Y-%m-%d')
         self.metrics.on_trade_close(net_pnl, trade_date)
-        
+
         # Clear position
         self.current_position = None
-        
+
         return {
             'type': 'trade_close',
             'trade': closed_trade,
@@ -323,8 +331,12 @@ class PaperTradingSession:
         if not self.current_position:
             return None
         
-        entry_time = datetime.fromisoformat(self.current_position['entry_time'])
-        duration_seconds = int((datetime.now() - entry_time).total_seconds())
+        entry_time = self.current_position['entry_time']
+        if isinstance(entry_time, (int, float)):
+            entry_dt = datetime.fromtimestamp(entry_time / 1000, tz=timezone.utc)
+        else:
+            entry_dt = datetime.fromisoformat(entry_time)
+        duration_seconds = int((datetime.now(tz=timezone.utc) - entry_dt).total_seconds())
         unrealized_pnl = self._calculate_unrealized_pnl(current_price)
         
         return {

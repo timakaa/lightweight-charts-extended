@@ -131,9 +131,9 @@ class TickerHandler:
                 ticker
                 for ticker in filtered
                 if (
-                    search_lower in (ticker.get("symbol", "")).lower()
-                    or search_lower in (ticker.get("base", "")).lower()
-                    or search_lower in (ticker.get("quote", "")).lower()
+                    search_lower in (ticker.get("symbol") or "").lower()
+                    or search_lower in (ticker.get("base") or "").lower()
+                    or search_lower in (ticker.get("quote") or "").lower()
                 )
             ]
 

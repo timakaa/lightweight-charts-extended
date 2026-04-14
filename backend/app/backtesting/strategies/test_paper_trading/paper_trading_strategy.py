@@ -13,7 +13,7 @@ class TestCyclePaperStrategy:
         self.name = "Test Paper Trading Strategy"
         self.description = "Cycling long/short every 10 candles for paper trading tests"
         self.logic = TestCycleLogic(
-            stop_loss_pct=parameters.get("stop_loss_pct", 0.01),
+            stop_loss_pct=parameters.get("stop_loss_pct", 0.0025),
             risk_reward=parameters.get("risk_reward", 2.0),
         )
 
